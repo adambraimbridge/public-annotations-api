@@ -24,7 +24,7 @@ func TestRetrieveMultipleAnnotations(t *testing.T) {
 	assert := assert.New(t)
 	expectedAnnotations := []annotation{getExpectedFacebookAnnotation(), getExpectedWallStreetJournalAnnotation()}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
-	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
+	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db: db}, 1)
 
 	contentRW := writeContent(assert, db, batchRunner)
 	organisationRW := writeOrganisations(assert, db, batchRunner)
@@ -40,13 +40,14 @@ func TestRetrieveMultipleAnnotations(t *testing.T) {
 	assert.NoError(err, "Unexpected error for content %s", contentUUID)
 	assert.True(found, "Found no annotations for content %s", contentUUID)
 	assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+	//TODO add specific tests for both annotations
 }
 
 func TestRetrieveNoAnnotationsWhenThereAreNonePresent(t *testing.T) {
 	assert := assert.New(t)
 	expectedAnnotations := []annotation{}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
-	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
+	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db: db}, 1)
 
 	contentRW := writeContent(assert, db, batchRunner)
 	organisationRW := writeOrganisations(assert, db, batchRunner)
@@ -66,7 +67,7 @@ func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
 	assert := assert.New(t)
 	expectedAnnotations := []annotation{}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
-	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
+	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db: db}, 1)
 
 	contentRW := writeContent(assert, db, batchRunner)
 	annotationsRW := writeAnnotations(assert, db, batchRunner)
