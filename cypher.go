@@ -6,24 +6,22 @@ import (
 )
 
 // Driver interface
-type Driver interface {
-	Read(id string) (annotations Annotations, found bool, err error)
-	CheckConnectivity() error
+type driver interface {
+	read(id string) (anns annotations, found bool, err error)
+	checkConnectivity() error
 }
 
 // CypherDriver struct
-type CypherDriver struct {
+type cypherDriver struct {
 	db  *neoism.Database
 	env string
 }
 
-//NewCypherDriver instantiate driver
-func NewCypherDriver(db *neoism.Database, env string) CypherDriver {
-	return CypherDriver{db, env}
+func newCypherDriver(db *neoism.Database, env string) cypherDriver {
+	return cypherDriver{db, env}
 }
 
-// CheckConnectivity tests neo4j by running a simple cypher query
-func (pcw CypherDriver) CheckConnectivity() error {
+func (pcw cypherDriver) checkConnectivity() error {
 	results := []struct {
 		ID int
 	}{}
@@ -39,7 +37,7 @@ func (pcw CypherDriver) CheckConnectivity() error {
 type neoReadStruct struct {
 }
 
-func (pcw CypherDriver) Read(uuid string) (annotations Annotations, found bool, err error) {
+func (pcw cypherDriver) read(uuid string) (anns annotations, found bool, err error) {
 	results := []annotation{}
 	return results, true, nil
 }

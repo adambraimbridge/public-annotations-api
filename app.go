@@ -60,7 +60,7 @@ func runServer(neoURL string, port string, cacheDuration string, env string) {
 	if duration, durationErr := time.ParseDuration(cacheDuration); durationErr != nil {
 		log.Fatalf("Failed to parse cache duration string, %v", durationErr)
 	} else {
-		CacheControlHeader = fmt.Sprintf("max-age=%s, public", strconv.FormatFloat(duration.Seconds(), 'f', 0, 64))
+		cacheControlHeader = fmt.Sprintf("max-age=%s, public", strconv.FormatFloat(duration.Seconds(), 'f', 0, 64))
 	}
 
 	db, err := neoism.Connect(neoURL)
@@ -69,19 +69,19 @@ func runServer(neoURL string, port string, cacheDuration string, env string) {
 		log.Fatalf("Error connecting to neo4j %s", err)
 	}
 
-	AnnotationsDriver = NewCypherDriver(db, env)
+	annotationsDriver = newCypherDriver(db, env)
 
 	servicesRouter := mux.NewRouter()
 
 	// Healthchecks and standards first
 	servicesRouter.HandleFunc("/__health", v1a.Handler("AnnotationsReadWriteNeo4j Healthchecks",
-		"Checks for accessing neo4j", HealthCheck()))
-	servicesRouter.HandleFunc("/ping", Ping)
-	servicesRouter.HandleFunc("/__ping", Ping)
+		"Checks for accessing neo4j", healthCheck()))
+	servicesRouter.HandleFunc("/ping", ping)
+	servicesRouter.HandleFunc("/__ping", ping)
 
 	// Then API specific ones:
-	servicesRouter.HandleFunc("/content/{uuid}/annotations", GetAnnotations).Methods("GET")
-	servicesRouter.HandleFunc("/content/{uuid}/annotations", MethodNotAllowedHandler)
+	servicesRouter.HandleFunc("/content/{uuid}/annotations", getAnnotations).Methods("GET")
+	servicesRouter.HandleFunc("/content/{uuid}/annotations", methodNotAllowedHandler)
 
 	var monitoringRouter http.Handler = servicesRouter
 	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
@@ -90,9 +90,9 @@ func runServer(neoURL string, port string, cacheDuration string, env string) {
 	// The following endpoints should not be monitored or logged (varnish calls one of these every second, depending on config)
 	// The top one of these build info endpoints feels more correct, but the lower one matches what we have in Dropwizard,
 	// so it's what apps expect currently same as ping, the content of build-info needs more definition
-	http.HandleFunc("/__build-info", BuildInfoHandler)
-	http.HandleFunc("/build-info", BuildInfoHandler)
-	http.HandleFunc("/__gtg", GoodToGo)
+	http.HandleFunc("/__build-info", buildInfoHandler)
+	http.HandleFunc("/build-info", buildInfoHandler)
+	http.HandleFunc("/__gtg", goodToGo)
 	http.Handle("/", monitoringRouter)
 
 	if err := http.ListenAndServe(":"+port, nil); err != nil {

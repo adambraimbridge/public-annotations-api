@@ -1,12 +1,12 @@
 package main
 
-type Annotations []annotation
+type annotations []annotation
 
 type annotation struct {
 	Predicate string   `json:"predicate"`
 	ID        string   `json:"id"`
-	APIURL    string   `json:"apiUrl`
-	PrefLabel string   `json:"prefLabel"`
-	LeiCode   string   `json:"leiCode"`
+	APIURL    string   `json:"apiUrl"`
 	Types     []string `json:"types"`
+	LeiCode   string   `json:"leiCode"`
+	PrefLabel string   `json:"prefLabel"`
 }
