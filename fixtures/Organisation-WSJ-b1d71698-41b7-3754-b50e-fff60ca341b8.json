@@ -1,0 +1,11 @@
+{
+  "uuid": "b1d71698-41b7-3754-b50e-fff60ca341b8",
+  "properName": "The Wall Street Journal",
+  "identifiers": [
+    {
+      "authority": "http://api.ft.com/system/FACTSET-EDM",
+      "identifierValue": "00BBBB-E"
+    }
+  ],
+  "type": "Organisation"
+}

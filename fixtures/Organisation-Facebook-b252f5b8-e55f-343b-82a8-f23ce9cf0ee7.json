@@ -1,0 +1,15 @@
+{
+  "uuid": "b252f5b8-e55f-343b-82a8-f23ce9cf0ee7",
+  "properName": "Facebook, Inc.",
+  "identifiers": [
+    {
+      "authority": "http://api.ft.com/system/FACTSET-EDM",
+      "identifierValue": "00AAA-E"
+    },
+    {
+      "authority": "http://api.ft.com/system/LEI",
+      "identifierValue": "BQ4BKCS1HXDV9HN80Z93"
+    }
+  ],
+  "type": "Organisation"
+}
