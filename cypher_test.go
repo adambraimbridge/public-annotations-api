@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Financial-Times/annotations-rw-neo4j/annotations"
+	annrw "github.com/Financial-Times/annotations-rw-neo4j/annotations"
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
 	"github.com/Financial-Times/content-rw-neo4j/content"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
@@ -24,11 +24,11 @@ func TestRetrieveMultipleAnnotations(t *testing.T) {
 	assert := assert.New(t)
 	expectedAnnotations := []annotation{getExpectedFacebookAnnotation(), getExpectedWallStreetJournalAnnotation()}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
-	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db: db}, 1)
+	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
 
-	contentRW := writeContent(assert, db, batchRunner)
-	organisationRW := writeOrganisations(assert, db, batchRunner)
-	annotationsRW := writeAnnotations(assert, db, batchRunner)
+	contentRW := writeContent(assert, db, &batchRunner)
+	organisationRW := writeOrganisations(assert, db, &batchRunner)
+	annotationsRW := writeAnnotations(assert, db, &batchRunner)
 
 	defer cleanDB(db, t, assert)
 	defer deleteContent(contentRW)
@@ -47,10 +47,10 @@ func TestRetrieveNoAnnotationsWhenThereAreNonePresent(t *testing.T) {
 	assert := assert.New(t)
 	expectedAnnotations := []annotation{}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
-	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db: db}, 1)
+	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
 
-	contentRW := writeContent(assert, db, batchRunner)
-	organisationRW := writeOrganisations(assert, db, batchRunner)
+	contentRW := writeContent(assert, db, &batchRunner)
+	organisationRW := writeOrganisations(assert, db, &batchRunner)
 
 	defer cleanDB(db, t, assert)
 	defer deleteContent(contentRW)
@@ -67,10 +67,10 @@ func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
 	assert := assert.New(t)
 	expectedAnnotations := []annotation{}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
-	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db: db}, 1)
+	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
 
-	contentRW := writeContent(assert, db, batchRunner)
-	annotationsRW := writeAnnotations(assert, db, batchRunner)
+	contentRW := writeContent(assert, db, &batchRunner)
+	annotationsRW := writeAnnotations(assert, db, &batchRunner)
 
 	defer cleanDB(db, t, assert)
 	defer deleteContent(contentRW)
@@ -107,14 +107,14 @@ func deleteOrganisations(organisationRW baseftrwapp.Service) {
 	organisationRW.Delete("b252f5b8-e55f-343b-82a8-f23ce9cf0ee7")
 }
 
-func writeAnnotations(assert *assert.Assertions, db *neoism.Database, batchRunner *neoutils.CypherRunner) baseftrwapp.Service {
-	annotationsRW := annotations.NewAnnotationsService(*batchRunner, db)
+func writeAnnotations(assert *assert.Assertions, db *neoism.Database, batchRunner *neoutils.CypherRunner) annrw.Service {
+	annotationsRW := annrw.NewAnnotationsService(*batchRunner, db, "v2")
 	assert.NoError(annotationsRW.Initialise())
-	writeJSONToService(annotationsRW, "./fixtures/Annotations-d6c9c76e-a625-11e3-8a2a-00144feab7de.json", assert)
+	writeJSONToAnnotationsService(annotationsRW, contentUUID, "./fixtures/Annotations-d6c9c76e-a625-11e3-8a2a-00144feab7de.json", assert)
 	return annotationsRW
 }
 
-func deleteAnnotations(annotationsRW baseftrwapp.Service) {
+func deleteAnnotations(annotationsRW annrw.Service) {
 	annotationsRW.Delete("d6c9c76e-a625-11e3-8a2a-00144feab7de")
 }
 
@@ -125,6 +125,16 @@ func writeJSONToService(service baseftrwapp.Service, pathToJSONFile string, asse
 	inst, _, errr := service.DecodeJSON(dec)
 	assert.NoError(errr)
 	errrr := service.Write(inst)
+	assert.NoError(errrr)
+}
+
+func writeJSONToAnnotationsService(service annrw.Service, contentUUID string, pathToJSONFile string, assert *assert.Assertions) {
+	f, err := os.Open(pathToJSONFile)
+	assert.NoError(err)
+	dec := json.NewDecoder(f)
+	inst, errr := service.DecodeJSON(dec)
+	assert.NoError(errr)
+	errrr := service.Write(contentUUID, inst)
 	assert.NoError(errrr)
 }
 
