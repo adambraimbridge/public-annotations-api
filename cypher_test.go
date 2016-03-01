@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	contentUUID                  = "d6c9c76e-a625-11e3-8a2a-00144feab7de"
-	contentUUIDWithNoAnnotations = "1d76cb3c-9d18-43a8-ade4-57d99f88eac5"
+	contentUUID         = "d6c9c76e-a625-11e3-8a2a-00144feab7de"
+	WSJConceptUUID      = "b1d71698-41b7-3754-b50e-fff60ca341b8"
+	FacebookConceptUUID = "b252f5b8-e55f-343b-82a8-f23ce9cf0ee7"
 )
 
 func TestRetrieveMultipleAnnotations(t *testing.T) {
@@ -40,12 +41,11 @@ func TestRetrieveMultipleAnnotations(t *testing.T) {
 	assert.NoError(err, "Unexpected error for content %s", contentUUID)
 	assert.True(found, "Found no annotations for content %s", contentUUID)
 	assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	//TODO add specific tests for both annotations
+	assertListContainsAll(assert, anns, getExpectedFacebookAnnotation(), getExpectedWallStreetJournalAnnotation())
 }
 
 func TestRetrieveNoAnnotationsWhenThereAreNonePresent(t *testing.T) {
 	assert := assert.New(t)
-	expectedAnnotations := []annotation{}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
 	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
 
@@ -57,15 +57,14 @@ func TestRetrieveNoAnnotationsWhenThereAreNonePresent(t *testing.T) {
 	defer deleteOrganisations(organisationRW)
 
 	annotationsDriver := newCypherDriver(db, "prod")
-	anns, found, err := annotationsDriver.read(contentUUIDWithNoAnnotations)
+	anns, found, err := annotationsDriver.read(contentUUID)
 	assert.NoError(err, "Unexpected error for content %s", contentUUID)
 	assert.False(found, "Found annotations for content %s", contentUUID)
-	assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+	assert.Equal(0, len(anns), "Didn't get the same number of annotations")
 }
 
 func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
 	assert := assert.New(t)
-	expectedAnnotations := []annotation{}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
 	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
 
@@ -77,10 +76,10 @@ func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
 	defer deleteAnnotations(annotationsRW)
 
 	annotationsDriver := newCypherDriver(db, "prod")
-	anns, found, err := annotationsDriver.read(contentUUIDWithNoAnnotations)
+	anns, found, err := annotationsDriver.read(contentUUID)
 	assert.NoError(err, "Unexpected error for content %s", contentUUID)
 	assert.False(found, "Found annotations for content %s", contentUUID)
-	assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+	assert.Equal(0, len(anns), "Didn't get the same number of annotations, anns=%s", anns)
 }
 
 func writeContent(assert *assert.Assertions, db *neoism.Database, batchRunner *neoutils.CypherRunner) baseftrwapp.Service {
@@ -91,7 +90,7 @@ func writeContent(assert *assert.Assertions, db *neoism.Database, batchRunner *n
 }
 
 func deleteContent(contentRW baseftrwapp.Service) {
-	contentRW.Delete("d6c9c76e-a625-11e3-8a2a-00144feab7de")
+	contentRW.Delete(contentUUID)
 }
 
 func writeOrganisations(assert *assert.Assertions, db *neoism.Database, batchRunner *neoutils.CypherRunner) baseftrwapp.Service {
@@ -103,8 +102,8 @@ func writeOrganisations(assert *assert.Assertions, db *neoism.Database, batchRun
 }
 
 func deleteOrganisations(organisationRW baseftrwapp.Service) {
-	organisationRW.Delete("b1d71698-41b7-3754-b50e-fff60ca341b8")
-	organisationRW.Delete("b252f5b8-e55f-343b-82a8-f23ce9cf0ee7")
+	organisationRW.Delete(WSJConceptUUID)
+	organisationRW.Delete(FacebookConceptUUID)
 }
 
 func writeAnnotations(assert *assert.Assertions, db *neoism.Database, batchRunner *neoutils.CypherRunner) annrw.Service {
@@ -115,7 +114,7 @@ func writeAnnotations(assert *assert.Assertions, db *neoism.Database, batchRunne
 }
 
 func deleteAnnotations(annotationsRW annrw.Service) {
-	annotationsRW.Delete("d6c9c76e-a625-11e3-8a2a-00144feab7de")
+	annotationsRW.Delete(contentUUID)
 }
 
 func writeJSONToService(service baseftrwapp.Service, pathToJSONFile string, assert *assert.Assertions) {
