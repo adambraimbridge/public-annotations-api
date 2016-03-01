@@ -56,6 +56,7 @@ func main() {
 }
 
 func runServer(neoURL string, port string, cacheDuration string, env string) {
+	var cacheControlHeader string
 
 	if duration, durationErr := time.ParseDuration(cacheDuration); durationErr != nil {
 		log.Fatalf("Failed to parse cache duration string, %v", durationErr)
@@ -69,33 +70,39 @@ func runServer(neoURL string, port string, cacheDuration string, env string) {
 		log.Fatalf("Error connecting to neo4j %s", err)
 	}
 
-	annotationsDriver = newCypherDriver(db, env)
+	httpHandlers := httpHandlers{newCypherDriver(db, env), cacheControlHeader}
 
+	r := router(httpHandlers)
+	// The following endpoints should not be monitored or logged (varnish calls one of these every second, depending on config)
+	// The top one of these build info endpoints feels more correct, but the lower one matches what we have in Dropwizard,
+	// so it's what apps expect currently same as ping, the content of build-info needs more definition
+	http.HandleFunc("/__build-info", httpHandlers.buildInfoHandler)
+	http.HandleFunc("/build-info", httpHandlers.buildInfoHandler)
+	http.HandleFunc("/__gtg", httpHandlers.goodToGo)
+
+	http.Handle("/", r)
+
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatalf("Unable to start server: %v", err)
+	}
+}
+
+func router(hh httpHandlers) http.Handler {
 	servicesRouter := mux.NewRouter()
 
 	// Healthchecks and standards first
 	servicesRouter.HandleFunc("/__health", v1a.Handler("AnnotationsReadWriteNeo4j Healthchecks",
-		"Checks for accessing neo4j", healthCheck()))
-	servicesRouter.HandleFunc("/ping", ping)
-	servicesRouter.HandleFunc("/__ping", ping)
+		"Checks for accessing neo4j", hh.healthCheck()))
+	servicesRouter.HandleFunc("/ping", hh.ping)
+	servicesRouter.HandleFunc("/__ping", hh.ping)
 
 	// Then API specific ones:
-	servicesRouter.HandleFunc("/content/{uuid}/annotations", getAnnotations).Methods("GET")
-	servicesRouter.HandleFunc("/content/{uuid}/annotations", methodNotAllowedHandler)
+	servicesRouter.HandleFunc("/content/{uuid}/annotations", hh.getAnnotations).Methods("GET")
+	servicesRouter.HandleFunc("/content/{uuid}/annotations", hh.methodNotAllowedHandler)
 
 	var monitoringRouter http.Handler = servicesRouter
 	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
 	monitoringRouter = httphandlers.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
 
-	// The following endpoints should not be monitored or logged (varnish calls one of these every second, depending on config)
-	// The top one of these build info endpoints feels more correct, but the lower one matches what we have in Dropwizard,
-	// so it's what apps expect currently same as ping, the content of build-info needs more definition
-	http.HandleFunc("/__build-info", buildInfoHandler)
-	http.HandleFunc("/build-info", buildInfoHandler)
-	http.HandleFunc("/__gtg", goodToGo)
-	http.Handle("/", monitoringRouter)
-
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatalf("Unable to start server: %v", err)
-	}
+	return monitoringRouter
 }
