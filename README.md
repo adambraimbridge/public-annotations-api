@@ -28,21 +28,10 @@ Based on the following [google doc](https://docs.google.com/a/ft.com/document/d/
 ## Healthchecks
 Healthchecks: [http://localhost:8080/__health](http://localhost:8080/__health)
 
-### API specific
-* Complete Test cases
-* Runbook
-* Update or new API documentation based on original [google doc](https://docs.google.com/a/ft.com/document/d/1kQH3tk1GhXnupHKdDhkDE5UyJIHm2ssWXW3zjs3g2h8/edit?usp=sharing)
-
-### Cross cutting concerns
-* Allow service to start if neo4j is unavailable at startup time
-* Rework build / deploy (low priority)
-  * Suggested flow:
-    1. Build & Tests
-    1. Publish Release (using konstructor to generate vrm)
-    1. Deploy vrm/hash to test/prod
-
 ### Logging
-the application uses logrus, the logfile is initilaised in main.go.
- logging requires an env app parameter, for all environments  other than local logs are written to file
- when running locally logging is written to console (if you want to log locally to file you need to pass in an env parameter that is != local)
- NOTE: build-info end point is not logged as it is called every second from varnish and this information is not needed in  logs/splunk
+The application uses logrus, the logfile is initialised in main.go.
+
+Logging requires an env app parameter: for all environments other than local, logs are written to file. When running locally logging
+is written to console (if you want to log locally to file you need to pass in an env parameter that is != local).
+
+NOTE: http://localhost:8080/__gtg end point is not logged as it is called every second from varnish and this information is not needed in logs/splunk
