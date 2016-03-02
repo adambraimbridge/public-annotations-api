@@ -1,6 +1,6 @@
 {
-  "uuid": "b252f5b8-e55f-343b-82a8-f23ce9cf0ee7",
-  "properName": "Facebook, Inc.",
+  "uuid": "eac853f5-3859-4c08-8540-55e043719400",
+  "properName": "Fakebook, Inc.",
   "identifiers": [
     {
       "authority": "http://api.ft.com/system/FACTSET-EDM",
@@ -8,7 +8,7 @@
     },
     {
       "authority": "http://api.ft.com/system/LEI",
-      "identifierValue": "BQ4BKCS1HXDV9HN80Z93"
+      "identifierValue": "BQ4BKCS1HXDV9TTTTTTTT"
     }
   ],
   "type": "PublicCompany"
