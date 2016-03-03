@@ -30,7 +30,7 @@ func main() {
 	graphitePrefix := app.StringOpt("graphitePrefix", "",
 		"Prefix to use. Should start with content, include the environment, and the host name. e.g. content.test.public.annotations.api.ftaps59382-law1a-eu-t")
 	logMetrics := app.BoolOpt("logMetrics", false, "Whether to log metrics. Set to true if running locally and you want metrics output")
-	cacheDuration := app.StringOpt("cache-duration", "1h", "Duration Get requests should be cached for. e.g. 2h45m would set the max-age value to '7440' seconds")
+	cacheDuration := app.StringOpt("cache-duration", "30s", "Duration Get requests should be cached for. e.g. 2h45m would set the max-age value to '7440' seconds")
 
 	app.Action = func() {
 		baseftrwapp.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
