@@ -63,7 +63,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
 		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
 	}
-	log.Debugf("CypherResult Read Annotations for uuid: %s was: %+v", contentUUID, results)
+	log.Infof("Found %d Annotations for uuid: %s", len(results), contentUUID)
 	if (len(results)) == 0 {
 		return annotations{}, false, nil
 	}
@@ -86,15 +86,15 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 func mapToResponseFormat(ann *annotation, env string) (*annotation, error) {
 	ann.APIURL = mapper.APIURL(ann.ID, ann.Types, env)
 	ann.ID = mapper.IDURL(ann.ID)
-	log.Infof("ann.types=%s", ann.Types)
-	types := mapper.TypeURIs(ann.Types) //TODO - change the mapper so it returns a type of 'Thing' if nothing else
+	types := mapper.TypeURIs(ann.Types) //TODO - change the mapper so it returns a type of 'Thing' if nothing else?
 	if types == nil {
+		log.Warnf("Could not map type URIs for ID %s with types %s", ann.ID, ann.Types)
 		return ann, errors.New("Concept not found")
 	}
-	log.Infof("types=%s", types)
 	ann.Types = types
 	predicate, err := getPredicateFromRelationship(ann.Predicate)
 	if err != nil {
+		log.Warnf("Could not find predicate for ID %s for relationship %s", ann.ID, ann.Predicate)
 		return ann, err
 	}
 	ann.Predicate = predicate
