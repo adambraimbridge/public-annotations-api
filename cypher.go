@@ -63,7 +63,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
 		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
 	}
-	log.Infof("Found %d Annotations for uuid: %s", len(results), contentUUID)
+	log.Debugf("Found %d Annotations for uuid: %s", len(results), contentUUID)
 	if (len(results)) == 0 {
 		return annotations{}, false, nil
 	}
