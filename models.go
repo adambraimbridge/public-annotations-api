@@ -15,5 +15,5 @@ var predicates = map[string]string{
 	"MENTIONS":         "http://www.ft.com/ontology/annotation/mentions",
 	"IS_CLASSIFIED_BY": "http://www.ft.com/ontology/annotation/isClassifiedBy",
 	"ABOUT":            "http://www.ft.com/ontology/annotation/about",
-	"IS_PRIMARILY_CLASSIFIED_BY": "http://www.ft.com/ontology/annotation/isPrimarilyClassifiedBy",
+	"IS_PRIMARILY_CLASSIFIED_BY": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
 }
