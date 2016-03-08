@@ -244,7 +244,7 @@ func getExpectedMallStreetJournalAnnotation() annotation {
 
 func getExpectedMetalMickeyAnnotation() annotation {
 	return annotation{
-		Predicate: "http://www.ft.com/ontology/annotation/isClassifiedBy",
+		Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
 		ID:        "http://api.ft.com/things/0483bef8-5797-40b8-9b25-b12e492f63c6",
 		APIURL:    "http://api.ft.com/things/0483bef8-5797-40b8-9b25-b12e492f63c6",
 		Types: []string{
