@@ -221,9 +221,11 @@ func getExpectedFakebookAnnotation() annotation {
 		ID:        "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
 		APIURL:    "http://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
 		Types: []string{
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
 			"http://www.ft.com/ontology/organisation/Organisation",
-			"http://www.ft.com/ontology/company/PublicCompany",
 			"http://www.ft.com/ontology/company/Company",
+			"http://www.ft.com/ontology/company/PublicCompany",
 		},
 		LeiCode:   "BQ4BKCS1HXDV9TTTTTTTT",
 		PrefLabel: "Fakebook, Inc.",
@@ -236,6 +238,8 @@ func getExpectedMallStreetJournalAnnotation() annotation {
 		ID:        "http://api.ft.com/things/5d1510f8-2779-4b74-adab-0a5eb138fca6",
 		APIURL:    "http://api.ft.com/organisations/5d1510f8-2779-4b74-adab-0a5eb138fca6",
 		Types: []string{
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
 			"http://www.ft.com/ontology/organisation/Organisation",
 		},
 		PrefLabel: "The Mall Street Journal",
@@ -248,6 +252,9 @@ func getExpectedMetalMickeyAnnotation() annotation {
 		ID:        "http://api.ft.com/things/0483bef8-5797-40b8-9b25-b12e492f63c6",
 		APIURL:    "http://api.ft.com/things/0483bef8-5797-40b8-9b25-b12e492f63c6",
 		Types: []string{
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
+			"http://www.ft.com/ontology/classification/Classification",
 			"http://www.ft.com/ontology/Subject",
 		},
 		PrefLabel: "Metal Mickey",

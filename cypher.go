@@ -47,7 +47,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	query := &neoism.CypherQuery{
 		Statement: `
-					MATCH (c:Thing{uuid:{contentUUID}})-[rel]->(cc:Thing)
+					MATCH (c:Thing{uuid:{contentUUID}})-[rel]->(cc:Concept)
 					OPTIONAL MATCH (cc)<-[iden:IDENTIFIES]-(i:LegalEntityIdentifier)
 					RETURN cc.uuid as id,
 					type(rel) as predicate,
@@ -86,7 +86,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 func mapToResponseFormat(ann *annotation, env string) (*annotation, error) {
 	ann.APIURL = mapper.APIURL(ann.ID, ann.Types, env)
 	ann.ID = mapper.IDURL(ann.ID)
-	types := mapper.TypeURIs(ann.Types) //TODO - change the mapper so it returns a type of 'Thing' if nothing else?
+	types := mapper.TypeURIs(ann.Types)
 	if types == nil {
 		log.Warnf("Could not map type URIs for ID %s with types %s", ann.ID, ann.Types)
 		return ann, errors.New("Concept not found")
