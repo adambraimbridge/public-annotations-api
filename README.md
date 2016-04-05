@@ -7,7 +7,6 @@ _NB You will need to tag a commit in order to build, since the UI asks for a tag
 * [Build and publish to forge](http://ftjen10085-lvpr-uk-p:8181/job/public-annotations-api-build)
 * [Deploy to test or production](http://ftjen10085-lvpr-uk-p:8181/job/public-annotations-api-deploy)
 
-
 ## Installation & running locally
 * `go get -u github.com/Financial-Times/public-annotations-api`
 * `cd $GOPATH/src/github.com/Financial-Times/public-annotations-api`
