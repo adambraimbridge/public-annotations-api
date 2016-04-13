@@ -32,12 +32,6 @@ func TestRetrieveMultipleAnnotations(t *testing.T) {
 	db := getDatabaseConnectionAndCheckClean(t, assert)
 	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
 
-	// writeContent(assert, db, &batchRunner)
-	// writeOrganisations(assert, db, &batchRunner)
-	// writeV1Annotations(assert, db, &batchRunner)
-	// writeV2Annotations(assert, db, &batchRunner)
-	// writeSubjects(assert, db, &batchRunner)
-
 	contentRW := writeContent(assert, db, &batchRunner)
 	organisationRW := writeOrganisations(assert, db, &batchRunner)
 	annotationsRWV1 := writeV1Annotations(assert, db, &batchRunner)

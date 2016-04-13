@@ -14,8 +14,6 @@ type httpHandlers struct {
 	cacheControlHeader string
 }
 
-//var maxAge = 24 * time.Hour
-
 func (hh *httpHandlers) healthCheck() v1a.Check {
 	return v1a.Check{
 		BusinessImpact:   "Unable to respond to Public Annotations api requests",
