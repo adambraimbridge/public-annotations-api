@@ -1,6 +1,6 @@
 FROM alpine:3.3
 ADD *.go .git /public-annotations-api/
-ADD ./*.go /public-annotations-api/
+ADD *.go /public-annotations-api/
 RUN apk add --update bash \
   && apk --update add git go \
   && cd public-annotations-api \
