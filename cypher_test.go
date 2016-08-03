@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/Financial-Times/alphaville-series-rw-neo4j/alphavilleseries"
@@ -28,7 +29,7 @@ const (
 
 func TestRetrieveMultipleAnnotations(t *testing.T) {
 	assert := assert.New(t)
-	expectedAnnotations := []annotation{getExpectedFakebookAnnotation(),
+	expectedAnnotations := annotations{getExpectedFakebookAnnotation(),
 		getExpectedMallStreetJournalAnnotation(),
 		getExpectedMetalMickeyAnnotation(),
 		getExpectedAlphavilleSeriesAnnotation()}
@@ -55,7 +56,7 @@ func TestRetrieveMultipleAnnotations(t *testing.T) {
 	assert.NoError(err, "Unexpected error for content %s", contentUUID)
 	assert.True(found, "Found no annotations for content %s", contentUUID)
 	assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(assert, anns, getExpectedFakebookAnnotation(), getExpectedMallStreetJournalAnnotation(), getExpectedMetalMickeyAnnotation(), getExpectedAlphavilleSeriesAnnotation())
+	assertListContainsAll(assert, anns, expectedAnnotations)
 }
 
 func TestRetrieveNoAnnotationsWhenThereAreNonePresent(t *testing.T) {
@@ -185,9 +186,18 @@ func writeJSONToAnnotationsService(service annrw.Service, contentUUID string, pa
 }
 
 func assertListContainsAll(assert *assert.Assertions, list interface{}, items ...interface{}) {
-	assert.Len(list, len(items))
-	for _, item := range items {
-		assert.Contains(list, item)
+	if reflect.TypeOf(items[0]).Kind().String() == "slice" {
+		expected := reflect.ValueOf(items[0])
+		expectedLength := expected.Len()
+		assert.Len(list, expectedLength)
+		for i := 0; i < expectedLength; i++ {
+			assert.Contains(list, expected.Index(i).Interface())
+		}
+	} else {
+		assert.Len(list, len(items))
+		for _, item := range items {
+			assert.Contains(list, item)
+		}
 	}
 }
 
