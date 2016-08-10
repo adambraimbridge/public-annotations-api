@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 
+	"github.com/Financial-Times/alphaville-series-rw-neo4j/alphavilleseries"
 	annrw "github.com/Financial-Times/annotations-rw-neo4j/annotations"
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
 	"github.com/Financial-Times/content-rw-neo4j/content"
@@ -22,35 +24,35 @@ const (
 	MSJConceptUUID         = "5d1510f8-2779-4b74-adab-0a5eb138fca6"
 	FakebookConceptUUID    = "eac853f5-3859-4c08-8540-55e043719400"
 	MetalMickeyConceptUUID = "0483bef8-5797-40b8-9b25-b12e492f63c6"
+	alphavilleSeriesUUID   = "747894f8-a231-4efb-805d-753635eca712"
 )
 
 func TestRetrieveMultipleAnnotations(t *testing.T) {
 	assert := assert.New(t)
-	expectedAnnotations := []annotation{getExpectedFakebookAnnotation(),
+	expectedAnnotations := annotations{getExpectedFakebookAnnotation(),
 		getExpectedMallStreetJournalAnnotation(),
-		getExpectedMetalMickeyAnnotation()}
+		getExpectedMetalMickeyAnnotation(),
+		getExpectedAlphavilleSeriesAnnotation()}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
 	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
 
-	contentRW := writeContent(assert, db, &batchRunner)
-	organisationRW := writeOrganisations(assert, db, &batchRunner)
-	annotationsRWV1 := writeV1Annotations(assert, db, &batchRunner)
-	annotationsRWV2 := writeV2Annotations(assert, db, &batchRunner)
-	subjectsRW := writeSubjects(assert, db, &batchRunner)
+	writeContent(assert, db, &batchRunner)
+	writeOrganisations(assert, db, &batchRunner)
+	writeSubjects(assert, db, &batchRunner)
+	writeAlphavilleSeries(assert, db, &batchRunner)
+	writeV1Annotations(assert, db, &batchRunner)
+	writeV2Annotations(assert, db, &batchRunner)
 
-	defer cleanDB(db, t, assert)
-	defer deleteContent(contentRW)
-	defer deleteOrganisations(organisationRW)
-	defer deleteAnnotations(annotationsRWV1)
-	defer deleteAnnotations(annotationsRWV2)
-	defer deleteSubjects(subjectsRW)
+	defer cleanDB(db, contentUUID,
+		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID},
+		t, assert)
 
 	annotationsDriver := newCypherDriver(db, "prod")
 	anns, found, err := annotationsDriver.read(contentUUID)
 	assert.NoError(err, "Unexpected error for content %s", contentUUID)
 	assert.True(found, "Found no annotations for content %s", contentUUID)
 	assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(assert, anns, getExpectedFakebookAnnotation(), getExpectedMallStreetJournalAnnotation(), getExpectedMetalMickeyAnnotation())
+	assertListContainsAll(assert, anns, expectedAnnotations)
 }
 
 func TestRetrieveNoAnnotationsWhenThereAreNonePresent(t *testing.T) {
@@ -58,14 +60,13 @@ func TestRetrieveNoAnnotationsWhenThereAreNonePresent(t *testing.T) {
 	db := getDatabaseConnectionAndCheckClean(t, assert)
 	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
 
-	contentRW := writeContent(assert, db, &batchRunner)
-	organisationRW := writeOrganisations(assert, db, &batchRunner)
-	subjectsRW := writeSubjects(assert, db, &batchRunner)
+	writeContent(assert, db, &batchRunner)
+	writeOrganisations(assert, db, &batchRunner)
+	writeSubjects(assert, db, &batchRunner)
 
-	defer cleanDB(db, t, assert)
-	defer deleteContent(contentRW)
-	defer deleteOrganisations(organisationRW)
-	defer deleteSubjects(subjectsRW)
+	defer cleanDB(db, contentUUID,
+		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID},
+		t, assert)
 
 	annotationsDriver := newCypherDriver(db, "prod")
 	anns, found, err := annotationsDriver.read(contentUUID)
@@ -79,14 +80,13 @@ func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
 	db := getDatabaseConnectionAndCheckClean(t, assert)
 	batchRunner := neoutils.NewBatchCypherRunner(neoutils.StringerDb{db}, 1)
 
-	contentRW := writeContent(assert, db, &batchRunner)
-	annotationsRWV1 := writeV1Annotations(assert, db, &batchRunner)
-	annotationsRWV2 := writeV2Annotations(assert, db, &batchRunner)
+	writeContent(assert, db, &batchRunner)
+	writeV1Annotations(assert, db, &batchRunner)
+	writeV2Annotations(assert, db, &batchRunner)
 
-	defer cleanDB(db, t, assert)
-	defer deleteContent(contentRW)
-	defer deleteAnnotations(annotationsRWV1)
-	defer deleteAnnotations(annotationsRWV2)
+	defer cleanDB(db, contentUUID,
+		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID},
+		t, assert)
 
 	annotationsDriver := newCypherDriver(db, "prod")
 	anns, found, err := annotationsDriver.read(contentUUID)
@@ -102,21 +102,12 @@ func writeContent(assert *assert.Assertions, db *neoism.Database, batchRunner *n
 	return contentRW
 }
 
-func deleteContent(contentRW baseftrwapp.Service) {
-	contentRW.Delete(contentUUID)
-}
-
 func writeOrganisations(assert *assert.Assertions, db *neoism.Database, batchRunner *neoutils.CypherRunner) baseftrwapp.Service {
 	organisationRW := organisations.NewCypherOrganisationService(*batchRunner, db)
 	assert.NoError(organisationRW.Initialise())
 	writeJSONToService(organisationRW, "./fixtures/Organisation-MSJ-5d1510f8-2779-4b74-adab-0a5eb138fca6.json", assert)
 	writeJSONToService(organisationRW, "./fixtures/Organisation-Fakebook-eac853f5-3859-4c08-8540-55e043719400.json", assert)
 	return organisationRW
-}
-
-func deleteOrganisations(organisationRW baseftrwapp.Service) {
-	organisationRW.Delete(MSJConceptUUID)
-	organisationRW.Delete(FakebookConceptUUID)
 }
 
 func writeSubjects(assert *assert.Assertions, db *neoism.Database, batchRunner *neoutils.CypherRunner) baseftrwapp.Service {
@@ -126,8 +117,11 @@ func writeSubjects(assert *assert.Assertions, db *neoism.Database, batchRunner *
 	return subjectsRW
 }
 
-func deleteSubjects(subjectsRW baseftrwapp.Service) {
-	subjectsRW.Delete(MetalMickeyConceptUUID)
+func writeAlphavilleSeries(assert *assert.Assertions, db *neoism.Database, batchRunner *neoutils.CypherRunner) baseftrwapp.Service {
+	alphavilleSeriesRW := alphavilleseries.NewCypherAlphavilleSeriesService(*batchRunner, db)
+	assert.NoError(alphavilleSeriesRW.Initialise())
+	writeJSONToService(alphavilleSeriesRW, "./fixtures/TestAlphavilleSeries.json", assert)
+	return alphavilleSeriesRW
 }
 
 func writeV1Annotations(assert *assert.Assertions, db *neoism.Database, batchRunner *neoutils.CypherRunner) annrw.Service {
@@ -142,10 +136,6 @@ func writeV2Annotations(assert *assert.Assertions, db *neoism.Database, batchRun
 	assert.NoError(annotationsRW.Initialise())
 	writeJSONToAnnotationsService(annotationsRW, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v2.json", assert)
 	return annotationsRW
-}
-
-func deleteAnnotations(annotationsRW annrw.Service) {
-	annotationsRW.Delete(contentUUID)
 }
 
 func writeJSONToService(service baseftrwapp.Service, pathToJSONFile string, assert *assert.Assertions) {
@@ -169,15 +159,24 @@ func writeJSONToAnnotationsService(service annrw.Service, contentUUID string, pa
 }
 
 func assertListContainsAll(assert *assert.Assertions, list interface{}, items ...interface{}) {
-	assert.Len(list, len(items))
-	for _, item := range items {
-		assert.Contains(list, item)
+	if reflect.TypeOf(items[0]).Kind().String() == "slice" {
+		expected := reflect.ValueOf(items[0])
+		expectedLength := expected.Len()
+		assert.Len(list, expectedLength)
+		for i := 0; i < expectedLength; i++ {
+			assert.Contains(list, expected.Index(i).Interface())
+		}
+	} else {
+		assert.Len(list, len(items))
+		for _, item := range items {
+			assert.Contains(list, item)
+		}
 	}
 }
 
 func getDatabaseConnectionAndCheckClean(t *testing.T, assert *assert.Assertions) *neoism.Database {
 	db := getDatabaseConnection(t, assert)
-	cleanDB(db, t, assert)
+	cleanDB(db, contentUUID, []string{}, t, assert)
 	return db
 }
 
@@ -192,18 +191,26 @@ func getDatabaseConnection(t *testing.T, assert *assert.Assertions) *neoism.Data
 	return db
 }
 
-func cleanDB(db *neoism.Database, t *testing.T, assert *assert.Assertions) {
-	uuids := []string{
-		contentUUID,
-		MSJConceptUUID,
-		FakebookConceptUUID,
-		MetalMickeyConceptUUID,
+func cleanDB(db *neoism.Database, contentUUID string, conceptUUIDs []string, t *testing.T, assert *assert.Assertions) {
+	size := len(conceptUUIDs)
+	if size == 0 && contentUUID == "" {
+		return
+	}
+
+	uuids := make([]string, size+1)
+	copy(uuids, conceptUUIDs)
+	if contentUUID != "" {
+		uuids[size] = contentUUID
 	}
 
 	qs := make([]*neoism.CypherQuery, len(uuids))
 	for i, uuid := range uuids {
 		qs[i] = &neoism.CypherQuery{
-			Statement: fmt.Sprintf("MATCH (a:Thing {uuid: '%s'}) DETACH DELETE a", uuid)}
+			Statement: fmt.Sprintf(`
+			MATCH (a:Thing {uuid: "%s"})
+			OPTIONAL MATCH (a)<-[iden:IDENTIFIES]-(i:Identifier)
+			DELETE iden, i
+			DETACH DELETE a`, uuid)}
 	}
 	err := db.CypherBatch(qs)
 	assert.NoError(err)
@@ -252,5 +259,20 @@ func getExpectedMetalMickeyAnnotation() annotation {
 			"http://www.ft.com/ontology/Subject",
 		},
 		PrefLabel: "Metal Mickey",
+	}
+}
+
+func getExpectedAlphavilleSeriesAnnotation() annotation {
+	return annotation{
+		Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
+		ID:        "http://api.ft.com/things/" + alphavilleSeriesUUID,
+		APIURL:    "http://api.ft.com/things/" + alphavilleSeriesUUID,
+		Types: []string{
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
+			"http://www.ft.com/ontology/classification/Classification",
+			"http://www.ft.com/ontology/AlphavilleSeries",
+		},
+		PrefLabel: "Test Alphaville Series",
 	}
 }
