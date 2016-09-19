@@ -1,4 +1,4 @@
-package main
+package annotations
 
 type annotations []annotation
 
