@@ -1,14 +1,14 @@
-package main
+package annotations
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 const knownUUID = "12345"
@@ -23,7 +23,6 @@ type test struct {
 }
 
 func TestGetHandler(t *testing.T) {
-	assert := assert.New(t)
 	tests := []test{
 		{"Success", newRequest("GET", fmt.Sprintf("/content/%s/annotations", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusOK, "", "[]"},
 		{"NotFound", newRequest("GET", fmt.Sprintf("/content/%s/annotations", "99999"), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusNotFound, "", message("No annotations found for content with uuid 99999.")},
@@ -31,10 +30,13 @@ func TestGetHandler(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		AnnotationsDriver = test.dummyService
 		rec := httptest.NewRecorder()
-		router(httpHandlers{test.dummyService, "max-age=360, public"}).ServeHTTP(rec, test.req)
-		assert.True(test.statusCode == rec.Code, fmt.Sprintf("%s: Wrong response code, was %d, should be %d", test.name, rec.Code, test.statusCode))
-		assert.JSONEq(test.body, rec.Body.String(), fmt.Sprintf("%s: Wrong body", test.name))
+		r := mux.NewRouter()
+		r.HandleFunc("/content/{uuid}/annotations", GetAnnotations).Methods("GET")
+		r.ServeHTTP(rec, test.req)
+		assert.True(t, test.statusCode == rec.Code, fmt.Sprintf("%s: Wrong response code, was %d, should be %d", test.name, rec.Code, test.statusCode))
+		assert.JSONEq(t, test.body, rec.Body.String(), fmt.Sprintf("%s: Wrong body", test.name))
 	}
 }
 

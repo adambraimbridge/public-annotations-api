@@ -1,4 +1,4 @@
-package main
+package annotations
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/Financial-Times/neo-model-utils-go/mapper"
+	"github.com/Financial-Times/neo-utils-go/neoutils"
 	log "github.com/Sirupsen/logrus"
 	"github.com/jmcvetta/neoism"
 )
@@ -18,25 +19,16 @@ type driver interface {
 
 // CypherDriver struct
 type cypherDriver struct {
-	db  *neoism.Database
-	env string
+	conn neoutils.NeoConnection
+	env  string
 }
 
-func newCypherDriver(db *neoism.Database, env string) cypherDriver {
-	return cypherDriver{db, env}
+func NewCypherDriver(conn neoutils.NeoConnection, env string) cypherDriver {
+	return cypherDriver{conn, env}
 }
 
 func (cd cypherDriver) checkConnectivity() error { //TODO - use the neo4j connectivity check library
-	results := []struct {
-		ID int
-	}{}
-	query := &neoism.CypherQuery{
-		Statement: "MATCH (x) RETURN ID(x) LIMIT 1",
-		Result:    &results,
-	}
-	err := cd.db.Cypher(query)
-	log.Debugf("CheckConnectivity results:%+v  err: %+v", results, err)
-	return err
+	return neoutils.Check(cd.conn)
 }
 
 type neoReadStruct struct {
@@ -58,7 +50,8 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		Parameters: neoism.Props{"contentUUID": contentUUID},
 		Result:     &results,
 	}
-	err = cd.db.Cypher(query)
+
+	err = cd.conn.CypherBatch([]*neoism.CypherQuery{query})
 	if err != nil {
 		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
 		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)

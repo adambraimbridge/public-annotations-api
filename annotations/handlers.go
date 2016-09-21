@@ -1,4 +1,4 @@
-package main
+package annotations
 
 import (
 	"encoding/json"
@@ -9,54 +9,52 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type httpHandlers struct {
-	annotationsDriver  driver
-	cacheControlHeader string
-}
+var AnnotationsDriver driver
+var CacheControlHeader string
 
-func (hh *httpHandlers) healthCheck() v1a.Check {
+func HealthCheck() v1a.Check {
 	return v1a.Check{
 		BusinessImpact:   "Unable to respond to Public Annotations api requests",
 		Name:             "Check connectivity to Neo4j - neoUrl is a parameter in hieradata for this service",
 		PanicGuide:       "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/public-annotations-api",
 		Severity:         1,
 		TechnicalSummary: `Cannot connect to Neo4j. If this check fails, check that Neo4j instance is up and running. You can find the neoUrl as a parameter in hieradata for this service.`,
-		Checker:          hh.checker,
+		Checker:          Checker,
 	}
 }
 
-func (hh *httpHandlers) checker() (string, error) {
-	err := hh.annotationsDriver.checkConnectivity()
+func Checker() (string, error) {
+	err := AnnotationsDriver.checkConnectivity()
 	if err == nil {
 		return "Connectivity to neo4j is ok", err
 	}
 	return "Error connecting to neo4j", err
 }
 
-func (hh *httpHandlers) ping(w http.ResponseWriter, r *http.Request) {
+func Ping(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }
 
 //goodToGo returns a 503 if the healthcheck fails - suitable for use from varnish to check availability of a node
-func (hh *httpHandlers) goodToGo(writer http.ResponseWriter, req *http.Request) {
-	if _, err := hh.checker(); err != nil {
+func GoodToGo(writer http.ResponseWriter, req *http.Request) {
+	if _, err := Checker(); err != nil {
 		writer.WriteHeader(http.StatusServiceUnavailable)
 	}
 
 }
 
 // buildInfoHandler - This is a stop gap and will be added to when we can define what we should display here
-func (hh *httpHandlers) buildInfoHandler(w http.ResponseWriter, req *http.Request) {
+func BuildInfoHandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "build-info")
 }
 
 // methodNotAllowedHandler handles 405
-func (hh *httpHandlers) methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
+func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	return
 }
 
-func (hh *httpHandlers) getAnnotations(w http.ResponseWriter, r *http.Request) {
+func GetAnnotations(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid := vars["uuid"]
 
@@ -65,7 +63,7 @@ func (hh *httpHandlers) getAnnotations(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "uuid required", http.StatusBadRequest)
 		return
 	}
-	annotations, found, err := hh.annotationsDriver.read(uuid)
+	annotations, found, err := AnnotationsDriver.read(uuid)
 	if err != nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		msg := fmt.Sprintf(`{"message":"Error getting annotations for content with uuid %s, err=%s"}`, uuid, err.Error())
@@ -79,7 +77,7 @@ func (hh *httpHandlers) getAnnotations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Cache-Control", hh.cacheControlHeader)
+	w.Header().Set("Cache-Control", CacheControlHeader)
 	w.WriteHeader(http.StatusOK)
 
 	if err = json.NewEncoder(w).Encode(annotations); err != nil {
