@@ -13,6 +13,7 @@ type annotation struct {
 
 var predicates = map[string]string{
 	"MENTIONS":         "http://www.ft.com/ontology/annotation/mentions",
+	"MAJOR_MENTIONS":   "http://www.ft.com/ontology/annotation/majorMentions",
 	"IS_CLASSIFIED_BY": "http://www.ft.com/ontology/classification/isClassifiedBy",
 	"ABOUT":            "http://www.ft.com/ontology/annotation/about",
 	"IS_PRIMARILY_CLASSIFIED_BY": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
