@@ -11,6 +11,7 @@ import (
 	annrw "github.com/Financial-Times/annotations-rw-neo4j/annotations"
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
 	"github.com/Financial-Times/content-rw-neo4j/content"
+	"github.com/Financial-Times/people-rw-neo4j/people"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
 	"github.com/Financial-Times/organisations-rw-neo4j/organisations"
 	"github.com/Financial-Times/subjects-rw-neo4j/subjects"
@@ -25,6 +26,7 @@ const (
 	FakebookConceptUUID    = "eac853f5-3859-4c08-8540-55e043719400"
 	MetalMickeyConceptUUID = "0483bef8-5797-40b8-9b25-b12e492f63c6"
 	alphavilleSeriesUUID   = "747894f8-a231-4efb-805d-753635eca712"
+	JohnSmithConceptUUID = "75e2f7e9-cb5e-40a5-a074-86d69fe09f69"
 )
 
 func TestRetrieveMultipleAnnotations(t *testing.T) {
@@ -32,18 +34,20 @@ func TestRetrieveMultipleAnnotations(t *testing.T) {
 	expectedAnnotations := annotations{getExpectedFakebookAnnotation(),
 		getExpectedMallStreetJournalAnnotation(),
 		getExpectedMetalMickeyAnnotation(),
-		getExpectedAlphavilleSeriesAnnotation()}
+		getExpectedAlphavilleSeriesAnnotation(),
+		getExpectedJohnSmithAnnotation()}
 	db := getDatabaseConnectionAndCheckClean(t, assert)
 
 	writeContent(assert, db)
 	writeOrganisations(assert, db)
+	writePerson(assert, db)
 	writeSubjects(assert, db)
 	writeAlphavilleSeries(assert, db)
 	writeV1Annotations(assert, db)
 	writeV2Annotations(assert, db)
 
 	defer cleanDB(db, contentUUID,
-		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID},
+		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID, JohnSmithConceptUUID},
 		t, assert)
 	defer cleanUpBrandsUppIdentifier(db, t, assert)
 
@@ -61,10 +65,11 @@ func TestRetrieveNoAnnotationsWhenThereAreNonePresent(t *testing.T) {
 
 	writeContent(assert, db)
 	writeOrganisations(assert, db)
+	writePerson(assert, db)
 	writeSubjects(assert, db)
 
 	defer cleanDB(db, contentUUID,
-		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID},
+		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID, JohnSmithConceptUUID},
 		t, assert)
 	defer cleanUpBrandsUppIdentifier(db, t, assert)
 
@@ -84,7 +89,7 @@ func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
 	writeV2Annotations(assert, db)
 
 	defer cleanDB(db, contentUUID,
-		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID},
+		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID, JohnSmithConceptUUID},
 		t, assert)
 	defer cleanUpBrandsUppIdentifier(db, t, assert)
 
@@ -110,6 +115,13 @@ func writeContent(assert *assert.Assertions, db neoutils.NeoConnection) baseftrw
 	assert.NoError(contentRW.Initialise())
 	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-4f7f-961a-e5065392bb31.json", assert)
 	return contentRW
+}
+
+func writePerson(assert *assert.Assertions, db neoutils.NeoConnection) baseftrwapp.Service {
+	personRW := people.NewCypherPeopleService(db)
+	assert.NoError(personRW.Initialise())
+	writeJSONToService(personRW, "./fixtures/People-75e2f7e9-cb5e-40a5-a074-86d69fe09f69.json", assert)
+	return personRW
 }
 
 func writeOrganisations(assert *assert.Assertions, db neoutils.NeoConnection) baseftrwapp.Service {
@@ -258,6 +270,20 @@ func getExpectedFakebookAnnotation() annotation {
 		},
 		LeiCode:   "BQ4BKCS1HXDV9TTTTTTTT",
 		PrefLabel: "Fakebook, Inc.",
+	}
+}
+
+func getExpectedJohnSmithAnnotation() annotation {
+	return annotation{
+		Predicate: "http://www.ft.com/ontology/annotation/hasAuthor",
+		ID:        "http://api.ft.com/things/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
+		APIURL:    "http://api.ft.com/people/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
+		Types: []string{
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
+			"http://www.ft.com/ontology/person/Person",
+		},
+		PrefLabel: "John Smith",
 	}
 }
 
