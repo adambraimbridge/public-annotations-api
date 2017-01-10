@@ -39,14 +39,15 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	query := &neoism.CypherQuery{
 		Statement: `
-					MATCH (c:Thing{uuid:{contentUUID}})-[rel]->(cc:Concept)
-					OPTIONAL MATCH (cc)<-[iden:IDENTIFIES]-(i:LegalEntityIdentifier)
-					RETURN cc.uuid as id,
-					type(rel) as predicate,
-					labels(cc) as types,
-					cc.prefLabel as prefLabel,
-					i.value as leiCode
-					`,
+				MATCH (c:Thing{uuid:{contentUUID}})-[rel]->(cc:Concept)
+				OPTIONAL MATCH (cc)<-[iden:IDENTIFIES]-(i:LegalEntityIdentifier)
+				WITH collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel:cc.prefLabel, leiCode:i.value}) as rows
+				MATCH (cc:Concept)<-[r:HAS_PARENT*..]-(n:Brand)<-[rel]-(c:Thing{uuid:{contentUUID}})
+				WITH collect({id: cc.uuid, predicate:'IS_CLASSIFIED_BY', types: labels(cc), prefLabel:cc.prefLabel,leiCode:null}) + rows as allRows
+				UNWIND allRows as row
+				WITH DISTINCT(row)
+				RETURN row.id as id, row.predicate as predicate, row.types as types, row.prefLabel as prefLabel, row.leiCode as leiCode
+				`,
 		Parameters: neoism.Props{"contentUUID": contentUUID},
 		Result:     &results,
 	}

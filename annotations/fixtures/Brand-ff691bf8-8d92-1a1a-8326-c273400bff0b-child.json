@@ -1,0 +1,17 @@
+{
+  "aliases": [
+    "Business School video"
+  ],
+  "alternativeIdentifiers": {
+    "TME": [
+      "MTVkNjNmNzctOTA3Mi00NGMwLThmOWUtMmI4MGIyODRiNmI0-QnJhbmRz"
+    ],
+    "uuids": [
+      "ff691bf8-8d92-1a1a-8326-c273400bff0b"
+    ]
+  },
+  "parentUUID": "dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54",
+  "prefLabel": "Business School video",
+  "type": "Brand",
+  "uuid": "ff691bf8-8d92-1a1a-8326-c273400bff0b"
+}

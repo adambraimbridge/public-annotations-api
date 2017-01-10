@@ -1,11 +1,11 @@
 {
-  "uuid": "3fc9fe3e-af8c-4f7f-961a-e5065392bb31",
-  "title": "Bitcoin story makes Newsweek the headline",
+  "uuid": "3fc9fe3e-af8c-3a3a-961a-e5065392bb31",
+  "title": "Awesome story tagged with grand child brand",
   "byline": "By Matthew Garrahan in Los Angeles",
   "identifiers": [
     {
       "authority": "http://api.ft.com/system/FTCOM-METHODE",
-      "identifierValue": "3fc9fe3e-af8c-4f7f-961a-e5065392bb31"
+      "identifierValue": "3fc9fe3e-af8c-3a3a-961a-e5065392bb31"
     }
   ],
   "publishedDate": "2014-03-07T19:18:01.000Z",
