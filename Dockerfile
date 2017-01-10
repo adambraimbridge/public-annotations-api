@@ -1,4 +1,4 @@
-FROM alpine:3.4
+FROM alpine:3.5
 
 ENV SOURCE_DIR /public-annotations-api-src
 
@@ -6,8 +6,8 @@ ADD *.go .git $SOURCE_DIR/
 
 ADD annotations/*.go $SOURCE_DIR/annotations/
 
-RUN apk add --update bash \
-  && apk --update add git go \
+RUN apk add --no-cache  --update bash ca-certificates \
+  && apk --no-cache --virtual .build-dependencies add git go libc-dev \
   && cd $SOURCE_DIR \
   && git fetch origin 'refs/tags/*:refs/tags/*' \
   && BUILDINFO_PACKAGE="github.com/Financial-Times/service-status-go/buildinfo." \
@@ -28,6 +28,7 @@ RUN apk add --update bash \
   && echo ${LDFLAGS} \
   && go build -ldflags="${LDFLAGS}" \
   && mv public-annotations-api / \
-  && apk del go git \
+  && apk del .build-dependencies \
   && rm -rf $GOPATH /var/cache/apk/*
+
 CMD [ "/public-annotations-api" ]
