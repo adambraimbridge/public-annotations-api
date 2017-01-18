@@ -1,4 +1,5 @@
 # Public API for Annotations (public-annotations-api)
+[![Circle CI](https://circleci.com/gh/Financial-Times/public-annotations-api.svg?style=shield)](https://circleci.com/gh/Financial-Times/public-annotations-api)[![Go Report Card](https://goreportcard.com/badge/github.com/Financial-Times/public-annotations-api)](https://goreportcard.com/report/github.com/Financial-Times/public-annotations-api) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/public-annotations-api/badge.svg)](https://coveralls.io/github/Financial-Times/public-annotations-api)
 __Provides a public API for Annotations stored in a Neo4J graph database__
 
 ## Build & deployment etc:
@@ -18,11 +19,12 @@ _Optional arguments are:
 --port defaults to 8080.
 --cache-duration defaults to 1 hour._
 * `curl http://localhost:8080/content/143ba45c-2fb3-35bc-b227-a6ed80b5c517/annotations | json_pp`
-Or using [httpie](https://github.com/jkbrzt/httpie)
-* `http GET http://localhost:8080/content/143ba45c-2fb3-35bc-b227-a6ed80b5c517/annotations`
+* * Or using [httpie](https://github.com/jkbrzt/httpie) `http GET http://localhost:8080/content/143ba45c-2fb3-35bc-b227-a6ed80b5c517/annotations`
 
 ## API definition
 Based on the following [google doc](https://docs.google.com/a/ft.com/document/d/1kQH3tk1GhXnupHKdDhkDE5UyJIHm2ssWXW3zjs3g2h8/edit?usp=sharing)
+
+*Please note* that the `public-annotations-api` will return more brands than the ones the article has been annotated with. This is because it will return also the parent of the brands from any brands annotations. If those brands have parents, then they too will be brought into the result. 
 
 ## Healthchecks
 Healthchecks: [http://localhost:8080/__health](http://localhost:8080/__health)
