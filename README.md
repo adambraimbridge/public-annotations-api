@@ -19,11 +19,12 @@ _Optional arguments are:
 --port defaults to 8080.
 --cache-duration defaults to 1 hour._
 * `curl http://localhost:8080/content/143ba45c-2fb3-35bc-b227-a6ed80b5c517/annotations | json_pp`
-Or using [httpie](https://github.com/jkbrzt/httpie)
-* `http GET http://localhost:8080/content/143ba45c-2fb3-35bc-b227-a6ed80b5c517/annotations`
+* * Or using [httpie](https://github.com/jkbrzt/httpie) `http GET http://localhost:8080/content/143ba45c-2fb3-35bc-b227-a6ed80b5c517/annotations`
 
 ## API definition
 Based on the following [google doc](https://docs.google.com/a/ft.com/document/d/1kQH3tk1GhXnupHKdDhkDE5UyJIHm2ssWXW3zjs3g2h8/edit?usp=sharing)
+
+*Please note* that the `public-annotations-api` will return more brands than the ones the article has been annotated with. This is because it will return also the parent of the brands from any brands annotations. If those brands have parents, then they too will be brought into the result. 
 
 ## Healthchecks
 Healthchecks: [http://localhost:8080/__health](http://localhost:8080/__health)
