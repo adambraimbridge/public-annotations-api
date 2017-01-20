@@ -24,16 +24,17 @@ import (
 
 const (
 	//Generate uuids so there's no clash with real data
-	contentUUID                       = "3fc9fe3e-af8c-4f7f-961a-e5065392bb31"
-	contentWithNoAnnotationsUUID      = "3fc9fe3e-af8c-1a1a-961a-e5065392bb31"
-	contentWithParentBrandUUID        = "3fc9fe3e-af8c-2a2a-961a-e5065392bb31"
-	contentWithThreeLevelsOfBrandUUID = "3fc9fe3e-af8c-3a3a-961a-e5065392bb31"
-	contentWithCircularBrandUUID      = "3fc9fe3e-af8c-4a4a-961a-e5065392bb31"
-	MSJConceptUUID                    = "5d1510f8-2779-4b74-adab-0a5eb138fca6"
-	FakebookConceptUUID               = "eac853f5-3859-4c08-8540-55e043719400"
-	MetalMickeyConceptUUID            = "0483bef8-5797-40b8-9b25-b12e492f63c6"
-	alphavilleSeriesUUID              = "747894f8-a231-4efb-805d-753635eca712"
-	JohnSmithConceptUUID              = "75e2f7e9-cb5e-40a5-a074-86d69fe09f69"
+	contentUUID                        = "3fc9fe3e-af8c-4f7f-961a-e5065392bb31"
+	contentWithNoAnnotationsUUID       = "3fc9fe3e-af8c-1a1a-961a-e5065392bb31"
+	contentWithParentAndChildBrandUUID = "3fc9fe3e-af8c-2a2a-961a-e5065392bb31"
+	contentWithThreeLevelsOfBrandUUID  = "3fc9fe3e-af8c-3a3a-961a-e5065392bb31"
+	contentWithCircularBrandUUID       = "3fc9fe3e-af8c-4a4a-961a-e5065392bb31"
+	contentWithOnlyFTUUID       	= "3fc9fe3e-af8c-5a5a-961a-e5065392bb31"
+	MSJConceptUUID                     = "5d1510f8-2779-4b74-adab-0a5eb138fca6"
+	FakebookConceptUUID                = "eac853f5-3859-4c08-8540-55e043719400"
+	MetalMickeyConceptUUID             = "0483bef8-5797-40b8-9b25-b12e492f63c6"
+	alphavilleSeriesUUID               = "747894f8-a231-4efb-805d-753635eca712"
+	JohnSmithConceptUUID               = "75e2f7e9-cb5e-40a5-a074-86d69fe09f69"
 	brandParentUUID                   = "dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54"
 	brandChildUUID                    = "ff691bf8-8d92-1a1a-8326-c273400bff0b"
 	brandGrandChildUUID               = "ff691bf8-8d92-2a2a-8326-c273400bff0b"
@@ -73,7 +74,7 @@ func TestRetrieveContentWithParentBrand(t *testing.T) {
 	defer cleanAll(db, t)
 
 	driver := NewCypherDriver(db, "prod")
-	anns := getAndCheckAnnotations(driver, contentWithParentBrandUUID, t)
+	anns := getAndCheckAnnotations(driver, contentWithParentAndChildBrandUUID, t)
 	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
 	assertListContainsAll(t, anns, expectedAnnotations)
 }
@@ -105,6 +106,21 @@ func TestRetrieveContentWithCircularBrand(t *testing.T) {
 
 	driver := NewCypherDriver(db, "prod")
 	anns := getAndCheckAnnotations(driver, contentWithCircularBrandUUID, t)
+	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+	assertListContainsAll(t, anns, expectedAnnotations)
+}
+
+func TestRetrieveContentWithJustParentBrand(t *testing.T) {
+	expectedAnnotations := annotations{getExpectedBrandParentAnnotation()}
+
+	db := getDatabaseConnectionAndCheckClean(t)
+
+	writeAllDataToDB(t, db)
+
+	defer cleanAll(db, t)
+
+	driver := NewCypherDriver(db, "prod")
+	anns := getAndCheckAnnotations(driver, contentWithOnlyFTUUID, t)
 	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
 	assertListContainsAll(t, anns, expectedAnnotations)
 }
@@ -207,6 +223,7 @@ func writeContent(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-2a2a-961a-e5065392bb31.json", t)
 	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-3a3a-961a-e5065392bb31.json", t)
 	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-4a4a-961a-e5065392bb31.json", t)
+	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-5a5a-961a-e5065392bb31.json", t)
 	return contentRW
 }
 
@@ -300,7 +317,7 @@ func getDatabaseConnectionAndCheckClean(t testing.TB) neoutils.NeoConnection {
 func cleanAll(db neoutils.NeoConnection, t testing.TB) {
 	cleanUpBrandsUppIdentifier(db, t)
 	cleanDB(db, contentUUID,
-		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID, JohnSmithConceptUUID, brandGrandChildUUID, brandChildUUID, brandParentUUID, brandCircularAUUID, brandCircularBUUID, contentWithNoAnnotationsUUID, contentWithParentBrandUUID, contentWithThreeLevelsOfBrandUUID, contentWithCircularBrandUUID}, t)
+		[]string{MSJConceptUUID, FakebookConceptUUID, MetalMickeyConceptUUID, alphavilleSeriesUUID, JohnSmithConceptUUID, brandGrandChildUUID, brandChildUUID, brandParentUUID, brandCircularAUUID, brandCircularBUUID, contentWithNoAnnotationsUUID, contentWithParentAndChildBrandUUID, contentWithThreeLevelsOfBrandUUID, contentWithCircularBrandUUID, contentWithOnlyFTUUID}, t)
 }
 
 func getDatabaseConnection(t testing.TB) neoutils.NeoConnection {
