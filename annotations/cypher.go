@@ -41,12 +41,11 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		Statement: `
 				MATCH (c:Thing{uuid:{contentUUID}})-[rel]->(cc:Concept)
 				OPTIONAL MATCH (cc)<-[iden:IDENTIFIES]-(i:LegalEntityIdentifier)
-				WITH collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel:cc.prefLabel, leiCode:i.value}) as rows
-				OPTIONAL MATCH (cc:Concept)<-[r:HAS_PARENT*..]-(n:Brand)<-[rel]-(c:Thing{uuid:{contentUUID}})
+				WITH c, collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel:cc.prefLabel, leiCode:i.value}) as rows
+				OPTIONAL MATCH (cc:Concept)<-[r:HAS_PARENT*0..]-(:Brand)<-[rel]-(c)
 				WITH collect({id: cc.uuid, predicate:'IS_CLASSIFIED_BY', types: labels(cc), prefLabel:cc.prefLabel,leiCode:null}) + rows as allRows
 				UNWIND allRows as row
 				WITH DISTINCT(row) as drow
-				WHERE exists(drow.id)
 				RETURN drow.id as id, drow.predicate as predicate, drow.types as types, drow.prefLabel as prefLabel, drow.leiCode as leiCode
 				`,
 		Parameters: neoism.Props{"contentUUID": contentUUID},
