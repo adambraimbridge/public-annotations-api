@@ -46,7 +46,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 				WITH collect({id: cc.uuid, predicate:'IS_CLASSIFIED_BY', types: labels(cc), prefLabel:cc.prefLabel,leiCode:null}) + rows as allRows
 				UNWIND allRows as row
 				WITH DISTINCT(row) as drow
-				WHERE has(drow.id)
+				WHERE exists(drow.id)
 				RETURN drow.id as id, drow.predicate as predicate, drow.types as types, drow.prefLabel as prefLabel, drow.leiCode as leiCode
 				`,
 		Parameters: neoism.Props{"contentUUID": contentUUID},

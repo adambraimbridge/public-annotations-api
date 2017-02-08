@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -19,7 +20,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/jmcvetta/neoism"
 	"github.com/stretchr/testify/assert"
-	"path/filepath"
 )
 
 const (
@@ -29,17 +29,17 @@ const (
 	contentWithParentAndChildBrandUUID = "3fc9fe3e-af8c-2a2a-961a-e5065392bb31"
 	contentWithThreeLevelsOfBrandUUID  = "3fc9fe3e-af8c-3a3a-961a-e5065392bb31"
 	contentWithCircularBrandUUID       = "3fc9fe3e-af8c-4a4a-961a-e5065392bb31"
-	contentWithOnlyFTUUID       	= "3fc9fe3e-af8c-5a5a-961a-e5065392bb31"
+	contentWithOnlyFTUUID              = "3fc9fe3e-af8c-5a5a-961a-e5065392bb31"
 	MSJConceptUUID                     = "5d1510f8-2779-4b74-adab-0a5eb138fca6"
 	FakebookConceptUUID                = "eac853f5-3859-4c08-8540-55e043719400"
 	MetalMickeyConceptUUID             = "0483bef8-5797-40b8-9b25-b12e492f63c6"
 	alphavilleSeriesUUID               = "747894f8-a231-4efb-805d-753635eca712"
 	JohnSmithConceptUUID               = "75e2f7e9-cb5e-40a5-a074-86d69fe09f69"
-	brandParentUUID                   = "dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54"
-	brandChildUUID                    = "ff691bf8-8d92-1a1a-8326-c273400bff0b"
-	brandGrandChildUUID               = "ff691bf8-8d92-2a2a-8326-c273400bff0b"
-	brandCircularAUUID                = "ff691bf8-8d92-3a3a-8326-c273400bff0b"
-	brandCircularBUUID                = "ff691bf8-8d92-4a4a-8326-c273400bff0b"
+	brandParentUUID                    = "dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54"
+	brandChildUUID                     = "ff691bf8-8d92-1a1a-8326-c273400bff0b"
+	brandGrandChildUUID                = "ff691bf8-8d92-2a2a-8326-c273400bff0b"
+	brandCircularAUUID                 = "ff691bf8-8d92-3a3a-8326-c273400bff0b"
+	brandCircularBUUID                 = "ff691bf8-8d92-4a4a-8326-c273400bff0b"
 )
 
 func TestRetrieveMultipleAnnotations(t *testing.T) {
