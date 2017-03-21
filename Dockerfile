@@ -4,7 +4,7 @@ ENV SOURCE_DIR /public-annotations-api-src
 
 COPY *.go .git $SOURCE_DIR/
 COPY annotations/*.go $SOURCE_DIR/annotations/
-COPY vendor $SOURCE_DIR/vendor/
+COPY vendor/vendor.json $SOURCE_DIR/vendor/
 
 RUN apk add --no-cache  --update bash ca-certificates \
   && apk --no-cache --virtual .build-dependencies add git go libc-dev \
@@ -23,6 +23,8 @@ RUN apk add --no-cache  --update bash ca-certificates \
   && cp -r $SOURCE_DIR/* $GOPATH/src/${REPO_PATH} \
   && cd $GOPATH/src/${REPO_PATH} \
   && echo ${LDFLAGS} \
+  && go get -u github.com/kardianos/govendor \
+  && $GOPATH/bin/govendor sync \
   && go build -ldflags="${LDFLAGS}" \
   && mv public-annotations-api / \
   && apk del .build-dependencies \
