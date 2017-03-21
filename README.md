@@ -60,7 +60,8 @@ An example response would look like this:
         ],
         uuids: [
             "uuid1","uuid2","canonical_uuid"
-        ]
+        ],
+        platformVersion: "v1",
     },
 ...
 ]
