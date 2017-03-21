@@ -14,6 +14,7 @@ import (
 // Driver interface
 type driver interface {
 	read(id string) (anns annotations, found bool, err error)
+	filteredRead(id string, platformVersion string) (anns annotations, found bool, err error)
 	checkConnectivity() error
 }
 
@@ -29,9 +30,6 @@ func NewCypherDriver(conn neoutils.NeoConnection, env string) cypherDriver {
 
 func (cd cypherDriver) checkConnectivity() error { //TODO - use the neo4j connectivity check library
 	return neoutils.Check(cd.conn)
-}
-
-type neoReadStruct struct {
 }
 
 func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, err error) {
@@ -58,6 +56,51 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
 	}
 	log.Debugf("Found %d Annotations for uuid: %s", len(results), contentUUID)
+	if (len(results)) == 0 {
+		return annotations{}, false, nil
+	}
+
+	mappedAnnotations := []annotation{}
+
+	found = false
+
+	for idx := range results {
+		annotation, err := mapToResponseFormat(&results[idx], cd.env)
+		if err == nil {
+			mappedAnnotations = append(mappedAnnotations, *annotation)
+			found = true
+		}
+	}
+
+	return mappedAnnotations, found, nil
+}
+
+// Returns all the annotations with the specified platformVersion enriched with all the existing concept IDs for a given content
+func (cd cypherDriver) filteredRead(contentUUID string, platformVersion string) (anns annotations, found bool, err error) {
+	results := []annotation{}
+
+	query := &neoism.CypherQuery{
+		Statement: `
+				MATCH (c:Thing{uuid:{contentUUID}})-[rel{platformVersion:{platformVersion}}]->(cc:Concept)
+				MATCH (cc)<-[:IDENTIFIES]-(upp:UPPIdentifier)
+				optional MATCH (cc)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
+				optional MATCH (cc)<-[:IDENTIFIES]-(tme:TMEIdentifier)
+				optional MATCH (cc)<-[:IDENTIFIES]-(fs:FactsetIdentifier)
+				WITH c, cc, rel, lei, fs, collect(distinct tme.value) as tme, collect(distinct upp.value) as upp
+				WITH c, collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel:cc.prefLabel, uuids:upp, tmeIDs:tme, leiCode:lei.value, factsetID:fs.value, platformVersion:rel.platformVersion}) as rows
+				UNWIND rows as row
+				WITH DISTINCT(row) as drow
+				RETURN drow.id as id, drow.predicate as predicate, drow.types as types, drow.prefLabel as prefLabel, drow.leiCode as leiCode, drow.factsetID as factsetID, drow.uuids as uuids, drow.tmeIDs as tmeIDs, drow.platformVersion as platformVersion`,
+		Parameters: neoism.Props{"contentUUID": contentUUID, "platformVersion": platformVersion},
+		Result:     &results,
+	}
+
+	err = cd.conn.CypherBatch([]*neoism.CypherQuery{query})
+	if err != nil {
+		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
+		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
+	}
+	log.Debugf("Found %d Annotations for uuid: %s with platformVersion: %s", len(results), contentUUID, platformVersion)
 	if (len(results)) == 0 {
 		return annotations{}, false, nil
 	}

@@ -13,8 +13,8 @@
 		},
 		{
 			"ImportPath": "github.com/Financial-Times/annotations-rw-neo4j/annotations",
-			"Comment": "0.1.8",
-			"Rev": "de1f9e4d0bfd4073d8288f81649cb2c57c53b1fc"
+			"Comment": "0.1.9",
+			"Rev": "7b7d64f1a659a7e868fd9c0ed08aa64329f9f090"
 		},
 		{
 			"ImportPath": "github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp",
@@ -27,8 +27,8 @@
 		},
 		{
 			"ImportPath": "github.com/Financial-Times/content-rw-neo4j/content",
-			"Comment": "0.0.36-3-g441a32f",
-			"Rev": "441a32fa76d2bcbe9c018453e8ec6bfaeee6d599"
+			"Comment": "v1.0.0",
+			"Rev": "b6a78d9e62371982ce0a9e900dc0d15bd728c56e"
 		},
 		{
 			"ImportPath": "github.com/Financial-Times/go-fthealth/v1a",
