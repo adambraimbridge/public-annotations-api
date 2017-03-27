@@ -9,8 +9,11 @@ _NB You will need to tag a commit in order to build, since the UI asks for a tag
 * [Deploy to test or production](http://ftjen10085-lvpr-uk-p:8181/job/public-annotations-api-deploy)
 
 ## Installation & running locally
+
+* `go get -u github.com/kardianos/govendor`
 * `go get -u github.com/Financial-Times/public-annotations-api`
 * `cd $GOPATH/src/github.com/Financial-Times/public-annotations-api`
+* `govendor sync`
 * `go test ./...`
 * `go install`
 * `$GOPATH/bin/public-annotations-api --neo-url={neo4jUrl} --port={port} --log-level={DEBUG|INFO|WARN|ERROR}--cache-duration{e.g. 22h10m3s}`
@@ -22,9 +25,47 @@ _Optional arguments are:
 * * Or using [httpie](https://github.com/jkbrzt/httpie) `http GET http://localhost:8080/content/143ba45c-2fb3-35bc-b227-a6ed80b5c517/annotations`
 
 ## API definition
+
+### content/{uuid}/annotations endpoint
+
 Based on the following [google doc](https://docs.google.com/a/ft.com/document/d/1kQH3tk1GhXnupHKdDhkDE5UyJIHm2ssWXW3zjs3g2h8/edit?usp=sharing)
 
 *Please note* that the `public-annotations-api` will return more brands than the ones the article has been annotated with. This is because it will return also the parent of the brands from any brands annotations. If those brands have parents, then they too will be brought into the result. 
+
+### content/{uuid}/annotations/{platformVersion} endpoint
+
+This endpoint returns all the existing annotations for a specific platformVersion - if any.
+Note:
+The response here is an enriched format of the simple /content/{uuid}/annotations response, containing fields like `platformVersion`, and the referenced concepts' identifiers.
+This endpoint does not show inferred Brands annotations, as the other endpoint does.
+
+An example response would look like this:
+```
+[...
+    {
+        predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
+        id: "http://api.ft.com/things/{concepts_canonical_uuid}",
+        apiUrl: "http://api.ft.com/things/{concepts_canonical_uuid}",
+        types: [
+            "http://www.ft.com/ontology/core/Thing",
+            "http://www.ft.com/ontology/concept/Concept",
+            "http://www.ft.com/ontology/classification/Classification",
+            "http://www.ft.com/ontology/Subject"
+        ],
+        prefLabel: "Company News",
+        leiCode: "leicode_value",
+        factsetID: "factsetID_value"
+        tmeIDs: [
+            "tmeid__value"
+        ],
+        uuids: [
+            "uuid1","uuid2","canonical_uuid"
+        ],
+        platformVersion: "v1",
+    },
+...
+]
+```
 
 ## Healthchecks
 Healthchecks: [http://localhost:8080/__health](http://localhost:8080/__health)

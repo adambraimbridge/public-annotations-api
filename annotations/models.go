@@ -9,6 +9,11 @@ type annotation struct {
 	Types     []string `json:"types"`
 	LeiCode   string   `json:"leiCode,omitempty"`
 	PrefLabel string   `json:"prefLabel,omitempty"`
+	//the fields below are populated only for the /content/{uuid}/annotations/{plaformVersion} endpoint
+	FactsetID       string   `json:"factsetID,omitempty"`
+	TmeIDs          []string `json:"tmeIDs,omitempty"`
+	UUIDs           []string `json:"uuids,omitempty"`
+	PlatformVersion string   `json:"platformVersion,omitempty"`
 }
 
 var predicates = map[string]string{
