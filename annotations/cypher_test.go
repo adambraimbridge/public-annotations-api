@@ -300,7 +300,7 @@ func writeAlphavilleSeries(t testing.TB, db neoutils.NeoConnection) baseftrwapp.
 }
 
 func writeV1Annotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "v1")
+	service := annrw.NewCypherAnnotationsService(db, "v1", "annotations-v1")
 	assert.NoError(t, service.Initialise())
 	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v1.json", t)
 	writeJSONToAnnotationsService(service, contentWithParentAndChildBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-2a2a-961a-e5065392bb31-v1.json", t)
@@ -311,7 +311,7 @@ func writeV1Annotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
 }
 
 func writeV2Annotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "v2")
+	service := annrw.NewCypherAnnotationsService(db, "v2", "annotations-v2")
 	assert.NoError(t, service.Initialise())
 	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v2.json", t)
 	return service
