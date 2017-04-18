@@ -4,6 +4,7 @@ import (
 	"strings"
 	"reflect"
 	log "github.com/Sirupsen/logrus"
+	"fmt"
 )
 
 // Defines all names of predicates that have to be considered by the annotation filter.
@@ -64,11 +65,14 @@ func NewAnnotationsFilter() *AnnotationsFilter {
 }
 
 func (f *AnnotationsFilter) Add(a annotation) {
+	log.Infof("\n processing annotation uuid %s predicate: %s \n", a.ID, strings.ToLower(a.Predicate))
 	if f.enum.contains(strings.ToLower(a.Predicate)) {
+		log.Infof("\n adding to filter annotation uuid %s predicate: %s \n", a.ID, strings.ToLower(a.Predicate))
 		f.addFiltered(a)
 
 	} else {
 		f.addUnfiltered(a)
+		log.Infof("\n unfiltered annotation uuid %s predicate: %s \n", a.ID, strings.ToLower(a.Predicate))
 	}
 }
 
