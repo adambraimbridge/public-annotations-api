@@ -196,7 +196,7 @@ func TestFilterForBasicSingleConcept(t *testing.T) {
 	}
 }
 
-//Tests support for sorting needed by other tests in order to compare 2 arrays of annotations 
+//Tests support for sorting needed by other tests in order to compare 2 arrays of annotations
 func TestSortAnnotations(t *testing.T) {
 	unsorted := []annotation {
 		{ Predicate: IS_PRIMARILY_CLASSIFIED_BY, ID: "2", },
