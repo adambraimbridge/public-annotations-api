@@ -9,21 +9,21 @@ import (
 // Defines all names of predicates that have to be considered by the annotation filter.
 // Predicates that are not defined in FilteredPredicateNames are not filtered.
 type filteredPredicateNames struct {
-	MENTIONS string `default: "mentions"`
-	MAJOR_MENTIONS string `default: "major_mentions"`
-	ABOUT string `default: "about"`
-	IS_CLASSIFIED_BY string `default: "is_classified_by"`
-	IS_PRIMARILY_CLASSIFIED_BY string `default: "is_primarily_classified_by"`
+	MENTIONS string
+	MAJOR_MENTIONS string
+	ABOUT string
+	IS_CLASSIFIED_BY string
+	IS_PRIMARILY_CLASSIFIED_BY string
 
 }
 
 func newFilteredPredicateNames() *filteredPredicateNames {
 	v := filteredPredicateNames{}
-	v.MENTIONS = "mentions"
-	v.MAJOR_MENTIONS = "major_mentions"
-	v.ABOUT = "about"
-	v.IS_CLASSIFIED_BY = "is_classified_by"
-	v.IS_PRIMARILY_CLASSIFIED_BY = "is_primarily_classified_by"
+	v.MENTIONS = "http://www.ft.com/ontology/annotation/mentions"
+	v.MAJOR_MENTIONS = "http://www.ft.com/ontology/annotation/majormentions"
+	v.ABOUT = "http://www.ft.com/ontology/annotation/about"
+	v.IS_CLASSIFIED_BY = "http://www.ft.com/ontology/classification/isclassifiedby"
+	v.IS_PRIMARILY_CLASSIFIED_BY = "http://www.ft.com/ontology/classification/isprimarilyclassifiedby"
 	return &v
 }
 

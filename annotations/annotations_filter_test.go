@@ -9,12 +9,12 @@ import (
 	"sort"
 )
 const (
-	MENTIONS = "MENTIONS"
-	MAJOR_MENTIONS = "MAJOR_MENTIONS"
-	ABOUT = "ABOUT"
-	IS_CLASSIFIED_BY = "IS_CLASSIFIED_BY"
-	IS_PRIMARILY_CLASSIFIED_BY = "IS_PRIMARILY_CLASSIFIED_BY"
-	HAS_AUTHOR = "HAS_AUTHOR"
+	MENTIONS = "http://www.ft.com/ontology/annotation/mentions"
+	MAJOR_MENTIONS = "http://www.ft.com/ontology/annotation/majormentions"
+	ABOUT = "http://www.ft.com/ontology/annotation/about"
+	IS_CLASSIFIED_BY = "http://www.ft.com/ontology/classification/isclassifiedby"
+	IS_PRIMARILY_CLASSIFIED_BY = "http://www.ft.com/ontology/classification/isprimarilyclassifiedby"
+	HAS_AUTHOR = "http://www.ft.com/ontology/annotation/hasauthor"
 	ConceptA = "1a2359b1-9326-4b80-9b97-2a91ccd68d23"
 	ConceptB = "2f1fead1-5e99-4e92-b23d-fb3cee7f17f2"
 )
