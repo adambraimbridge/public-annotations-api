@@ -40,6 +40,7 @@ const (
 	brandGrandChildUUID                = "ff691bf8-8d92-2a2a-8326-c273400bff0b"
 	brandCircularAUUID                 = "ff691bf8-8d92-3a3a-8326-c273400bff0b"
 	brandCircularBUUID                 = "ff691bf8-8d92-4a4a-8326-c273400bff0b"
+	contentWithBrandsDiffTypesUUID     = "3fc9fe3e-af8c-6a6a-961a-e5065392bb31"
 )
 
 func TestRetrieveMultipleAnnotations(t *testing.T) {
@@ -132,6 +133,22 @@ func TestRetrieveContentWithGrandParentBrand(t *testing.T) {
 }
 
 func TestRetrieveContentWithCircularBrand(t *testing.T) {
+	expectedAnnotations := annotations{getExpectedBrandCircularAAnnotation(),
+		getExpectedBrandCircularBAnnotation()}
+	db := getDatabaseConnectionAndCheckClean(t)
+
+	writeAllDataToDB(t, db)
+
+	defer cleanAll(db, t)
+
+	driver := NewCypherDriver(db, "prod")
+	anns := getAndCheckAnnotations(driver, contentWithCircularBrandUUID, t)
+	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+	assertListContainsAll(t, anns, expectedAnnotations)
+}
+//Tests filtering Annotations where content is related to Brand A as isClassifiedBy and to Brand B as isPrimarilyClassifiedBy
+// and Brands A and B have a circular relation HasParent
+func TestRetrieveContentBrandsOfDifferentTypes(t *testing.T) {
 	expectedAnnotations := annotations{getExpectedBrandCircularAAnnotation(),
 		getExpectedBrandCircularBAnnotation()}
 	db := getDatabaseConnectionAndCheckClean(t)
@@ -267,6 +284,7 @@ func writeContent(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-3a3a-961a-e5065392bb31.json", t)
 	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-4a4a-961a-e5065392bb31.json", t)
 	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-5a5a-961a-e5065392bb31.json", t)
+	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-6a6a-961a-e5065392bb31.json", t)
 	return contentRW
 }
 
@@ -307,6 +325,7 @@ func writeV1Annotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
 	writeJSONToAnnotationsService(service, contentWithThreeLevelsOfBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-3a3a-961a-e5065392bb31-v1.json", t)
 	writeJSONToAnnotationsService(service, contentWithCircularBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4a4a-961a-e5065392bb31-v1.json", t)
 	writeJSONToAnnotationsService(service, contentWithOnlyFTUUID, "./fixtures/Annotations-3fc9fe3e-af8c-5a5a-961a-e5065392bb31-v1.json", t)
+	writeJSONToAnnotationsService(service, contentWithBrandsDiffTypesUUID, "./fixtures/Annotations-3fc9fe3e-af8c-6a6a-961a-e5065392bb31-v1.json", t)
 	return service
 }
 
