@@ -149,7 +149,7 @@ var tests = []struct {
 			{ Predicate: ABOUT, ID: ConceptA, },
 			{ Predicate: MENTIONS, ID: ConceptB, },
 		},
-		"12. Returns ABOUT annotation for one concept and MENTIONS annotations for anothr",
+		"12. Returns About annotation for one concept and Mentions annotations for anothr",
 	},
 	{
 		[]annotation {
@@ -161,22 +161,9 @@ var tests = []struct {
 			{ Predicate: IS_PRIMARILY_CLASSIFIED_BY, ID: ConceptA, },
 			{ Predicate: IS_CLASSIFIED_BY, ID: ConceptB, },
 		},
-		"13. Returns IS_PRIMARILY_CLASSIFIED_BY annotation for one concept and IS_CLASSIFIED_BY annotations for anothr",
-	},
-	{
-		[]annotation {
-			{ Predicate: IS_CLASSIFIED_BY, ID: ConceptA, },
-			{ Predicate: IS_PRIMARILY_CLASSIFIED_BY, ID: ConceptA, },
-			{ Predicate: IS_CLASSIFIED_BY, ID: ConceptB, },
-		},
-		[]annotation {
-			{ Predicate: IS_PRIMARILY_CLASSIFIED_BY, ID: ConceptA, },
-			{ Predicate: IS_CLASSIFIED_BY, ID: ConceptB, },
-		},
-		"14. Returns IS_PRIMARILY_CLASSIFIED_BY annotation for one concept and IS_CLASSIFIED_BY annotations for anothr",
+		"13. Returns Is Primarily Classified By annotation for one concept and Is Classified By annotations for anothr",
 	},
 }
-
 
 func TestFilterForBasicSingleConcept(t *testing.T) {
 	for _, test := range tests {
@@ -196,7 +183,7 @@ func TestFilterForBasicSingleConcept(t *testing.T) {
 	}
 }
 
-//Tests support for sorting needed by other tests in order to compare 2 arrays of annotations
+//Tests support for sort needed by other tests in order to compare 2 arrays of annotations
 func TestSortAnnotations(t *testing.T) {
 	unsorted := []annotation {
 		{ Predicate: IS_PRIMARILY_CLASSIFIED_BY, ID: "2", },
