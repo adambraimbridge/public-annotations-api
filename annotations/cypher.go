@@ -61,17 +61,18 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 	}
 
 	mappedAnnotations := []annotation{}
-
+	filter := NewAnnotationsFilter()
 	found = false
 
 	for idx := range results {
 		annotation, err := mapToResponseFormat(&results[idx], cd.env)
+
 		if err == nil {
-			mappedAnnotations = append(mappedAnnotations, *annotation)
+			filter.Add(*annotation)
 			found = true
 		}
 	}
-
+	mappedAnnotations = filter.Filter()
 	return mappedAnnotations, found, nil
 }
 
