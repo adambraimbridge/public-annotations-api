@@ -8,15 +8,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Financial-Times/alphaville-series-rw-neo4j/alphavilleseries"
 	annrw "github.com/Financial-Times/annotations-rw-neo4j/annotations"
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
 	"github.com/Financial-Times/brands-rw-neo4j/brands"
+	"github.com/Financial-Times/concepts-rw-neo4j/concepts"
 	"github.com/Financial-Times/content-rw-neo4j/content"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
 	"github.com/Financial-Times/organisations-rw-neo4j/organisations"
 	"github.com/Financial-Times/people-rw-neo4j/people"
-	"github.com/Financial-Times/subjects-rw-neo4j/subjects"
 	log "github.com/Sirupsen/logrus"
 	"github.com/jmcvetta/neoism"
 	"github.com/stretchr/testify/assert"
@@ -146,6 +145,7 @@ func TestRetrieveContentWithCircularBrand(t *testing.T) {
 	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
 	assertListContainsAll(t, anns, expectedAnnotations)
 }
+
 //Tests filtering Annotations where content is related to Brand A as isClassifiedBy and to Brand B as isPrimarilyClassifiedBy
 // and Brands A and B have a circular relation HasParent
 func TestRetrieveContentBrandsOfDifferentTypes(t *testing.T) {
@@ -304,14 +304,14 @@ func writeOrganisations(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Ser
 }
 
 func writeSubjects(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
-	subjectsRW := subjects.NewCypherSubjectsService(db)
+	subjectsRW := concepts.NewConceptService(db)
 	assert.NoError(t, subjectsRW.Initialise())
 	writeJSONToService(subjectsRW, "./fixtures/Subject-MetalMickey-0483bef8-5797-40b8-9b25-b12e492f63c6.json", t)
 	return subjectsRW
 }
 
 func writeAlphavilleSeries(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
-	alphavilleSeriesRW := alphavilleseries.NewCypherAlphavilleSeriesService(db)
+	alphavilleSeriesRW := concepts.NewConceptService(db)
 	assert.NoError(t, alphavilleSeriesRW.Initialise())
 	writeJSONToService(alphavilleSeriesRW, "./fixtures/TestAlphavilleSeries.json", t)
 	return alphavilleSeriesRW
