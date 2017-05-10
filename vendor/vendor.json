@@ -3,16 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "z/1KRZNtm19HMsBmW/b3D8ndg1k=",
-			"comment": "v0.0.8",
-			"path": "github.com/Financial-Times/alphaville-series-rw-neo4j/alphavilleseries",
-			"revision": "12d9e5525fca43df36fdf95685ad1f33515eaea4"
-		},
-		{
-			"checksumSHA1": "pgmx0X+XNVrtRnC7EHUv6hX/sPk=",
-			"comment": "0.1.9",
+			"checksumSHA1": "nV+iZwjtm4ncxB/+L/w5tNEIWQU=",
 			"path": "github.com/Financial-Times/annotations-rw-neo4j/annotations",
-			"revision": "7b7d64f1a659a7e868fd9c0ed08aa64329f9f090"
+			"revision": "aa64d7f26ed907b3cd8ad54b2744d3b6c2db32ae",
+			"revisionTime": "2017-03-29T09:44:06Z",
+			"version": "=0.2.0",
+			"versionExact": "0.2.0"
 		},
 		{
 			"checksumSHA1": "fg1dZ/MIpnMKoW0vJE2y5HpHXXc=",
@@ -23,28 +19,49 @@
 			"checksumSHA1": "0bUtGKFFNpJ85woOBFG5IlanCfw=",
 			"comment": "0.1.3",
 			"path": "github.com/Financial-Times/brands-rw-neo4j/brands",
-			"revision": "5fd088c29db4e997efa448a5076fb5cde100780e"
+			"revision": "5fd088c29db4e997efa448a5076fb5cde100780e",
+			"version": "=0.1.7",
+			"versionExact": "0.1.7"
+		},
+		{
+			"checksumSHA1": "ft2GrORzOZ/m/m39SyGJs41O2dQ=",
+			"path": "github.com/Financial-Times/concepts-rw-neo4j/concepts",
+			"revision": "1ddcf42a8f9824492b53ba1362cc9bc89046a481",
+			"revisionTime": "2017-04-28T09:06:27Z",
+			"version": "=1.0.1",
+			"versionExact": "1.0.1"
 		},
 		{
 			"checksumSHA1": "q3Tyb0BPfxP4S6KLVJf6JfUuUeU=",
 			"comment": "v1.0.0",
 			"path": "github.com/Financial-Times/content-rw-neo4j/content",
-			"revision": "b6a78d9e62371982ce0a9e900dc0d15bd728c56e"
+			"revision": "b6a78d9e62371982ce0a9e900dc0d15bd728c56e",
+			"version": "=1.0.3",
+			"versionExact": "1.0.3"
 		},
 		{
 			"checksumSHA1": "FUhczVSvt/VQAlWfzATo1YLez2E=",
 			"path": "github.com/Financial-Times/go-fthealth/v1a",
-			"revision": "f9074331b3ab48bca0e6d0afc211a673d88ac925"
+			"revision": "f9074331b3ab48bca0e6d0afc211a673d88ac925",
+			"revisionTime": "2016-06-16T09:04:59Z",
+			"version": "=0.1.0",
+			"versionExact": "0.1.0"
 		},
 		{
 			"checksumSHA1": "zUpINnstJChGK0LAtkt7jBc3RY0=",
 			"path": "github.com/Financial-Times/http-handlers-go/httphandlers",
-			"revision": "bb69c454da9050fe1c4b92fe1345a01583ee70be"
+			"revision": "bb69c454da9050fe1c4b92fe1345a01583ee70be",
+			"revisionTime": "2016-08-03T10:40:03Z",
+			"version": "=0.1.0",
+			"versionExact": "0.1.0"
 		},
 		{
-			"checksumSHA1": "jsMrCUKy7+qiBEGhTj8tbSW/p9o=",
+			"checksumSHA1": "ZmT6PPQSF7C4aHQ2HO8QsKtYStg=",
 			"path": "github.com/Financial-Times/neo-model-utils-go/mapper",
-			"revision": "918e3fa4b42fd0293cfdb6749d944ed8e7110066"
+			"revision": "1a5407658c842183647f4799bb66ecac73af97a8",
+			"revisionTime": "2017-04-05T08:23:10Z",
+			"version": "=0.2.0",
+			"versionExact": "0.2.0"
 		},
 		{
 			"checksumSHA1": "IDKJ/mqVeFl91y07EpjO6Kbnwnc=",
@@ -55,13 +72,17 @@
 			"checksumSHA1": "giHVzPN1yDGvUgvWS+kJtj7MWlg=",
 			"comment": "0.5.0-logging",
 			"path": "github.com/Financial-Times/organisations-rw-neo4j/organisations",
-			"revision": "433d517527b4834f0094ebfc4c92f59061a98f45"
+			"revision": "433d517527b4834f0094ebfc4c92f59061a98f45",
+			"version": "=0.5.2",
+			"versionExact": "0.5.2"
 		},
 		{
 			"checksumSHA1": "aTbE6j4aUuXSwiuoDeHf+IEw6hA=",
 			"comment": "0.1.7-1-g772a2ba",
 			"path": "github.com/Financial-Times/people-rw-neo4j/people",
-			"revision": "772a2ba82ed44a098b84477d78029b88f9a1c21f"
+			"revision": "772a2ba82ed44a098b84477d78029b88f9a1c21f",
+			"version": "=1.0.9",
+			"versionExact": "1.0.9"
 		},
 		{
 			"checksumSHA1": "fqpohN7Qp2qj7TLMbUxh/cK4oH0=",
@@ -77,12 +98,6 @@
 			"checksumSHA1": "973POGyMCoyaKQuIYX2f7EKFwlQ=",
 			"path": "github.com/Financial-Times/service-status-go/httphandlers",
 			"revision": "3f5199736a3d7ae52394c63aac36834786825e21"
-		},
-		{
-			"checksumSHA1": "v8vxMNzyFgRihXOTFI5zd90WT98=",
-			"comment": "v1.1.2",
-			"path": "github.com/Financial-Times/subjects-rw-neo4j/subjects",
-			"revision": "521c61d79f41764fd55b7f139f220518ea042225"
 		},
 		{
 			"checksumSHA1": "ddLGmQTKn5BeEsKYFOGAH33sEfg=",
@@ -109,12 +124,6 @@
 			"checksumSHA1": "dvabztWVQX8f6oMLRyv4dLH+TGY=",
 			"comment": "v1.1.0",
 			"path": "github.com/davecgh/go-spew/spew",
-			"revision": "346938d642f2ec3594ed81d874461961cd0faa76"
-		},
-		{
-			"checksumSHA1": "a2yC46a1qsJomgY6rb+FkTFiqmE=",
-			"comment": "v1.1.0",
-			"path": "github.com/davecgh/go-spew/spew/testdata",
 			"revision": "346938d642f2ec3594ed81d874461961cd0faa76"
 		},
 		{
