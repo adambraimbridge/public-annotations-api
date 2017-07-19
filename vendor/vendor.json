@@ -13,20 +13,26 @@
 		{
 			"checksumSHA1": "5b1Y79xoNFuE/XXi5LDN3ys4OYA=",
 			"path": "github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp",
-			"revision": "3cefe0d2386280234af7a3f6e9b9aa3b664df812",
-			"revisionTime": "2017-07-10T13:00:32Z"
+			"revision": "27f4c78ff5bff819fea09533b4444693bca2136b",
+			"revisionTime": "2017-07-13T11:10:17Z",
+			"version": "=1.0.1",
+			"versionExact": "1.0.1"
 		},
 		{
-			"checksumSHA1": "uYE44WXlte37YhuJK8ED05OD5OA=",
+			"checksumSHA1": "vJmggjnU3wcs9cnvPCYapAXzBFg=",
 			"path": "github.com/Financial-Times/concepts-rw-neo4j/concepts",
-			"revision": "26dc8ba8a2cda0913e10db3e1072f1d52ac8cefb",
-			"revisionTime": "2017-07-10T12:39:28Z"
+			"revision": "a5870df103bb1c6e5c274f7c72429714ed80943a",
+			"revisionTime": "2017-07-18T07:41:22Z",
+			"version": "=1.1.0",
+			"versionExact": "1.1.0"
 		},
 		{
-			"checksumSHA1": "Nv8WGvaFsT2HfwcjEJD+GNylqk4=",
+			"checksumSHA1": "UXj0Fg9GGzBNcQkdWnxjSTrKM3M=",
 			"path": "github.com/Financial-Times/content-rw-neo4j/content",
-			"revision": "a8bb8bcedece53cd58dd248b0b6a34ba38034ba2",
-			"revisionTime": "2017-07-10T15:23:39Z"
+			"revision": "61d4309ed9b05e79af1cbece20bf63ecefc27e55",
+			"revisionTime": "2017-06-19T11:26:34Z",
+			"version": "=1.0.4",
+			"versionExact": "1.0.4"
 		},
 		{
 			"checksumSHA1": "FUhczVSvt/VQAlWfzATo1YLez2E=",
@@ -55,13 +61,18 @@
 		{
 			"checksumSHA1": "IDKJ/mqVeFl91y07EpjO6Kbnwnc=",
 			"path": "github.com/Financial-Times/neo-utils-go/neoutils",
-			"revision": "aed125896a5ac0b50296fde5faefed1ebfa7fae3"
+			"revision": "aed125896a5ac0b50296fde5faefed1ebfa7fae3",
+			"revisionTime": "2017-01-04T12:16:44Z",
+			"version": "=1.0.0",
+			"versionExact": "1.0.0"
 		},
 		{
 			"checksumSHA1": "OViPZtQxGJ8ECf9BBDvQ112tzP4=",
 			"path": "github.com/Financial-Times/organisations-rw-neo4j/organisations",
-			"revision": "cb217caf77f1e60a4b8eed7e30416e02c350467f",
-			"revisionTime": "2017-07-10T14:00:21Z"
+			"revision": "c77c568607ee3b42143d3a96d91adf9c289d6e50",
+			"revisionTime": "2017-07-10T13:25:41Z",
+			"version": "=0.5.6",
+			"versionExact": "0.5.6"
 		},
 		{
 			"checksumSHA1": "fqpohN7Qp2qj7TLMbUxh/cK4oH0=",
