@@ -35,163 +35,167 @@ const (
 	brandCircularBUUID                 = "ff691bf8-8d92-4a4a-8326-c273400bff0b"
 	contentWithBrandsDiffTypesUUID     = "3fc9fe3e-af8c-6a6a-961a-e5065392bb31"
 
-	MSJConceptUUID                     = "5d1510f8-2779-4b74-adab-0a5eb138fca6"
-	FakebookConceptUUID                = "eac853f5-3859-4c08-8540-55e043719400"
-	MetalMickeyConceptUUID             = "0483bef8-5797-40b8-9b25-b12e492f63c6"
-	JohnSmithConceptUUID               = "75e2f7e9-cb5e-40a5-a074-86d69fe09f69"
+	MSJConceptUUID         = "5d1510f8-2779-4b74-adab-0a5eb138fca6"
+	FakebookConceptUUID    = "eac853f5-3859-4c08-8540-55e043719400"
+	MetalMickeyConceptUUID = "0483bef8-5797-40b8-9b25-b12e492f63c6"
+	JohnSmithConceptUUID   = "75e2f7e9-cb5e-40a5-a074-86d69fe09f69"
 )
+
 var allUUIDs = []string{contentUUID, contentWithNoAnnotationsUUID, contentWithParentAndChildBrandUUID,
 	contentWithThreeLevelsOfBrandUUID, contentWithCircularBrandUUID, contentWithOnlyFTUUID, alphavilleSeriesUUID,
-	brandParentUUID, brandChildUUID, brandGrandChildUUID, brandCircularAUUID, brandCircularBUUID, contentWithBrandsDiffTypesUUID}
+	brandParentUUID, brandChildUUID, brandGrandChildUUID, brandCircularAUUID, brandCircularBUUID, contentWithBrandsDiffTypesUUID,
+	FakebookConceptUUID, MSJConceptUUID, MetalMickeyConceptUUID, JohnSmithConceptUUID}
 
-//Reusable Neo4J connection
-var db neoutils.NeoConnection
-
-func init() {
-	conf := neoutils.DefaultConnectionConfig()
-	conf.Transactional = false
-	db, _ = neoutils.Connect(neoUrl(), conf)
-	if db == nil {
-		panic("Cannot connect to Neo4J")
-	}
-}
-
-func neoUrl() string {
+func getDatabaseConnection(t *testing.T, assert *assert.Assertions) neoutils.NeoConnection {
 	url := os.Getenv("NEO4J_TEST_URL")
 	if url == "" {
-		url = "http://localhost:7777/db/data"
+		url = "http://localhost:7474/db/data"
 	}
-	return url
+
+	conf := neoutils.DefaultConnectionConfig()
+	conf.Transactional = false
+	db, err := neoutils.Connect(url, conf)
+	assert.NoError(err, "Failed to connect to Neo4j")
+	return db
 }
 
-
-func TestRetrieveMultipleAnnotations(t *testing.T) {
-	expectedAnnotations := annotations{getExpectedFakebookAnnotation(),
-		getExpectedMallStreetJournalAnnotation(),
-		getExpectedMetalMickeyAnnotation(),
-		getExpectedAlphavilleSeriesAnnotation(),
-		getExpectedJohnSmithAnnotation(),
-		getExpectedBrandChildAnnotation(),
-		getExpectedBrandParentAnnotation(),
-		getExpectedBrandGrandChildAnnotation()}
-
+func TestCypherQueries(t *testing.T) {
+	assert := assert.New(t)
+	db := getDatabaseConnection(t, assert)
 	writeAllDataToDB(t, db)
+	defer cleanDB(t, db)
 
-	defer cleanDB(t)
+	t.Run("RetrieveMultipleAnnotations", func(t *testing.T) {
+		expectedAnnotations := annotations{
+			getExpectedFakebookAnnotation(),
+			getExpectedMallStreetJournalAnnotation(),
+			getExpectedMetalMickeyAnnotation(),
+			getExpectedAlphavilleSeriesAnnotation(),
+			getExpectedBrandChildAnnotation(),
+			getExpectedBrandGrandChildAnnotation(),
+			getExpectedBrandParentAnnotation(),
+		}
 
-	driver := NewCypherDriver(db, "prod")
-	anns := getAndCheckAnnotations(driver, contentUUID, t)
-	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(t, anns, expectedAnnotations)
+		driver := NewCypherDriver(db, "prod")
+		anns := getAndCheckAnnotations(driver, contentUUID, t)
+		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+		assertListContainsAll(t, anns, expectedAnnotations)
+
+	})
+
+	t.Run("RetrieveContentWithParentBrand", func(t *testing.T) {
+		expectedAnnotations := annotations{getExpectedBrandChildAnnotation(),
+			getExpectedBrandParentAnnotation(),
+			getExpectedBrandGrandChildAnnotation()}
+
+		driver := NewCypherDriver(db, "prod")
+		anns := getAndCheckAnnotations(driver, contentWithParentAndChildBrandUUID, t)
+		log.Info(anns)
+		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+		assertListContainsAll(t, anns, expectedAnnotations)
+	})
+
+	t.Run("RetrieveContentWithGrandParentBrand", func(t *testing.T) {
+		expectedAnnotations := annotations{getExpectedBrandChildAnnotation(),
+			getExpectedBrandParentAnnotation(),
+			getExpectedBrandGrandChildAnnotation()}
+
+		driver := NewCypherDriver(db, "prod")
+		anns := getAndCheckAnnotations(driver, contentWithThreeLevelsOfBrandUUID, t)
+		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+		assertListContainsAll(t, anns, expectedAnnotations)
+	})
+
+	t.Run("RetrieveContentWithCircularBrand", func(t *testing.T) {
+		expectedAnnotations := annotations{getExpectedBrandCircularAAnnotation(),
+			getExpectedBrandCircularBAnnotation()}
+
+		driver := NewCypherDriver(db, "prod")
+		anns := getAndCheckAnnotations(driver, contentWithCircularBrandUUID, t)
+		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+		assertListContainsAll(t, anns, expectedAnnotations)
+	})
+
+	t.Run("RetrieveContentWithJustParentBrand", func(t *testing.T) {
+		expectedAnnotations := annotations{getExpectedBrandParentAnnotation()}
+
+		driver := NewCypherDriver(db, "prod")
+		anns := getAndCheckAnnotations(driver, contentWithOnlyFTUUID, t)
+		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+		assertListContainsAll(t, anns, expectedAnnotations)
+	})
+
+	//Tests filtering Annotations where content is related to Brand A as isClassifiedBy and to Brand B as isPrimarilyClassifiedBy
+	// and Brands A and B have a circular relation HasParent
+	t.Run("RetrieveContentBrandsOfDifferentTypes", func(t *testing.T) {
+		expectedAnnotations := annotations{getExpectedBrandCircularAAnnotation(),
+			getExpectedBrandCircularBAnnotation()}
+
+		driver := NewCypherDriver(db, "prod")
+		anns := getAndCheckAnnotations(driver, contentWithCircularBrandUUID, t)
+		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+		assertListContainsAll(t, anns, expectedAnnotations)
+	})
+
+	t.Run("RetrieveMultipleV1Annotations", func(t *testing.T) {
+		expectedAnnotations := getExpectedV1Annotations()
+		driver := NewCypherDriver(db, "prod")
+		anns := getAndCheckFilteredAnnotations(driver, contentUUID, "v1", t)
+		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+		assertListContainsAll(t, anns, expectedAnnotations)
+
+		for _, ann := range anns {
+			log.Info(ann)
+			assert.Equal("v1", ann.PlatformVersion)
+		}
+	})
+
+	t.Run("RetrieveMultipleV2Annotations", func(t *testing.T) {
+		expectedAnnotations := getExpectedV2Annotations()
+		driver := NewCypherDriver(db, "prod")
+		anns := getAndCheckFilteredAnnotations(driver, contentUUID, "v2", t)
+		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+		assertListContainsAll(t, anns, expectedAnnotations)
+
+		for _, ann := range anns {
+			log.Info(ann)
+			assert.Equal("v2", ann.PlatformVersion)
+		}
+	})
+
 }
 
+func TestRetrieveNoAnnotationsWhenThereAreNonePresentExceptBrands(t *testing.T) {
+	assert := assert.New(t)
+	db := getDatabaseConnection(t, assert)
 
-func TestRetrieveMultipleV1Annotations(t *testing.T) {
-	expectedAnnotations := getExpectedV1Annotations()
+	writeContent(t, db)
+	writeBrands(t, db)
 
-	writeAllDataToDB(t, db)
-
-	defer cleanDB(t)
+	defer cleanDB(t, db)
 
 	driver := NewCypherDriver(db, "prod")
-	anns := getAndCheckFilteredAnnotations(driver, contentUUID, "v1", t)
-	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(t, anns, expectedAnnotations)
-
-	for _, ann := range anns {
-		assert.Equal(t, "v1", ann.PlatformVersion)
-	}
+	anns, found, err := driver.read(contentWithNoAnnotationsUUID)
+	assert.NoError(err, "Unexpected error for content %s", contentWithNoAnnotationsUUID)
+	assert.False(found, "Found annotations for content %s", contentWithNoAnnotationsUUID)
+	assert.Equal(0, len(anns), "Didn't get the same number of annotations") // Two brands, child and parent
 }
 
-func TestRetrieveMultipleV2Annotations(t *testing.T) {
-	expectedAnnotations := getExpectedV2Annotations()
+func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
+	assert := assert.New(t)
+	db := getDatabaseConnection(t, assert)
 
-	writeAllDataToDB(t, db)
+	writeContent(t, db)
+	writeV1Annotations(t, db)
+	writeV2Annotations(t, db)
 
-	defer cleanDB(t)
-
-	driver := NewCypherDriver(db, "prod")
-	anns := getAndCheckFilteredAnnotations(driver, contentUUID, "v2", t)
-	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(t, anns, expectedAnnotations)
-
-	for _, ann := range anns {
-		assert.Equal(t, "v2", ann.PlatformVersion)
-	}
-}
-
-func TestRetrieveContentWithParentBrand(t *testing.T) {
-	expectedAnnotations := annotations{getExpectedBrandChildAnnotation(),
-		getExpectedBrandParentAnnotation(),
-		getExpectedBrandGrandChildAnnotation()}
-
-	writeAllDataToDB(t, db)
-
-	defer cleanDB(t)
+	defer cleanDB(t, db)
 
 	driver := NewCypherDriver(db, "prod")
-	anns := getAndCheckAnnotations(driver, contentWithParentAndChildBrandUUID, t)
-	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(t, anns, expectedAnnotations)
-}
-
-func TestRetrieveContentWithGrandParentBrand(t *testing.T) {
-	expectedAnnotations := annotations{getExpectedBrandChildAnnotation(),
-		getExpectedBrandParentAnnotation(),
-		getExpectedBrandGrandChildAnnotation()}
-
-	writeAllDataToDB(t, db)
-
-	defer cleanDB(t)
-
-	driver := NewCypherDriver(db, "prod")
-	anns := getAndCheckAnnotations(driver, contentWithThreeLevelsOfBrandUUID, t)
-	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(t, anns, expectedAnnotations)
-}
-
-func TestRetrieveContentWithCircularBrand(t *testing.T) {
-	expectedAnnotations := annotations{getExpectedBrandCircularAAnnotation(),
-		getExpectedBrandCircularBAnnotation()}
-
-	writeAllDataToDB(t, db)
-
-	defer cleanDB(t)
-
-	driver := NewCypherDriver(db, "prod")
-	anns := getAndCheckAnnotations(driver, contentWithCircularBrandUUID, t)
-	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(t, anns, expectedAnnotations)
-}
-
-//Tests filtering Annotations where content is related to Brand A as isClassifiedBy and to Brand B as isPrimarilyClassifiedBy
-// and Brands A and B have a circular relation HasParent
-func TestRetrieveContentBrandsOfDifferentTypes(t *testing.T) {
-	expectedAnnotations := annotations{getExpectedBrandCircularAAnnotation(),
-		getExpectedBrandCircularBAnnotation()}
-
-	writeAllDataToDB(t, db)
-
-	defer cleanDB(t)
-
-	driver := NewCypherDriver(db, "prod")
-	anns := getAndCheckAnnotations(driver, contentWithCircularBrandUUID, t)
-	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(t, anns, expectedAnnotations)
-}
-
-// FT brand is special case and is never tagged in QMI
-func TestRetrieveContentWithJustParentBrand(t *testing.T) {
-	expectedAnnotations := annotations{getExpectedBrandParentAnnotation()}
-
-	writeAllDataToDB(t, db)
-
-	defer cleanDB(t)
-
-	driver := NewCypherDriver(db, "prod")
-	anns := getAndCheckAnnotations(driver, contentWithOnlyFTUUID, t)
-	assert.Equal(t, len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(t, anns, expectedAnnotations)
+	anns, found, err := driver.read(contentUUID)
+	assert.NoError(err, "Unexpected error for content %s", contentUUID)
+	assert.False(found, "Found annotations for content %s", contentUUID)
+	assert.Equal(0, len(anns), "Didn't get the same number of annotations, anns=%s", anns)
 }
 
 func getAndCheckAnnotations(driver cypherDriver, contentUUID string, t *testing.T) annotations {
@@ -208,71 +212,15 @@ func getAndCheckFilteredAnnotations(driver cypherDriver, contentUUID string, pla
 	return anns
 }
 
+// Utility functions
 func writeAllDataToDB(t testing.TB, db neoutils.NeoConnection) {
 	writeBrands(t, db)
 	writeContent(t, db)
 	writeOrganisations(t, db)
-	//writePerson(t, db)
 	writeSubjects(t, db)
 	writeAlphavilleSeries(t, db)
 	writeV1Annotations(t, db)
 	writeV2Annotations(t, db)
-}
-
-func BenchmarkRetrieveNoAnnotationsWhenThereAreNonePresent(b *testing.B) {
-
-	writeAllDataToDB(b, db)
-	defer cleanDB(b)
-
-	driver := NewCypherDriver(db, "prod")
-	log.Info("Running benchmark...")
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		anns, found, err := driver.read(contentUUID)
-		assert.NoError(b, err, "Unexpected error for content %s", contentUUID)
-		assert.True(b, found, "Found no annotations for content %s", contentUUID)
-		assert.Equal(b, 8, len(anns), "Didn't get the same number of annotations")
-	}
-
-	b.StopTimer()
-	log.Info("... Done.")
-}
-
-func TestRetrieveNoAnnotationsWhenThereAreNonePresentExceptBrands(t *testing.T) {
-	writeAllDataToDB(t, db)
-
-	defer cleanDB(t)
-
-	driver := NewCypherDriver(db, "prod")
-	anns, found, err := driver.read(contentWithNoAnnotationsUUID)
-	assert.NoError(t, err, "Unexpected error for content %s", contentWithNoAnnotationsUUID)
-	assert.False(t, found, "Found annotations for content %s", contentWithNoAnnotationsUUID)
-	assert.Equal(t, 0, len(anns), "Didn't get the same number of annotations") // Two brands, child and parent
-}
-
-func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
-	writeContent(t, db)
-	writeV1Annotations(t, db)
-	writeV2Annotations(t, db)
-
-	defer cleanDB(t)
-
-	driver := NewCypherDriver(db, "prod")
-	anns, found, err := driver.read(contentUUID)
-	assert.NoError(t, err, "Unexp"+
-		""+
-		""+
-		""+
-		""+
-		""+
-		""+
-		""+
-		""+
-		""+
-		"ected error for content %s", contentUUID)
-	assert.False(t, found, "Found annotations for content %s", contentUUID)
-	assert.Equal(t, 0, len(anns), "Didn't get the same number of annotations, anns=%s", anns)
 }
 
 func writeBrands(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
@@ -298,13 +246,6 @@ func writeContent(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-6a6a-961a-e5065392bb31.json", t)
 	return contentRW
 }
-
-//func writePerson(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
-//	personRW := people.NewCypherPeopleService(db)
-//	assert.NoError(t, personRW.Initialise())
-//	writeJSONToService(personRW, "./fixtures/People-75e2f7e9-cb5e-40a5-a074-86d69fe09f69.json", t)
-//	return personRW
-//}
 
 func writeOrganisations(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	organisationRW := organisations.NewCypherOrganisationService(db)
@@ -385,14 +326,15 @@ func assertListContainsAll(t *testing.T, list interface{}, items ...interface{})
 	}
 }
 
-func cleanDB(t testing.TB) {
+func cleanDB(t testing.TB, db neoutils.NeoConnection) {
 	qs := make([]*neoism.CypherQuery, len(allUUIDs))
 	for i, uuid := range allUUIDs {
 		qs[i] = &neoism.CypherQuery{
 			Statement: fmt.Sprintf(`
 			MATCH (a:Thing {uuid: "%s"})
 			OPTIONAL MATCH (a)<-[iden:IDENTIFIES]-(i:Identifier)
-			DELETE iden, i
+			OPTIONAL MATCH (a)-[:EQUIVALENT_TO]-(t:Thing)
+			DELETE iden, i, t
 			DETACH DELETE a`, uuid)}
 	}
 	err := db.CypherBatch(qs)
@@ -401,19 +343,13 @@ func cleanDB(t testing.TB) {
 
 func getExpectedV1Annotations() annotations {
 
-	js := getExpectedJohnSmithAnnotation()
-	js.FactsetID = "000ZZZ-E"
-	js.TmeIDs = []string{}
-	js.UUIDs = []string{"75e2f7e9-cb5e-40a5-a074-86d69fe09f69"}
-	js.PlatformVersion = "v1"
-
 	av := getExpectedAlphavilleSeriesAnnotation()
 	av.TmeIDs = []string{"FOOBAR"}
 	av.UUIDs = []string{"747894f8-a231-4efb-805d-753635eca712"}
 	av.PlatformVersion = "v1"
 
 	mm := getExpectedMetalMickeyAnnotation()
-	mm.TmeIDs = []string{"AAAA-U3ViamVjdHM="}
+	mm.TmeIDs = []string{"TWV0YWwgTWlja2V5-U3ViamVjdHM="}
 	mm.UUIDs = []string{"0483bef8-5797-40b8-9b25-b12e492f63c6"}
 	mm.PlatformVersion = "v1"
 
@@ -422,20 +358,18 @@ func getExpectedV1Annotations() annotations {
 	b.UUIDs = []string{"ff691bf8-8d92-2a2a-8326-c273400bff0b"}
 	b.PlatformVersion = "v1"
 
-	return []annotation{js, av, mm, b}
+	return []annotation{av, mm, b}
 }
 
 func getExpectedV2Annotations() annotations {
 
 	fb := getExpectedFakebookAnnotation()
-	fb.FactsetID = "00AAA-E"
-	fb.TmeIDs = []string{}
+	fb.FactsetIDs = []string{"00AAA-E"}
 	fb.UUIDs = []string{"eac853f5-3859-4c08-8540-55e043719400"}
 	fb.PlatformVersion = "v2"
 
 	msj := getExpectedMallStreetJournalAnnotation()
-	msj.FactsetID = "00BBBB-E"
-	msj.TmeIDs = []string{}
+	msj.FactsetIDs = []string{"00BBBB-E"}
 	msj.UUIDs = []string{"5d1510f8-2779-4b74-adab-0a5eb138fca6"}
 	msj.PlatformVersion = "v2"
 

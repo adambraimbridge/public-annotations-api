@@ -17,14 +17,6 @@
 			"revisionTime": "2017-07-10T13:00:32Z"
 		},
 		{
-			"checksumSHA1": "0bUtGKFFNpJ85woOBFG5IlanCfw=",
-			"comment": "0.1.3",
-			"path": "github.com/Financial-Times/brands-rw-neo4j/brands",
-			"revision": "5fd088c29db4e997efa448a5076fb5cde100780e",
-			"version": "=0.1.7",
-			"versionExact": "0.1.7"
-		},
-		{
 			"checksumSHA1": "uYE44WXlte37YhuJK8ED05OD5OA=",
 			"path": "github.com/Financial-Times/concepts-rw-neo4j/concepts",
 			"revision": "26dc8ba8a2cda0913e10db3e1072f1d52ac8cefb",
@@ -72,14 +64,6 @@
 			"revisionTime": "2017-07-10T14:00:21Z"
 		},
 		{
-			"checksumSHA1": "aTbE6j4aUuXSwiuoDeHf+IEw6hA=",
-			"comment": "0.1.7-1-g772a2ba",
-			"path": "github.com/Financial-Times/people-rw-neo4j/people",
-			"revision": "772a2ba82ed44a098b84477d78029b88f9a1c21f",
-			"version": "=1.0.9",
-			"versionExact": "1.0.9"
-		},
-		{
 			"checksumSHA1": "fqpohN7Qp2qj7TLMbUxh/cK4oH0=",
 			"path": "github.com/Financial-Times/service-status-go/buildinfo",
 			"revision": "3f5199736a3d7ae52394c63aac36834786825e21"
@@ -123,6 +107,12 @@
 			"revision": "346938d642f2ec3594ed81d874461961cd0faa76"
 		},
 		{
+			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
+			"path": "github.com/gorilla/context",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
+		},
+		{
 			"checksumSHA1": "F5dR3/i70EhSIMZfeIV+H8/PtvM=",
 			"comment": "v1.3.0",
 			"path": "github.com/gorilla/mux",
@@ -150,6 +140,18 @@
 			"revision": "2bb1b664bcff821e02b2a0644cd29c7e824d54f8"
 		},
 		{
+			"checksumSHA1": "0PYW8zyGI0iZzb5xxZw+veCjgFM=",
+			"path": "github.com/joho/godotenv",
+			"revision": "3ddb2792f3923947290c4932990136e17852a078",
+			"revisionTime": "2017-07-05T04:31:29Z"
+		},
+		{
+			"checksumSHA1": "UE4lhbPYYWEhqHXQk24OA73m5+8=",
+			"path": "github.com/joho/godotenv/autoload",
+			"revision": "3ddb2792f3923947290c4932990136e17852a078",
+			"revisionTime": "2017-07-05T04:31:29Z"
+		},
+		{
 			"checksumSHA1": "eOXF2PEvYLMeD8DSzLZJWbjYzco=",
 			"comment": "go.weekly.2011-12-22-36-gcfb55aa",
 			"path": "github.com/kr/pretty",
@@ -172,20 +174,10 @@
 			"revision": "1f30fe9094a513ce4c700b9a54458bbb0c96996c"
 		},
 		{
-			"checksumSHA1": "bbilAC3Am0MP1lPfSKblFsIvg4Q=",
-			"path": "github.com/spaolacci/murmur3",
-			"revision": "0d12bf811670bf6a1a63828dfbd003eded177fce"
-		},
-		{
 			"checksumSHA1": "JXUVA1jky8ZX8w09p2t5KLs97Nc=",
 			"comment": "v1.1.4-27-g4d4bfba",
 			"path": "github.com/stretchr/testify/assert",
 			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987"
-		},
-		{
-			"checksumSHA1": "SubpTLnurFt1lvW8AftpgpA50go=",
-			"path": "github.com/ugorji/go/codec",
-			"revision": "5cd0f2b3b6cca8e3a0a4101821e41a73cb59bed6"
 		},
 		{
 			"checksumSHA1": "dBmk68coq8umF51FL23vNXOOS7o=",
@@ -198,7 +190,7 @@
 			"revision": "236b8f043b920452504e263bc21d354427127473"
 		},
 		{
-			"checksumSHA1": "Xhsm+TevJogC8U4sG6FO+czBMps=",
+			"checksumSHA1": "uTQtOqR0ePMMcvuvAIksiIZxhqU=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "7a6e5648d140666db5d920909e082ca00a87ba2c"
 		},

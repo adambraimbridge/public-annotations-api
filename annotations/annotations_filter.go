@@ -1,20 +1,20 @@
 package annotations
 
 import (
-	"strings"
 	"reflect"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 )
 
 // Defines all names of predicates that have to be considered by the annotation filter.
 // Predicates that are not defined in FilteredPredicateNames are not filtered.
 type filteredPredicateNames struct {
-	MENTIONS string
-	MAJOR_MENTIONS string
-	ABOUT string
-	IS_CLASSIFIED_BY string
+	MENTIONS                   string
+	MAJOR_MENTIONS             string
+	ABOUT                      string
+	IS_CLASSIFIED_BY           string
 	IS_PRIMARILY_CLASSIFIED_BY string
-
 }
 
 func newFilteredPredicateNames() *filteredPredicateNames {
@@ -30,8 +30,8 @@ func newFilteredPredicateNames() *filteredPredicateNames {
 func (f *filteredPredicateNames) contains(pred string) bool {
 	enum := newFilteredPredicateNames()
 	v := reflect.ValueOf(*enum)
-	for i :=0; i < v.NumField(); i++ {
-		if(v.Field(i).String() == pred) {
+	for i := 0; i < v.NumField(); i++ {
+		if v.Field(i).String() == pred {
 			return true
 		}
 	}
@@ -41,13 +41,13 @@ func (f *filteredPredicateNames) contains(pred string) bool {
 type AnnotationsFilter struct {
 	// Definition of predicate groups to whom Rule of Importance should be applied.
 	// Each group contains a list of predicate names in the order of increasing importance.
-	ImportanceRuleConfig  [][]string
+	ImportanceRuleConfig [][]string
 	// Predicate names of annotations that should be considered for filtering
-	enum                  *filteredPredicateNames
+	enum *filteredPredicateNames
 	// Stores annotations to be filtered keyed by concept ID (uuid).
 	unfilteredAnnotations map[string][]annotation
 	// Stores annotations not to be filtered keyed by concept ID (uuid).
-	filteredAnnotations   map[string][]annotation
+	filteredAnnotations map[string][]annotation
 }
 
 func NewAnnotationsFilter() *AnnotationsFilter {
@@ -55,11 +55,11 @@ func NewAnnotationsFilter() *AnnotationsFilter {
 	f.enum = newFilteredPredicateNames()
 	// Configure groups of predicates that should be filtered according to their importance.
 	f.ImportanceRuleConfig = [][]string{
-		{f.enum.MENTIONS,f.enum.MAJOR_MENTIONS, f.enum.ABOUT},
+		{f.enum.MENTIONS, f.enum.MAJOR_MENTIONS, f.enum.ABOUT},
 		{f.enum.IS_CLASSIFIED_BY, f.enum.IS_PRIMARILY_CLASSIFIED_BY},
 	}
 	f.filteredAnnotations = make(map[string][]annotation)
-	f.unfilteredAnnotations =  make(map[string][]annotation)
+	f.unfilteredAnnotations = make(map[string][]annotation)
 	return &f
 }
 
@@ -91,10 +91,10 @@ func (f *AnnotationsFilter) Filter() []annotation {
 func (f *AnnotationsFilter) addFiltered(a annotation) {
 	if f.filteredAnnotations[a.ID] == nil {
 		// For each importance group we shell store 1 most important annotation
-		f.filteredAnnotations[a.ID] = make([]annotation, len(f.ImportanceRuleConfig ))
+		f.filteredAnnotations[a.ID] = make([]annotation, len(f.ImportanceRuleConfig))
 	}
 	grpId, pos := f.getGroupIdAndImportanceValue(strings.ToLower(a.Predicate))
-	if grpId == -1 || pos == -1  {
+	if grpId == -1 || pos == -1 {
 		log.Debugf("Could not find group for predicate %s \n", strings.ToLower(a.Predicate))
 		return
 	}
@@ -115,7 +115,7 @@ func (f *AnnotationsFilter) addUnfiltered(a annotation) {
 	if f.unfilteredAnnotations[a.ID] == nil {
 		f.unfilteredAnnotations[a.ID] = []annotation{}
 	}
-	f.unfilteredAnnotations[a.ID] = append(f.unfilteredAnnotations[a.ID], a )
+	f.unfilteredAnnotations[a.ID] = append(f.unfilteredAnnotations[a.ID], a)
 }
 
 func (f *AnnotationsFilter) getGroupIdAndImportanceValue(predicate string) (int, int) {
@@ -137,5 +137,5 @@ func (f *AnnotationsFilter) getImportanceValueForGroupId(predicate string, group
 		}
 	}
 	//should not occur in normal circumstances
-	return  -1
+	return -1
 }

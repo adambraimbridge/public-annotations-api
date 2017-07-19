@@ -1,5 +1,5 @@
 {
-  "prefUUID":"ff691bf8-8d92-1a1a-8326-c273400bff0b",
+  "prefUUID":"ff691bf8-8d92-2a2a-8326-c273400bff0b",
   "prefLabel":"Child Business School video",
   "type":"Brand",
   "aliases": [
@@ -7,10 +7,10 @@
   ],
   "sourceRepresentations": [
     {
-      "parentUUID": "ff691bf8-8d92-1a1a-8326-c273400bff0b",
+      "parentUUIDs": ["ff691bf8-8d92-1a1a-8326-c273400bff0b"],
       "prefLabel": "Child Business School video",
       "type": "Brand",
-      "uuid": "ff691bf8-8d92-1a1a-8326-c273400bff0b",
+      "uuid": "ff691bf8-8d92-2a2a-8326-c273400bff0b",
       "aliases": [
         "Child Business School video"
       ],
