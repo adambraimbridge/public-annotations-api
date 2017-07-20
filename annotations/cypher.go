@@ -28,7 +28,7 @@ func NewCypherDriver(conn neoutils.NeoConnection, env string) cypherDriver {
 	return cypherDriver{conn, env}
 }
 
-func (cd cypherDriver) checkConnectivity() error { //TODO - use the neo4j connectivity check library
+func (cd cypherDriver) checkConnectivity() error {
 	return neoutils.Check(cd.conn)
 }
 
@@ -62,8 +62,9 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 			OPTIONAL MATCH (cc)-[:EQUIVALENT_TO]->(canonical:Concept)
 			OPTIONAL MATCH (cc)<-[iden:IDENTIFIES]-(i:LegalEntityIdentifier)
 			WITH c, collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel:cc.prefLabel, leiCode:i.value, prefUUID: canonical.prefUUID, canonicalPrefLabel: canonical.prefLabel, canonicalLEI: canonical.LEICode, canonicalTypes: labels(canonical)}) as rows
-			OPTIONAL MATCH (cd:Concept)<-[r:HAS_PARENT*0..]-(:Brand)<-[rel]-(c)
-			OPTIONAL MATCH (cd)-[:EQUIVALENT_TO]->(canon:Concept)
+			OPTIONAL MATCH (canonicalBrand:Brand)-[:EQUIVALENT_TO]-(sourceBrand:Brand)<-[rel]-(c)
+            OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(treeBrand:Brand)-[r:HAS_PARENT*0..]-(cd:Concept)
+            OPTIONAL MATCH (cd)-[:EQUIVALENT_TO]-(canon:Brand)
 			WITH collect({id: cd.uuid, predicate:'IS_CLASSIFIED_BY', types: labels(cd), prefLabel:cd.prefLabel,leiCode:null, canonicalPrefLabel: canon.prefLabel, prefUUID: canon.prefUUID, canonicalTypes: labels(canon), canonicalLEI: null}) + rows as allRows
 			UNWIND allRows as row
 			WITH DISTINCT(row) as drow
@@ -88,7 +89,6 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 	found = false
 
 	for idx := range results {
-		log.Info(results[idx])
 		annotation, err := mapToResponseFormat(results[idx], cd.env)
 
 		if err == nil {
