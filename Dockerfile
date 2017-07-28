@@ -25,7 +25,7 @@ RUN apk add --no-cache  --update bash ca-certificates \
   && echo ${LDFLAGS} \
   && go get -u github.com/kardianos/govendor \
   && $GOPATH/bin/govendor sync \
-  && go build -ldflags="${LDFLAGS}" \
+  && $GOPATH/bin/govendor build -ldflags="${LDFLAGS}" \
   && mv public-annotations-api / \
   && apk del .build-dependencies \
   && rm -rf $GOPATH /var/cache/apk/*
