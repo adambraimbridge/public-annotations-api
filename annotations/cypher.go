@@ -59,13 +59,15 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 	query := &neoism.CypherQuery{
 		Statement: `
 			MATCH (c:Thing{uuid:{contentUUID}})-[rel]->(cc:Concept)
+			OPTIONAL MATCH (parent:Concept)<-[r:HAS_PARENT*0..]-(b:Brand)<-[rel]-(c)
+			WITH c, rel, cc, collect({id: parent.uuid, predicate: 'IS_CLASSIFIED_BY', types: labels(parent), prefLabel: parent.prefLabel, leiCode: null, prefUUID: null, canonicalPrefLabel: null, canonicalLEI: null, canonicalTypes: null}) as rows
 			OPTIONAL MATCH (cc)-[:EQUIVALENT_TO]->(canonical:Concept)
 			OPTIONAL MATCH (cc)<-[iden:IDENTIFIES]-(i:LegalEntityIdentifier)
-			WITH c, collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel:cc.prefLabel, leiCode:i.value, prefUUID: canonical.prefUUID, canonicalPrefLabel: canonical.prefLabel, canonicalLEI: canonical.LEICode, canonicalTypes: labels(canonical)}) as rows
+			WITH c, collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel: cc.prefLabel, leiCode: i.value, prefUUID: canonical.prefUUID, canonicalPrefLabel: canonical.prefLabel, canonicalLEI: canonical.LEICode, canonicalTypes: labels(canonical)}) + rows as moreRows
 			OPTIONAL MATCH (canonicalBrand:Brand)-[:EQUIVALENT_TO]-(sourceBrand:Brand)<-[rel]-(c)
             OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(treeBrand:Brand)-[r:HAS_PARENT*0..]->(cd:Concept)
             OPTIONAL MATCH (cd)-[:EQUIVALENT_TO]-(canon:Brand)
-			WITH collect({id: cd.uuid, predicate:'IS_CLASSIFIED_BY', types: labels(cd), prefLabel:cd.prefLabel,leiCode:null, canonicalPrefLabel: canon.prefLabel, prefUUID: canon.prefUUID, canonicalTypes: labels(canon), canonicalLEI: null}) + rows as allRows
+			WITH collect({id: cd.uuid, predicate:'IS_CLASSIFIED_BY', types: labels(cd), prefLabel: cd.prefLabel,leiCode: null, canonicalPrefLabel: canon.prefLabel, prefUUID: canon.prefUUID, canonicalTypes: labels(canon), canonicalLEI: null}) + moreRows as allRows
 			UNWIND allRows as row
 			WITH DISTINCT(row) as drow
 			RETURN distinct drow.id as id, drow.predicate as predicate, drow.types as types, drow.prefLabel as prefLabel, drow.leiCode as leiCode, drow.canonicalPrefLabel as canonicalPrefLabel, drow.prefUUID as prefUUID, drow.canonicalTypes as canonicalTypes,  drow.canonicalLEI as canonicalLei
