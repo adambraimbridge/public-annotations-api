@@ -156,6 +156,7 @@ func (cd cypherDriver) filteredRead(contentUUID string, platformVersion string) 
 
 func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	var ann annotation
+	fmt.Printf("Id is: %s\n", neoAnn.ID)
 
 	// New concordance model
 	if neoAnn.PrefUUID != "" {
@@ -198,6 +199,7 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	if len(neoAnn.UUIDs) > 0 {
 		ann.UUIDs = deduplicateList(neoAnn.UUIDs)
 	}
+	fmt.Printf("Annotation is %v\n", ann)
 	return ann, nil
 }
 
