@@ -75,18 +75,6 @@
 			"revisionTime": "2017-07-10T14:00:21Z"
 		},
 		{
-			"checksumSHA1": "1z1Z9l6OV+ai525+uYkPHPP19aQ=",
-			"path": "github.com/Financial-Times/public-annotations-api",
-			"revision": "887b1eddab819eb2449e8d74e1e30bad5c259558",
-			"revisionTime": "2017-07-28T08:49:47Z"
-		},
-		{
-			"checksumSHA1": "9YonoEtsJX7BV3OY3S2d3u+1QQI=",
-			"path": "github.com/Financial-Times/public-annotations-api/annotations",
-			"revision": "887b1eddab819eb2449e8d74e1e30bad5c259558",
-			"revisionTime": "2017-07-28T08:49:47Z"
-		},
-		{
 			"checksumSHA1": "fqpohN7Qp2qj7TLMbUxh/cK4oH0=",
 			"path": "github.com/Financial-Times/service-status-go/buildinfo",
 			"revision": "3f5199736a3d7ae52394c63aac36834786825e21",
