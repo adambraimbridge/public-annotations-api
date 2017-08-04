@@ -105,10 +105,10 @@
 			"revisionTime": "2017-07-10T12:58:28Z"
 		},
 		{
-			"checksumSHA1": "Cag+3Y9IpGeyM+7Li1AkHdcaTyg=",
+			"checksumSHA1": "BCmjskha6fhGDUxvgayGZnF8RUc=",
 			"path": "github.com/Sirupsen/logrus",
-			"revision": "e49c59d69b89746796d48156991108c80faf1d7d",
-			"revisionTime": "2017-07-18T14:06:42Z"
+			"revision": "181d419aa9e2223811b824e8f0b4af96f9ba9302",
+			"revisionTime": "2017-07-28T07:42:14Z"
 		},
 		{
 			"checksumSHA1": "/6H1rhQmbq8mEP29pnmLmdwBKUE=",
@@ -141,10 +141,10 @@
 			"revisionTime": "2017-02-02T08:07:59Z"
 		},
 		{
-			"checksumSHA1": "ArLTWjZ9qJ5OaaElTmDclb/got0=",
+			"checksumSHA1": "+gF/oQlAYc2JJl7/FYsNgkzryU4=",
 			"path": "github.com/jawher/mow.cli",
-			"revision": "a6088643acff58732aead67c465ed09c334c5697",
-			"revisionTime": "2017-07-12T11:38:24Z"
+			"revision": "82aefbee1e23d398752fbe663f964a6d87016434",
+			"revisionTime": "2017-08-02T12:06:32Z"
 		},
 		{
 			"checksumSHA1": "nMm7xgpbpYYWy/zdKttNSoo1HAE=",
@@ -207,16 +207,22 @@
 			"revisionTime": "2017-05-24T23:16:39Z"
 		},
 		{
-			"checksumSHA1": "dr5+PfIRzXeN+l1VG+s0lea9qz8=",
-			"path": "golang.org/x/net/context",
-			"revision": "02ac38e2528ff4adea90f184d71a3faa04b4b1b0",
-			"revisionTime": "2017-07-18T17:12:47Z"
+			"checksumSHA1": "+WzOFwhDdPcz5PYt7imWl71ekZY=",
+			"path": "golang.org/x/crypto/ssh/terminal",
+			"revision": "358f15eacb587b056fc93273b930314a5cda12fe",
+			"revisionTime": "2017-08-01T06:20:35Z"
 		},
 		{
-			"checksumSHA1": "lzKN/3F0mwa8tLTOD/9zG5H1rN0=",
+			"checksumSHA1": "dr5+PfIRzXeN+l1VG+s0lea9qz8=",
+			"path": "golang.org/x/net/context",
+			"revision": "f5079bd7f6f74e23c4d65efa0f4ce14cbd6a3c0f",
+			"revisionTime": "2017-07-19T21:11:51Z"
+		},
+		{
+			"checksumSHA1": "fwb6FNBUs0SOyUpUx5R31Xf22GY=",
 			"path": "golang.org/x/sys/unix",
-			"revision": "cd2c276457edda6df7fb04895d3fd6a6add42926",
-			"revisionTime": "2017-07-17T10:05:24Z"
+			"revision": "d8f5ea21b9295e315e612b4bcf4bedea93454d4d",
+			"revisionTime": "2017-08-03T09:04:06Z"
 		},
 		{
 			"checksumSHA1": "k3L1Q7anlDsX2njPAE5Dd2SWVlw=",
