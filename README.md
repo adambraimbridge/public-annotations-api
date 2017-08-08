@@ -66,6 +66,7 @@ The structure of the the response is the same both endpoints and would look like
         ],
         prefLabel: "Company News",
         leiCode: "leicode_value",
+        FIGI: "figi_value",
         factsetID: "factsetID_value"
         tmeIDs: [
             "tmeid__value"
