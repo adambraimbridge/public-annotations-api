@@ -17,6 +17,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/jmcvetta/neoism"
 	"github.com/stretchr/testify/assert"
+	"github.com/Financial-Times/financial-instruments-rw-neo4j/financialinstruments"
 )
 
 const (
@@ -181,6 +182,38 @@ func TestRetrieveNoAnnotationsWhenThereAreNonePresentExceptBrands(t *testing.T) 
 	assert.Equal(0, len(anns), "Didn't get the same number of annotations") // Two brands, child and parent
 }
 
+func TestRetrieveAnnotationWithCorrectValues(t *testing.T) {
+	assert := assert.New(t)
+	db := getDatabaseConnection(t, assert)
+	writeContent(t, db)
+	writeOrganisations(t, db)
+	writeFinancialInstruments(t, db)
+	writeV2Annotations(t, db)
+	defer cleanDB(t, db)
+
+	expectedAnnotations := annotations{
+		getExpectedFakebookAnnotation(),
+		getExpectedMallStreetJournalAnnotation(),
+	}
+
+	driver := NewCypherDriver(db, "prod")
+	anns := getAndCheckAnnotations(driver, contentUUID, t)
+
+	assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+	assertListContainsAll(t, anns, expectedAnnotations)
+
+	for _, ann := range anns {
+		for _, expected := range expectedAnnotations {
+			if expected.ID == ann.ID {
+				assert.Equal(expected.FIGI, ann.FIGI, "Didn't get the expected FIGI value")
+				assert.Equal(expected.LeiCode, ann.LeiCode, "Didn't get the expected Leicode value")
+				break
+			}
+		}
+	}
+
+}
+
 func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
 	assert := assert.New(t)
 	db := getDatabaseConnection(t, assert)
@@ -217,6 +250,7 @@ func writeAllDataToDB(t testing.TB, db neoutils.NeoConnection) {
 	writeBrands(t, db)
 	writeContent(t, db)
 	writeOrganisations(t, db)
+	writeFinancialInstruments(t, db)
 	writeSubjects(t, db)
 	writeAlphavilleSeries(t, db)
 	writeV1Annotations(t, db)
@@ -253,6 +287,13 @@ func writeOrganisations(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Ser
 	writeJSONToService(organisationRW, "./fixtures/Organisation-MSJ-5d1510f8-2779-4b74-adab-0a5eb138fca6.json", t)
 	writeJSONToService(organisationRW, "./fixtures/Organisation-Fakebook-eac853f5-3859-4c08-8540-55e043719400.json", t)
 	return organisationRW
+}
+
+func writeFinancialInstruments(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
+	fiRW := financialinstruments.NewCypherFinancialInstrumentService(db)
+	assert.NoError(t, fiRW.Initialise())
+	writeJSONToService(fiRW, "./fixtures/FinancialInstrument-77f613ad-1470-422c-bf7c-1dd4c3fd1693.json", t)
+	return fiRW
 }
 
 func writeSubjects(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
@@ -389,6 +430,7 @@ func getExpectedFakebookAnnotation() annotation {
 			"http://www.ft.com/ontology/company/PublicCompany",
 		},
 		LeiCode:   "BQ4BKCS1HXDV9TTTTTTTT",
+		FIGI: "BB8000C3P0-R2D2",
 		PrefLabel: "Fakebook, Inc.",
 	}
 }
