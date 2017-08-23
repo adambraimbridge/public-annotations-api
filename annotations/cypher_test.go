@@ -45,7 +45,6 @@ const (
 	pacPlatformVersion="pac"
 	v1Lifecycle="annotations-v1"
 	v2Lifecycle="annotations-v2"
-	pacLifecycle="annotations-pac"
 	emptyPlatformVersion=""
 )
 

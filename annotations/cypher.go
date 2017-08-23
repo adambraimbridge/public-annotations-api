@@ -33,20 +33,19 @@ func (cd cypherDriver) checkConnectivity() error {
 }
 
 type neoAnnotation struct {
-	Predicate string   `json:"predicate"`
-	ID        string   `json:"id"`
-	APIURL    string   `json:"apiUrl"`
-	Types     []string `json:"types"`
-	LeiCode   string   `json:"leiCode,omitempty"`
-	PrefLabel string   `json:"prefLabel,omitempty"`
-	//used for filtering e.g. pac priority, not exposed
-	Lifecycle string `json:"lifecycle,omitempty"`
+	Predicate string
+	ID        string
+	APIURL    string
+	Types     []string
+	LeiCode   string
+	PrefLabel string
+	Lifecycle string
 
 	// Canonical information
-	PrefUUID           string   `json:"prefUUID"`
-	CanonicalTypes     []string `json:"canonicalTypes"`
-	CanonicalLeiCode   string   `json:"canonicalLei,omitempty"`
-	CanonicalPrefLabel string   `json:"canonicalPrefLabel,omitempty"`
+	PrefUUID           string
+	CanonicalTypes     []string
+	CanonicalLeiCode   string
+	CanonicalPrefLabel string
 
 	//the fields below are populated only for the /content/{uuid}/annotations/{plaformVersion} endpoint
 	FactsetIDs      []string `json:"factsetID,omitempty"`
@@ -54,6 +53,8 @@ type neoAnnotation struct {
 	UUIDs           []string `json:"uuids,omitempty"`
 	PlatformVersion string   `json:"platformVersion,omitempty"`
 }
+
+const pacLifecycle = "annotations-pac"
 
 func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, err error) {
 	results := []neoAnnotation{}
@@ -90,7 +91,6 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	mappedAnnotations := []annotation{}
 	predicateFilter := NewAnnotationsPredicateFilter()
-	pacLifecycle := "annotations-pac"
 	found = false
 
 	for idx := range results {
@@ -100,7 +100,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 			mappedAnnotations = append(mappedAnnotations, annotation)
 		}
 	}
-	//return  pac lifecycle (tagme) annotations as a prioity
+	//return  pac lifecycle (tagme) annotations, hide annotations with any other lifcycle or no lifecycle
 	if isLifecyclePresent(pacLifecycle, mappedAnnotations) {
 		return filterByLifecycle(pacLifecycle, mappedAnnotations), found, nil
 	}
