@@ -172,7 +172,8 @@ func TestFilterForBasicSingleConcept(t *testing.T) {
 			//for _, a := range test.input {
 			//			filter.Add(a)
 			//	}
-			actualOutput := filter.FilterAnnotations(test.input)
+			filter.FilterAnnotations(test.input)
+			actualOutput := filter.ProduceResponseList()
 
 			By(byUuid).Sort(test.expectedOutput)
 			By(byUuid).Sort(actualOutput)

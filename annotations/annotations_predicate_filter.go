@@ -3,6 +3,7 @@ package annotations
 import (
 	"reflect"
 	"strings"
+	"fmt"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -63,11 +64,11 @@ func NewAnnotationsPredicateFilter() *AnnotationsPredicateFilter {
 	return &f
 }
 
-func (f *AnnotationsPredicateFilter) FilterAnnotations(annotations []annotation) []annotation {
-	for _, ann := range annotations {
+func (f *AnnotationsPredicateFilter) FilterAnnotations(annotations []annotation)  {
+	for index, ann := range annotations {
 		f.Add(ann)
+		fmt.Println(index)
 	}
-	return f.produceResponseList()
 }
 
 func (f *AnnotationsPredicateFilter) Add(a annotation) {
@@ -78,7 +79,7 @@ func (f *AnnotationsPredicateFilter) Add(a annotation) {
 	}
 }
 
-func (f *AnnotationsPredicateFilter) produceResponseList() []annotation {
+func (f *AnnotationsPredicateFilter) ProduceResponseList() []annotation {
 	out := []annotation{}
 
 	for _, allFiltered := range f.filteredAnnotations {
