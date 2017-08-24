@@ -1,9 +1,9 @@
 package annotations
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
-	"fmt"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -64,7 +64,7 @@ func NewAnnotationsPredicateFilter() *AnnotationsPredicateFilter {
 	return &f
 }
 
-func (f *AnnotationsPredicateFilter) FilterAnnotations(annotations []annotation)  {
+func (f *AnnotationsPredicateFilter) FilterAnnotations(annotations []annotation) {
 	for index, ann := range annotations {
 		f.Add(ann)
 		fmt.Println(index)
