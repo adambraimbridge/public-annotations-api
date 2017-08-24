@@ -8,6 +8,7 @@ type annotation struct {
 	APIURL    string   `json:"apiUrl"`
 	Types     []string `json:"types"`
 	LeiCode   string   `json:"leiCode,omitempty"`
+	FIGI      string   `json:"FIGI,omitempty"`
 	PrefLabel string   `json:"prefLabel,omitempty"`
 	//the fields below are populated only for the /content/{uuid}/annotations/{plaformVersion} endpoint
 	FactsetIDs      []string `json:"factsetIDs,omitempty"`

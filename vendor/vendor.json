@@ -45,6 +45,12 @@
 			"versionExact": "1.0.6"
 		},
 		{
+			"checksumSHA1": "4EOEpxCej+FHfgPz/I7WRiFaQDQ=",
+			"path": "github.com/Financial-Times/financial-instruments-rw-neo4j/financialinstruments",
+			"revision": "fedc405769c84306f44a132075039953a6f7b81f",
+			"revisionTime": "2017-07-25T13:05:33Z"
+		},
+		{
 			"checksumSHA1": "FUhczVSvt/VQAlWfzATo1YLez2E=",
 			"path": "github.com/Financial-Times/go-fthealth/v1a",
 			"revision": "e7ccca038327a0091303a52445ec1f0fb66cb97b",
@@ -195,10 +201,22 @@
 			"revisionTime": "2016-11-28T21:05:44Z"
 		},
 		{
+			"checksumSHA1": "jvP3O/wTF9QNi6amOjOzssnzvgA=",
+			"path": "github.com/spaolacci/murmur3",
+			"revision": "4ec5a0f56d4fc178129a8433576bf6f2fe672a9e",
+			"revisionTime": "2017-08-06T11:57:23Z"
+		},
+		{
 			"checksumSHA1": "J+ppEq6nYMKxhB9+c+MD1x9UwSc=",
 			"path": "github.com/stretchr/testify/assert",
 			"revision": "05e8a0eda380579888eb53c394909df027f06991",
 			"revisionTime": "2017-07-13T16:51:06Z"
+		},
+		{
+			"checksumSHA1": "9Zw986fuQM/hCoVd8vmHoSM+8sU=",
+			"path": "github.com/ugorji/go/codec",
+			"revision": "5efa3251c7f7d05e5d9704a69a984ec9f1386a40",
+			"revisionTime": "2017-06-20T10:48:52Z"
 		},
 		{
 			"checksumSHA1": "dBmk68coq8umF51FL23vNXOOS7o=",
@@ -221,6 +239,12 @@
 		{
 			"checksumSHA1": "fwb6FNBUs0SOyUpUx5R31Xf22GY=",
 			"path": "golang.org/x/sys/unix",
+			"revision": "d8f5ea21b9295e315e612b4bcf4bedea93454d4d",
+			"revisionTime": "2017-08-03T09:04:06Z"
+		},
+		{
+			"checksumSHA1": "LkAsnLUlAZSg3lRYk7BEyNfog3A=",
+			"path": "golang.org/x/sys/windows",
 			"revision": "d8f5ea21b9295e315e612b4bcf4bedea93454d4d",
 			"revisionTime": "2017-08-03T09:04:06Z"
 		},
