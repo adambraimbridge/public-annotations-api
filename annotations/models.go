@@ -16,7 +16,7 @@ type annotation struct {
 	UUIDs           []string `json:"uuids,omitempty"`
 	PlatformVersion string   `json:"platformVersion,omitempty"`
 	//used for filtering, e.g. pac not exposed
-	Lifecycle string
+	Lifecycle string		 `json:"-"`
 }
 
 var predicates = map[string]string{
