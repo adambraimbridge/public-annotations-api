@@ -1,33 +1,31 @@
-FROM alpine:3.5
+FROM golang:1.8-alpine
 
-ENV SOURCE_DIR /public-annotations-api-src
+ENV PROJECT=public-annotations-api
+COPY . /${PROJECT}-sources/
 
-COPY *.go .git $SOURCE_DIR/
-COPY annotations/*.go $SOURCE_DIR/annotations/
-COPY vendor/vendor.json $SOURCE_DIR/vendor/
-
-RUN apk add --no-cache  --update bash ca-certificates \
-  && apk --no-cache --virtual .build-dependencies add git go libc-dev \
-  && cd $SOURCE_DIR \
-  && BUILDINFO_PACKAGE="github.com/Financial-Times/service-status-go/buildinfo." \
+RUN apk --no-cache --virtual .build-dependencies add git \
+  && ORG_PATH="github.com/Financial-Times" \
+  && REPO_PATH="${ORG_PATH}/${PROJECT}" \
+  && mkdir -p $GOPATH/src/${ORG_PATH} \
+  # Linking the project sources in the GOPATH folder
+  && ln -s /${PROJECT}-sources $GOPATH/src/${REPO_PATH} \
+  && cd $GOPATH/src/${REPO_PATH} \
+  && BUILDINFO_PACKAGE="${ORG_PATH}/${PROJECT}/vendor/${ORG_PATH}/service-status-go/buildinfo." \
   && VERSION="version=$(git describe --tag --always 2> /dev/null)" \
   && DATETIME="dateTime=$(date -u +%Y%m%d%H%M%S)" \
   && REPOSITORY="repository=$(git config --get remote.origin.url)" \
   && REVISION="revision=$(git rev-parse HEAD)" \
   && BUILDER="builder=$(go version)" \
   && LDFLAGS="-X '"${BUILDINFO_PACKAGE}$VERSION"' -X '"${BUILDINFO_PACKAGE}$DATETIME"' -X '"${BUILDINFO_PACKAGE}$REPOSITORY"' -X '"${BUILDINFO_PACKAGE}$REVISION"' -X '"${BUILDINFO_PACKAGE}$BUILDER"'" \
-  && cd .. \
-  && export GOPATH=/gopath \
-  && REPO_PATH="github.com/Financial-Times/public-annotations-api" \
-  && mkdir -p $GOPATH/src/${REPO_PATH} \
-  && cp -r $SOURCE_DIR/* $GOPATH/src/${REPO_PATH} \
-  && cd $GOPATH/src/${REPO_PATH} \
-  && echo ${LDFLAGS} \
+  && echo "Build flags: $LDFLAGS" \
+  && echo "Fetching dependencies..." \
   && go get -u github.com/kardianos/govendor \
   && $GOPATH/bin/govendor sync \
-  && $GOPATH/bin/govendor build -ldflags="${LDFLAGS}" \
-  && mv public-annotations-api / \
+  && go build -ldflags="${LDFLAGS}" \
+  && mv ${PROJECT} /${PROJECT} \
   && apk del .build-dependencies \
   && rm -rf $GOPATH /var/cache/apk/*
+
+WORKDIR /
 
 CMD [ "/public-annotations-api" ]
