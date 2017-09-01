@@ -1,0 +1,17 @@
+# Default values for public-annotations-api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+service:
+  name: "" # The name of the service, should be defined in the specific app-configs folder.
+  hasHealthcheck: "true"
+replicaCount: 2
+image:
+  repository: coco/public-annotations-api
+  pullPolicy: IfNotPresent
+public_annotations_api:
+  graphite_prefix: "coco.services.k8s.public-annotations-api"
+  log_metrics: "false"
+  cache_duration: 30s
+resources:
+  limits:
+    memory: 256Mi
