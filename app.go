@@ -17,6 +17,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/rcrowley/go-metrics"
 )
 
@@ -62,13 +63,24 @@ func main() {
 		Desc:   "Duration Get requests should be cached for. e.g. 2h45m would set the max-age value to '7440' seconds",
 		EnvVar: "CACHE_DURATION",
 	})
+	logLevel := app.String(cli.StringOpt{
+		Name:   "log-level",
+		Value:  "info",
+		Desc:   "Log level for the service",
+		EnvVar: "LOG_LEVEL",
+	})
 
 	app.Action = func() {
 		baseftrwapp.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
 		log.Infof("public-annotations-api will listen on port: %s, connecting to: %s", *port, *neoURL)
 		runServer(*neoURL, *port, *cacheDuration, *env)
 	}
-	log.SetLevel(log.InfoLevel)
+
+	lvl, err := log.ParseLevel(*logLevel)
+	if err != nil {
+		lvl = log.InfoLevel
+	}
+	log.SetLevel(lvl)
 	log.Infof("Application started with args %s", os.Args)
 	app.Run(os.Args)
 }
