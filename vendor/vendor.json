@@ -15,12 +15,12 @@
 			"revision": ""
 		},
 		{
-			"checksumSHA1": "qKDYaqwE0+Ulc1tiICBINAeutkg=",
+			"checksumSHA1": "JSOIsVxdgPcxgx2mHVq4K+paFMY=",
 			"path": "github.com/Financial-Times/annotations-rw-neo4j/annotations",
-			"revision": "5e93af968065d5879b3c1846893dd36e5f8a5768",
-			"revisionTime": "2017-04-26T07:48:24Z",
-			"version": "=0.2.0",
-			"versionExact": "0.2.0"
+			"revision": "f9086e7e56a93fdd9ba32cfa5942add50ada5e2d",
+			"revisionTime": "2017-08-31T17:44:14Z",
+			"version": "1.0.2-dp-contributor-displaytag-rc.1",
+			"versionExact": "1.0.2-dp-contributor-displaytag-rc.1"
 		},
 		{
 			"checksumSHA1": "5b1Y79xoNFuE/XXi5LDN3ys4OYA=",
@@ -201,6 +201,12 @@
 			"revisionTime": "2016-11-28T21:05:44Z"
 		},
 		{
+			"checksumSHA1": "BYvROBsiyAXK4sq6yhDe8RgT4LM=",
+			"path": "github.com/sirupsen/logrus",
+			"revision": "89742aefa4b206dcf400792f3bd35b542998eb3b",
+			"revisionTime": "2017-08-22T13:27:46Z"
+		},
+		{
 			"checksumSHA1": "jvP3O/wTF9QNi6amOjOzssnzvgA=",
 			"path": "github.com/spaolacci/murmur3",
 			"revision": "4ec5a0f56d4fc178129a8433576bf6f2fe672a9e",
@@ -237,7 +243,7 @@
 			"revisionTime": "2017-07-19T21:11:51Z"
 		},
 		{
-			"checksumSHA1": "fwb6FNBUs0SOyUpUx5R31Xf22GY=",
+			"checksumSHA1": "NqlOcIqzDg46JUFFXqZdKUER0B0=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "d8f5ea21b9295e315e612b4bcf4bedea93454d4d",
 			"revisionTime": "2017-08-03T09:04:06Z"
