@@ -7,8 +7,8 @@ import (
 
 	"github.com/Financial-Times/neo-model-utils-go/mapper"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
-	log "github.com/Sirupsen/logrus"
 	"github.com/jmcvetta/neoism"
+	log "github.com/sirupsen/logrus"
 )
 
 // Driver interface
@@ -62,20 +62,17 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	query := &neoism.CypherQuery{
 		Statement: `
-			MATCH (c:Thing{uuid:{contentUUID}})-[rel]->(cc:Concept)
-			OPTIONAL MATCH (parent:Concept)<-[r:HAS_PARENT*0..]-(b:Brand)<-[rel]-(c)
-			WITH c, rel, cc, collect({id: parent.uuid, predicate: 'IS_CLASSIFIED_BY', types: labels(parent), prefLabel: parent.prefLabel, leiCode: null, figi:null, prefUUID: null, canonicalPrefLabel: null, canonicalLEI: null, canonicalTypes: null,lifecycle:null}) as rows
-			OPTIONAL MATCH (cc)-[:EQUIVALENT_TO]->(canonical:Concept)
-			OPTIONAL MATCH (cc)<-[iden:IDENTIFIES]-(i:LegalEntityIdentifier)
-			OPTIONAL MATCH (cc)<-[:ISSUED_BY]-(fi:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
-			WITH c, collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel: cc.prefLabel, leiCode: i.value, figi: figi.value, prefUUID: canonical.prefUUID, canonicalPrefLabel: canonical.prefLabel, canonicalLEI: canonical.LEICode, canonicalTypes: labels(canonical), lifecycle: rel.lifecycle}) + rows as moreRows
-			OPTIONAL MATCH (canonicalBrand:Brand)-[:EQUIVALENT_TO]-(sourceBrand:Brand)<-[rel]-(c)
-            OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(treeBrand:Brand)-[r:HAS_PARENT*0..]->(cd:Concept)
-            OPTIONAL MATCH (cd)-[:EQUIVALENT_TO]-(canon:Brand)
-			WITH collect({id: cd.uuid, predicate:'IS_CLASSIFIED_BY', types: labels(cd), prefLabel: cd.prefLabel,leiCode: null, figi:null, canonicalPrefLabel: canon.prefLabel, prefUUID: canon.prefUUID, canonicalTypes: labels(canon), canonicalLEI: null, lifecycle: rel.lifecycle}) + moreRows as allRows
-			UNWIND allRows as row
-			WITH DISTINCT(row) as drow
-			RETURN distinct drow.id as id, drow.predicate as predicate, drow.types as types, drow.prefLabel as prefLabel, drow.leiCode as leiCode, drow.figi as figi, drow.canonicalPrefLabel as canonicalPrefLabel, drow.prefUUID as prefUUID, drow.canonicalTypes as canonicalTypes,  drow.canonicalLEI as canonicalLei, drow.lifecycle as lifecycle
+			MATCH (content:Content{uuid:{contentUUID}})-[rel]-(concept:Concept)
+			OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]-(canonicalConcept:Concept)
+			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
+			OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
+			RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
+				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle
+			UNION ALL
+			MATCH (content:Content{uuid:{contentUUID}})-[rel]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
+			OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
+			RETURN distinct coalesce(canonicalParent.prefUUID, parentBrand.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalParent), labels(parentBrand)) as types,
+				coalesce(canonicalParent.prefLabel, parentBrand.prefLabel) as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle
       `,
 		Parameters: neoism.Props{"contentUUID": contentUUID},
 		Result:     &results,
@@ -152,9 +149,9 @@ func (cd cypherDriver) filteredRead(contentUUID string, platformVersion string) 
 
 	found = false
 
-	for idx := range results {
-		if results[idx].ID != "" {
-			annotation, err := mapToResponseFormat(results[idx], cd.env)
+	for _, ann := range results {
+		if ann.ID != "" {
+			annotation, err := mapToResponseFormat(ann, cd.env)
 			if err == nil {
 				mappedAnnotations = append(mappedAnnotations, annotation)
 				found = true
@@ -168,32 +165,17 @@ func (cd cypherDriver) filteredRead(contentUUID string, platformVersion string) 
 func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	var ann annotation
 
-	// New concordance model
-	if neoAnn.PrefUUID != "" {
-		ann.PrefLabel = neoAnn.CanonicalPrefLabel
-		ann.LeiCode = neoAnn.CanonicalLeiCode
-		ann.APIURL = mapper.APIURL(neoAnn.PrefUUID, neoAnn.Types, env)
-		ann.ID = mapper.IDURL(neoAnn.PrefUUID)
-		types := mapper.TypeURIs(neoAnn.CanonicalTypes)
-		if types == nil || len(types) == 0 {
-			log.Debugf("Could not map type URIs for ID %s with types %s", ann.ID, neoAnn.CanonicalTypes)
-			return ann, errors.New("Concept not found")
-		}
-		ann.Types = types
-
-	} else {
-		ann.PrefLabel = neoAnn.PrefLabel
-		ann.LeiCode = neoAnn.LeiCode
-		ann.FIGI = neoAnn.FIGI
-		ann.APIURL = mapper.APIURL(neoAnn.ID, neoAnn.Types, env)
-		ann.ID = mapper.IDURL(neoAnn.ID)
-		types := mapper.TypeURIs(neoAnn.Types)
-		if types == nil || len(types) == 0 {
-			log.Debugf("Could not map type URIs for ID %s with types %s", ann.ID, ann.Types)
-			return ann, errors.New("Concept not found")
-		}
-		ann.Types = types
+	ann.PrefLabel = neoAnn.PrefLabel
+	ann.LeiCode = neoAnn.LeiCode
+	ann.FIGI = neoAnn.FIGI
+	ann.APIURL = mapper.APIURL(neoAnn.ID, neoAnn.Types, env)
+	ann.ID = mapper.IDURL(neoAnn.ID)
+	types := mapper.TypeURIs(neoAnn.Types)
+	if types == nil || len(types) == 0 {
+		log.Debugf("Could not map type URIs for ID %s with types %s", ann.ID, ann.Types)
+		return ann, errors.New("Concept not found")
 	}
+	ann.Types = types
 
 	predicate, err := getPredicateFromRelationship(neoAnn.Predicate)
 	if err != nil {

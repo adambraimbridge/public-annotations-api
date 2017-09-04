@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Defines all names of predicates that have to be considered by the annotation filter.

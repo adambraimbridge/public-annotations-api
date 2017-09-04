@@ -14,11 +14,11 @@ import (
 	"github.com/Financial-Times/neo-utils-go/neoutils"
 	annotations "github.com/Financial-Times/public-annotations-api/annotations"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
-	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rcrowley/go-metrics"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
