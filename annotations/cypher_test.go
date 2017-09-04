@@ -15,8 +15,9 @@ import (
 	"github.com/Financial-Times/financial-instruments-rw-neo4j/financialinstruments"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
 	"github.com/Financial-Times/organisations-rw-neo4j/organisations"
-	log "github.com/Sirupsen/logrus"
+	"github.com/Financial-Times/people-rw-neo4j/people"
 	"github.com/jmcvetta/neoism"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,7 +45,6 @@ const (
 
 	v1PlatformVersion    = "v1"
 	v2PlatformVersion    = "v2"
-	pacPlatformVersion   = "pac"
 	v1Lifecycle          = "annotations-v1"
 	v2Lifecycle          = "annotations-v2"
 	emptyPlatformVersion = ""
@@ -94,8 +94,9 @@ func TestCypherQueries(t *testing.T) {
 
 	t.Run("RetrievePacAnnotationsAsPriority", func(t *testing.T) {
 		expectedAnnotations := annotations{
-			getExpectedMallStreetJournalAnnotation(pacLifecycle, emptyPlatformVersion),
 			getExpectedMetalMickeyAnnotation(pacLifecycle, emptyPlatformVersion),
+			getExpectedFacebookAnnotation(pacLifecycle, emptyPlatformVersion),
+			getExpectedJohnSmithAnnotation(pacLifecycle, emptyPlatformVersion),
 		}
 		driver := NewCypherDriver(db, "prod")
 		writePacAnnotations(t, db)
@@ -129,9 +130,9 @@ func TestCypherQueries(t *testing.T) {
 		//assert data for filtering
 		numOfV1Annotations, _ := count(v1Lifecycle, db)
 		numOfv2Annotations, _ := count(v2Lifecycle, db)
-		numOfpacAnnotations, _ := count(pacLifecycle, db)
+		numOfPacAnnotations, _ := count(pacLifecycle, db)
 		assert.True((numOfV1Annotations + numOfv2Annotations) > 0)
-		assert.Equal(numOfpacAnnotations, 1)
+		assert.Equal(numOfPacAnnotations, 1)
 
 		anns := getAndCheckAnnotations(driver, contentUUID, t)
 		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
@@ -304,6 +305,7 @@ func writeAllDataToDB(t testing.TB, db neoutils.NeoConnection) {
 	writeBrands(t, db)
 	writeContent(t, db)
 	writeOrganisations(t, db)
+	writePeople(t, db)
 	writeFinancialInstruments(t, db)
 	writeSubjects(t, db)
 	writeAlphavilleSeries(t, db)
@@ -343,6 +345,13 @@ func writeOrganisations(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Ser
 	return organisationRW
 }
 
+func writePeople(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
+	peopleRW := people.NewCypherPeopleService(db)
+	assert.NoError(t, peopleRW.Initialise())
+	writeJSONToService(peopleRW, "./fixtures/People-75e2f7e9-cb5e-40a5-a074-86d69fe09f69.json", t)
+	return peopleRW
+}
+
 func writeFinancialInstruments(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	fiRW := financialinstruments.NewCypherFinancialInstrumentService(db)
 	assert.NoError(t, fiRW.Initialise())
@@ -365,35 +374,35 @@ func writeAlphavilleSeries(t testing.TB, db neoutils.NeoConnection) baseftrwapp.
 }
 
 func writeV1Annotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "v1", "annotations-v1")
+	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
-	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithParentAndChildBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-2a2a-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithThreeLevelsOfBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-3a3a-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithCircularBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4a4a-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithOnlyFTUUID, "./fixtures/Annotations-3fc9fe3e-af8c-5a5a-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithBrandsDiffTypesUUID, "./fixtures/Annotations-3fc9fe3e-af8c-6a6a-961a-e5065392bb31-v1.json", t)
+	writeJSONToAnnotationsService(t, service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v1.json", v1Lifecycle, v1PlatformVersion)
+	writeJSONToAnnotationsService(t, service, contentWithParentAndChildBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-2a2a-961a-e5065392bb31-v1.json", v1Lifecycle, v1PlatformVersion)
+	writeJSONToAnnotationsService(t, service, contentWithThreeLevelsOfBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-3a3a-961a-e5065392bb31-v1.json", v1Lifecycle, v1PlatformVersion)
+	writeJSONToAnnotationsService(t, service, contentWithCircularBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4a4a-961a-e5065392bb31-v1.json", v1Lifecycle, emptyPlatformVersion)
+	writeJSONToAnnotationsService(t, service, contentWithOnlyFTUUID, "./fixtures/Annotations-3fc9fe3e-af8c-5a5a-961a-e5065392bb31-v1.json", v1Lifecycle, v1PlatformVersion)
+	writeJSONToAnnotationsService(t, service, contentWithBrandsDiffTypesUUID, "./fixtures/Annotations-3fc9fe3e-af8c-6a6a-961a-e5065392bb31-v1.json", v1Lifecycle, v1PlatformVersion)
 	return service
 }
 
 func writeV2Annotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "v2", "annotations-v2")
+	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
-	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v2.json", t)
+	writeJSONToAnnotationsService(t, service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v2.json", v2Lifecycle, v2PlatformVersion)
 	return service
 }
 
 func writePacAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "pac", "annotations-pac")
+	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
-	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-pac.json", t)
+	writeJSONToAnnotationsService(t, service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-pac.json", pacLifecycle, emptyPlatformVersion)
 	return service
 }
 
 func writeBrokenPacAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "pac", "annotations-pac")
+	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
-	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-broken-pac.json", t)
+	writeJSONToAnnotationsService(t, service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-broken-pac.json", pacLifecycle, emptyPlatformVersion)
 	return service
 }
 
@@ -408,14 +417,14 @@ func writeJSONToService(service baseftrwapp.Service, pathToJSONFile string, t te
 	assert.NoError(t, errrr)
 }
 
-func writeJSONToAnnotationsService(service annrw.Service, contentUUID string, pathToJSONFile string, t testing.TB) {
+func writeJSONToAnnotationsService(t testing.TB, service annrw.Service, contentUUID string, pathToJSONFile string, annotationLifecycle string, platformVersion string) {
 	absPath, _ := filepath.Abs(pathToJSONFile)
 	f, err := os.Open(absPath)
 	assert.NoError(t, err)
 	dec := json.NewDecoder(f)
 	inst, errr := service.DecodeJSON(dec)
 	assert.NoError(t, errr, "Error parsing file %s", pathToJSONFile)
-	errrr := service.Write(contentUUID, inst)
+	errrr := service.Write(contentUUID, annotationLifecycle, platformVersion, "tis_test123", inst)
 	assert.NoError(t, errrr)
 }
 
@@ -465,22 +474,6 @@ func getExpectedV1Annotations() annotations {
 	b.UUIDs = []string{"ff691bf8-8d92-2a2a-8326-c273400bff0b"}
 
 	return []annotation{av, mm, b}
-}
-
-func getExpectedPacAnnotations() annotations {
-	mm := getExpectedMetalMickeyAnnotation(pacLifecycle, pacPlatformVersion)
-	mm.TmeIDs = []string{"TWV0YWwgTWlja2V5-U3ViamVjdHM="}
-	mm.UUIDs = []string{"0483bef8-5797-40b8-9b25-b12e492f63c6"}
-	mm.PlatformVersion = "pac"
-	mm.Lifecycle = "annotations-pac"
-
-	msj := getExpectedMallStreetJournalAnnotation(pacLifecycle, pacPlatformVersion)
-	msj.FactsetIDs = []string{"00BBBB-E"}
-	msj.UUIDs = []string{"5d1510f8-2779-4b74-adab-0a5eb138fca6"}
-	msj.PlatformVersion = "pac"
-	msj.Lifecycle = "annotations-pac"
-
-	return []annotation{mm, msj}
 }
 
 func getExpectedV2Annotations() annotations {
@@ -544,6 +537,42 @@ func getExpectedMetalMickeyAnnotation(lifecycle string, platformVersion string) 
 			"http://www.ft.com/ontology/Subject",
 		},
 		PrefLabel:       "Metal Mickey",
+		Lifecycle:       lifecycle,
+		PlatformVersion: platformVersion,
+	}
+}
+
+func getExpectedFacebookAnnotation(lifecycle string, platformVersion string) annotation {
+	return annotation{
+		Predicate: "http://www.ft.com/ontology/annotation/hasDisplayTag",
+		ID:        "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
+		APIURL:    "http://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
+		Types: []string{
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
+			"http://www.ft.com/ontology/organisation/Organisation",
+			"http://www.ft.com/ontology/company/Company",
+			"http://www.ft.com/ontology/company/PublicCompany",
+		},
+		PrefLabel:       "Fakebook, Inc.",
+		Lifecycle:       lifecycle,
+		PlatformVersion: platformVersion,
+		LeiCode:         "BQ4BKCS1HXDV9TTTTTTTT",
+		FIGI:            "BB8000C3P0-R2D2",
+	}
+}
+
+func getExpectedJohnSmithAnnotation(lifecycle string, platformVersion string) annotation {
+	return annotation{
+		Predicate: "http://www.ft.com/ontology/annotation/hasContributor",
+		ID:        "http://api.ft.com/things/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
+		APIURL:    "http://api.ft.com/people/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
+		Types: []string{
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
+			"http://www.ft.com/ontology/person/Person",
+		},
+		PrefLabel:       "John Smith",
 		Lifecycle:       lifecycle,
 		PlatformVersion: platformVersion,
 	}

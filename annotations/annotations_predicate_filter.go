@@ -1,11 +1,10 @@
 package annotations
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Defines all names of predicates that have to be considered by the annotation filter.
@@ -65,9 +64,8 @@ func NewAnnotationsPredicateFilter() *AnnotationsPredicateFilter {
 }
 
 func (f *AnnotationsPredicateFilter) FilterAnnotations(annotations []annotation) {
-	for index, ann := range annotations {
+	for _, ann := range annotations {
 		f.Add(ann)
-		fmt.Println(index)
 	}
 }
 
