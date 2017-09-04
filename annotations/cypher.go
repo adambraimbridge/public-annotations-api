@@ -33,19 +33,20 @@ func (cd cypherDriver) checkConnectivity() error {
 }
 
 type neoAnnotation struct {
-	Predicate string   `json:"predicate"`
-	ID        string   `json:"id"`
-	APIURL    string   `json:"apiUrl"`
-	Types     []string `json:"types"`
-	LeiCode   string   `json:"leiCode,omitempty"`
-	FIGI      string   `json:"figi,omitempty"`
-	PrefLabel string   `json:"prefLabel,omitempty"`
+	Predicate string
+	ID        string
+	APIURL    string
+	Types     []string
+	LeiCode   string
+	FIGI      string
+	PrefLabel string
+	Lifecycle string
 
 	// Canonical information
-	PrefUUID           string   `json:"prefUUID"`
-	CanonicalTypes     []string `json:"canonicalTypes"`
-	CanonicalLeiCode   string   `json:"canonicalLei,omitempty"`
-	CanonicalPrefLabel string   `json:"canonicalPrefLabel,omitempty"`
+	PrefUUID           string
+	CanonicalTypes     []string
+	CanonicalLeiCode   string
+	CanonicalPrefLabel string
 
 	//the fields below are populated only for the /content/{uuid}/annotations/{plaformVersion} endpoint
 	FactsetIDs      []string `json:"factsetID,omitempty"`
@@ -54,6 +55,8 @@ type neoAnnotation struct {
 	PlatformVersion string   `json:"platformVersion,omitempty"`
 }
 
+const pacLifecycle = "annotations-pac"
+
 func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, err error) {
 	results := []neoAnnotation{}
 
@@ -61,19 +64,19 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		Statement: `
 			MATCH (c:Thing{uuid:{contentUUID}})-[rel]->(cc:Concept)
 			OPTIONAL MATCH (parent:Concept)<-[r:HAS_PARENT*0..]-(b:Brand)<-[rel]-(c)
-			WITH c, rel, cc, collect({id: parent.uuid, predicate: 'IS_CLASSIFIED_BY', types: labels(parent), prefLabel: parent.prefLabel, leiCode: null, figi:null, prefUUID: null, canonicalPrefLabel: null, canonicalLEI: null, canonicalTypes: null}) as rows
+			WITH c, rel, cc, collect({id: parent.uuid, predicate: 'IS_CLASSIFIED_BY', types: labels(parent), prefLabel: parent.prefLabel, leiCode: null, figi:null, prefUUID: null, canonicalPrefLabel: null, canonicalLEI: null, canonicalTypes: null,lifecycle:null}) as rows
 			OPTIONAL MATCH (cc)-[:EQUIVALENT_TO]->(canonical:Concept)
 			OPTIONAL MATCH (cc)<-[iden:IDENTIFIES]-(i:LegalEntityIdentifier)
 			OPTIONAL MATCH (cc)<-[:ISSUED_BY]-(fi:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
-			WITH c, collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel: cc.prefLabel, leiCode: i.value, figi: figi.value, prefUUID: canonical.prefUUID, canonicalPrefLabel: canonical.prefLabel, canonicalLEI: canonical.LEICode, canonicalTypes: labels(canonical)}) + rows as moreRows
+			WITH c, collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel: cc.prefLabel, leiCode: i.value, figi: figi.value, prefUUID: canonical.prefUUID, canonicalPrefLabel: canonical.prefLabel, canonicalLEI: canonical.LEICode, canonicalTypes: labels(canonical), lifecycle: rel.lifecycle}) + rows as moreRows
 			OPTIONAL MATCH (canonicalBrand:Brand)-[:EQUIVALENT_TO]-(sourceBrand:Brand)<-[rel]-(c)
             OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(treeBrand:Brand)-[r:HAS_PARENT*0..]->(cd:Concept)
             OPTIONAL MATCH (cd)-[:EQUIVALENT_TO]-(canon:Brand)
-			WITH collect({id: cd.uuid, predicate:'IS_CLASSIFIED_BY', types: labels(cd), prefLabel: cd.prefLabel,leiCode: null, figi:null, canonicalPrefLabel: canon.prefLabel, prefUUID: canon.prefUUID, canonicalTypes: labels(canon), canonicalLEI: null}) + moreRows as allRows
+			WITH collect({id: cd.uuid, predicate:'IS_CLASSIFIED_BY', types: labels(cd), prefLabel: cd.prefLabel,leiCode: null, figi:null, canonicalPrefLabel: canon.prefLabel, prefUUID: canon.prefUUID, canonicalTypes: labels(canon), canonicalLEI: null, lifecycle: rel.lifecycle}) + moreRows as allRows
 			UNWIND allRows as row
 			WITH DISTINCT(row) as drow
-			RETURN distinct drow.id as id, drow.predicate as predicate, drow.types as types, drow.prefLabel as prefLabel, drow.leiCode as leiCode, drow.figi as figi, drow.canonicalPrefLabel as canonicalPrefLabel, drow.prefUUID as prefUUID, drow.canonicalTypes as canonicalTypes,  drow.canonicalLEI as canonicalLei
-			`,
+			RETURN distinct drow.id as id, drow.predicate as predicate, drow.types as types, drow.prefLabel as prefLabel, drow.leiCode as leiCode, drow.figi as figi, drow.canonicalPrefLabel as canonicalPrefLabel, drow.prefUUID as prefUUID, drow.canonicalTypes as canonicalTypes,  drow.canonicalLEI as canonicalLei, drow.lifecycle as lifecycle
+      `,
 		Parameters: neoism.Props{"contentUUID": contentUUID},
 		Result:     &results,
 	}
@@ -89,20 +92,22 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 	}
 
 	mappedAnnotations := []annotation{}
-	filter := NewAnnotationsFilter()
+	predicateFilter := NewAnnotationsPredicateFilter()
 	found = false
 
 	for idx := range results {
-
 		annotation, err := mapToResponseFormat(results[idx], cd.env)
-
 		if err == nil {
-			filter.Add(annotation)
 			found = true
+			mappedAnnotations = append(mappedAnnotations, annotation)
 		}
 	}
-	mappedAnnotations = filter.Filter()
-	return mappedAnnotations, found, nil
+	//return  pac lifecycle (tagme) annotations, hide annotations with any other lifcycle or no lifecycle
+	if isLifecyclePresent(pacLifecycle, mappedAnnotations) {
+		return filterByLifecycle(pacLifecycle, mappedAnnotations), found, nil
+	}
+	predicateFilter.FilterAnnotations(mappedAnnotations)
+	return predicateFilter.ProduceResponseList(), found, nil
 }
 
 // Returns all the annotations with the specified platformVersion enriched with all the existing concept IDs for a given content
@@ -175,6 +180,7 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 			return ann, errors.New("Concept not found")
 		}
 		ann.Types = types
+
 	} else {
 		ann.PrefLabel = neoAnn.PrefLabel
 		ann.LeiCode = neoAnn.LeiCode
@@ -195,7 +201,10 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 		return ann, err
 	}
 	ann.Predicate = predicate
+
 	ann.PlatformVersion = neoAnn.PlatformVersion
+	ann.Lifecycle = neoAnn.Lifecycle
+
 	if len(neoAnn.TmeIDs) > 0 {
 		ann.TmeIDs = deduplicateList(neoAnn.TmeIDs)
 	}
@@ -228,4 +237,23 @@ func getPredicateFromRelationship(relationship string) (predicate string, err er
 		return "", errors.New("Not a valid annotation type")
 	}
 	return predicate, nil
+}
+
+func isLifecyclePresent(lifecycle string, annotations []annotation) bool {
+	for _, annotation := range annotations {
+		if annotation.Lifecycle == lifecycle {
+			return true
+		}
+	}
+	return false
+}
+
+func filterByLifecycle(lifecycle string, annotations []annotation) []annotation {
+	filtered := []annotation{}
+	for _, annotation := range annotations {
+		if annotation.Lifecycle == lifecycle {
+			filtered = append(filtered, annotation)
+		}
+	}
+	return filtered
 }

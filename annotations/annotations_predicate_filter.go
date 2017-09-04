@@ -1,6 +1,7 @@
 package annotations
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -38,7 +39,7 @@ func (f *filteredPredicateNames) contains(pred string) bool {
 	return false
 }
 
-type AnnotationsFilter struct {
+type AnnotationsPredicateFilter struct {
 	// Definition of predicate groups to whom Rule of Importance should be applied.
 	// Each group contains a list of predicate names in the order of increasing importance.
 	ImportanceRuleConfig [][]string
@@ -50,8 +51,8 @@ type AnnotationsFilter struct {
 	filteredAnnotations map[string][]annotation
 }
 
-func NewAnnotationsFilter() *AnnotationsFilter {
-	f := AnnotationsFilter{}
+func NewAnnotationsPredicateFilter() *AnnotationsPredicateFilter {
+	f := AnnotationsPredicateFilter{}
 	f.enum = newFilteredPredicateNames()
 	// Configure groups of predicates that should be filtered according to their importance.
 	f.ImportanceRuleConfig = [][]string{
@@ -63,7 +64,14 @@ func NewAnnotationsFilter() *AnnotationsFilter {
 	return &f
 }
 
-func (f *AnnotationsFilter) Add(a annotation) {
+func (f *AnnotationsPredicateFilter) FilterAnnotations(annotations []annotation) {
+	for index, ann := range annotations {
+		f.Add(ann)
+		fmt.Println(index)
+	}
+}
+
+func (f *AnnotationsPredicateFilter) Add(a annotation) {
 	if f.enum.contains(strings.ToLower(a.Predicate)) {
 		f.addFiltered(a)
 	} else {
@@ -71,7 +79,7 @@ func (f *AnnotationsFilter) Add(a annotation) {
 	}
 }
 
-func (f *AnnotationsFilter) Filter() []annotation {
+func (f *AnnotationsPredicateFilter) ProduceResponseList() []annotation {
 	out := []annotation{}
 
 	for _, allFiltered := range f.filteredAnnotations {
@@ -88,7 +96,7 @@ func (f *AnnotationsFilter) Filter() []annotation {
 	return out
 }
 
-func (f *AnnotationsFilter) addFiltered(a annotation) {
+func (f *AnnotationsPredicateFilter) addFiltered(a annotation) {
 	if f.filteredAnnotations[a.ID] == nil {
 		// For each importance group we shell store 1 most important annotation
 		f.filteredAnnotations[a.ID] = make([]annotation, len(f.ImportanceRuleConfig))
@@ -111,14 +119,14 @@ func (f *AnnotationsFilter) addFiltered(a annotation) {
 	}
 }
 
-func (f *AnnotationsFilter) addUnfiltered(a annotation) {
+func (f *AnnotationsPredicateFilter) addUnfiltered(a annotation) {
 	if f.unfilteredAnnotations[a.ID] == nil {
 		f.unfilteredAnnotations[a.ID] = []annotation{}
 	}
 	f.unfilteredAnnotations[a.ID] = append(f.unfilteredAnnotations[a.ID], a)
 }
 
-func (f *AnnotationsFilter) getGroupIdAndImportanceValue(predicate string) (int, int) {
+func (f *AnnotationsPredicateFilter) getGroupIdAndImportanceValue(predicate string) (int, int) {
 	for group, s := range f.ImportanceRuleConfig {
 		for pos, val := range s {
 			if val == predicate {
@@ -130,7 +138,7 @@ func (f *AnnotationsFilter) getGroupIdAndImportanceValue(predicate string) (int,
 	return -1, -1
 }
 
-func (f *AnnotationsFilter) getImportanceValueForGroupId(predicate string, groupId int) int {
+func (f *AnnotationsPredicateFilter) getImportanceValueForGroupId(predicate string, groupId int) int {
 	for pos, val := range f.ImportanceRuleConfig[groupId] {
 		if val == predicate {
 			return pos
