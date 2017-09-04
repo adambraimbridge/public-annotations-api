@@ -313,7 +313,7 @@ func writeAllDataToDB(t testing.TB, db neoutils.NeoConnection) {
 	writeV2Annotations(t, db)
 }
 
-func writeBrands(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
+func writeBrands(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
 	brandRW := concepts.NewConceptService(db)
 	assert.NoError(t, brandRW.Initialise())
 	writeJSONToService(brandRW, "./fixtures/Brand-dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54-parent.json", t)
@@ -359,14 +359,14 @@ func writeFinancialInstruments(t testing.TB, db neoutils.NeoConnection) baseftrw
 	return fiRW
 }
 
-func writeSubjects(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
+func writeSubjects(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
 	subjectsRW := concepts.NewConceptService(db)
 	assert.NoError(t, subjectsRW.Initialise())
 	writeJSONToService(subjectsRW, "./fixtures/Subject-MetalMickey-0483bef8-5797-40b8-9b25-b12e492f63c6.json", t)
 	return subjectsRW
 }
 
-func writeAlphavilleSeries(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
+func writeAlphavilleSeries(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
 	alphavilleSeriesRW := concepts.NewConceptService(db)
 	assert.NoError(t, alphavilleSeriesRW.Initialise())
 	writeJSONToService(alphavilleSeriesRW, "./fixtures/TestAlphavilleSeries.json", t)
@@ -406,15 +406,24 @@ func writeBrokenPacAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Se
 	return service
 }
 
-func writeJSONToService(service baseftrwapp.Service, pathToJSONFile string, t testing.TB) {
+type writeSevice interface {
+	DecodeJSON(*json.Decoder) (thing interface{}, identity string, err error)
+}
+
+func writeJSONToService(service writeSevice, pathToJSONFile string, t testing.TB) {
 	absPath, _ := filepath.Abs(pathToJSONFile)
 	f, err := os.Open(absPath)
 	assert.NoError(t, err)
 	dec := json.NewDecoder(f)
 	inst, _, errr := service.DecodeJSON(dec)
 	assert.NoError(t, errr)
-	errrr := service.Write(inst, "TEST_TRANS_ID")
-	assert.NoError(t, errrr)
+	switch service.(type) {
+	case baseftrwapp.Service:
+		errr = service.(baseftrwapp.Service).Write(inst, "TEST_TRANS_ID")
+	case concepts.ConceptService:
+		_, errr = service.(concepts.ConceptService).Write(inst, "TEST_TRANS_ID")
+	}
+	assert.NoError(t, errr)
 }
 
 func writeJSONToAnnotationsService(t testing.TB, service annrw.Service, contentUUID string, pathToJSONFile string, annotationLifecycle string, platformVersion string) {
