@@ -16,14 +16,16 @@ type annotation struct {
 	UUIDs           []string `json:"uuids,omitempty"`
 	PlatformVersion string   `json:"platformVersion,omitempty"`
 	//used for filtering, e.g. pac not exposed
-	Lifecycle string		 `json:"-"`
+	Lifecycle string `json:"-"`
 }
 
 var predicates = map[string]string{
-	"MENTIONS":         "http://www.ft.com/ontology/annotation/mentions",
-	"MAJOR_MENTIONS":   "http://www.ft.com/ontology/annotation/majorMentions",
-	"IS_CLASSIFIED_BY": "http://www.ft.com/ontology/classification/isClassifiedBy",
-	"ABOUT":            "http://www.ft.com/ontology/annotation/about",
-	"IS_PRIMARILY_CLASSIFIED_BY": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
+	"MENTIONS":                   "http://www.ft.com/ontology/annotation/mentions",
+	"MAJOR_MENTIONS":             "http://www.ft.com/ontology/annotation/majorMentions",
+	"ABOUT":                      "http://www.ft.com/ontology/annotation/about",
 	"HAS_AUTHOR":                 "http://www.ft.com/ontology/annotation/hasAuthor",
+	"HAS_CONTRIBUTOR":            "http://www.ft.com/ontology/annotation/hasContributor",
+	"HAS_DISPLAY_TAG":            "http://www.ft.com/ontology/annotation/hasDisplayTag",
+	"IS_CLASSIFIED_BY":           "http://www.ft.com/ontology/classification/isClassifiedBy",
+	"IS_PRIMARILY_CLASSIFIED_BY": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
 }
