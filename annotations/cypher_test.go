@@ -474,10 +474,7 @@ func getExpectedV1Annotations() annotations {
 	b.TmeIDs = []string{"MTVkNjNmNzctOTA3Mi00GrandChildUtMmI4MGIyODRiNmI0-QnJhbmRz"}
 	b.UUIDs = []string{"ff691bf8-8d92-2a2a-8326-c273400bff0b"}
 
-	c := getExpectedBrandParentAnnotation(v1Lifecycle, v1PlatformVersion)
-	d := getExpectedBrandChildAnnotation(v1Lifecycle, v1PlatformVersion)
-
-	return []annotation{av, mm, b, c, d}
+	return []annotation{av, mm, b}
 }
 
 func getExpectedPacAnnotations() annotations {
