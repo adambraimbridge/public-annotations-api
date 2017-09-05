@@ -31,21 +31,11 @@ func Checker() (string, error) {
 	return "Error connecting to neo4j", err
 }
 
-func Ping(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "pong")
-}
-
 //goodToGo returns a 503 if the healthcheck fails - suitable for use from varnish to check availability of a node
 func GoodToGo(writer http.ResponseWriter, req *http.Request) {
 	if _, err := Checker(); err != nil {
 		writer.WriteHeader(http.StatusServiceUnavailable)
 	}
-
-}
-
-// buildInfoHandler - This is a stop gap and will be added to when we can define what we should display here
-func BuildInfoHandler(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "build-info")
 }
 
 // methodNotAllowedHandler handles 405

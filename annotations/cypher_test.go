@@ -15,8 +15,8 @@ import (
 	"github.com/Financial-Times/financial-instruments-rw-neo4j/financialinstruments"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
 	"github.com/Financial-Times/organisations-rw-neo4j/organisations"
-	log "github.com/Sirupsen/logrus"
 	"github.com/jmcvetta/neoism"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -145,7 +145,6 @@ func TestCypherQueries(t *testing.T) {
 
 		driver := NewCypherDriver(db, "prod")
 		anns := getAndCheckAnnotations(driver, contentWithParentAndChildBrandUUID, t)
-		log.Info(anns)
 		assert.Equal(len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
 		assertListContainsAll(t, anns, expectedAnnotations)
 	})
@@ -311,7 +310,7 @@ func writeAllDataToDB(t testing.TB, db neoutils.NeoConnection) {
 	writeV2Annotations(t, db)
 }
 
-func writeBrands(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
+func writeBrands(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
 	brandRW := concepts.NewConceptService(db)
 	assert.NoError(t, brandRW.Initialise())
 	writeJSONToService(brandRW, "./fixtures/Brand-dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54-parent.json", t)
@@ -325,39 +324,39 @@ func writeBrands(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 func writeContent(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	contentRW := content.NewCypherContentService(db)
 	assert.NoError(t, contentRW.Initialise())
-	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-4f7f-961a-e5065392bb31.json", t)
-	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-1a1a-961a-e5065392bb31.json", t)
-	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-2a2a-961a-e5065392bb31.json", t)
-	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-3a3a-961a-e5065392bb31.json", t)
-	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-4a4a-961a-e5065392bb31.json", t)
-	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-5a5a-961a-e5065392bb31.json", t)
-	writeJSONToService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-6a6a-961a-e5065392bb31.json", t)
+	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-4f7f-961a-e5065392bb31.json", t)
+	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-1a1a-961a-e5065392bb31.json", t)
+	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-2a2a-961a-e5065392bb31.json", t)
+	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-3a3a-961a-e5065392bb31.json", t)
+	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-4a4a-961a-e5065392bb31.json", t)
+	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-5a5a-961a-e5065392bb31.json", t)
+	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-6a6a-961a-e5065392bb31.json", t)
 	return contentRW
 }
 
 func writeOrganisations(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	organisationRW := organisations.NewCypherOrganisationService(db)
 	assert.NoError(t, organisationRW.Initialise())
-	writeJSONToService(organisationRW, "./fixtures/Organisation-MSJ-5d1510f8-2779-4b74-adab-0a5eb138fca6.json", t)
-	writeJSONToService(organisationRW, "./fixtures/Organisation-Fakebook-eac853f5-3859-4c08-8540-55e043719400.json", t)
+	writeJSONToBaseService(organisationRW, "./fixtures/Organisation-MSJ-5d1510f8-2779-4b74-adab-0a5eb138fca6.json", t)
+	writeJSONToBaseService(organisationRW, "./fixtures/Organisation-Fakebook-eac853f5-3859-4c08-8540-55e043719400.json", t)
 	return organisationRW
 }
 
 func writeFinancialInstruments(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	fiRW := financialinstruments.NewCypherFinancialInstrumentService(db)
 	assert.NoError(t, fiRW.Initialise())
-	writeJSONToService(fiRW, "./fixtures/FinancialInstrument-77f613ad-1470-422c-bf7c-1dd4c3fd1693.json", t)
+	writeJSONToBaseService(fiRW, "./fixtures/FinancialInstrument-77f613ad-1470-422c-bf7c-1dd4c3fd1693.json", t)
 	return fiRW
 }
 
-func writeSubjects(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
+func writeSubjects(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
 	subjectsRW := concepts.NewConceptService(db)
 	assert.NoError(t, subjectsRW.Initialise())
 	writeJSONToService(subjectsRW, "./fixtures/Subject-MetalMickey-0483bef8-5797-40b8-9b25-b12e492f63c6.json", t)
 	return subjectsRW
 }
 
-func writeAlphavilleSeries(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
+func writeAlphavilleSeries(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
 	alphavilleSeriesRW := concepts.NewConceptService(db)
 	assert.NoError(t, alphavilleSeriesRW.Initialise())
 	writeJSONToService(alphavilleSeriesRW, "./fixtures/TestAlphavilleSeries.json", t)
@@ -365,58 +364,69 @@ func writeAlphavilleSeries(t testing.TB, db neoutils.NeoConnection) baseftrwapp.
 }
 
 func writeV1Annotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "v1", "annotations-v1")
+	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
-	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithParentAndChildBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-2a2a-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithThreeLevelsOfBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-3a3a-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithCircularBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4a4a-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithOnlyFTUUID, "./fixtures/Annotations-3fc9fe3e-af8c-5a5a-961a-e5065392bb31-v1.json", t)
-	writeJSONToAnnotationsService(service, contentWithBrandsDiffTypesUUID, "./fixtures/Annotations-3fc9fe3e-af8c-6a6a-961a-e5065392bb31-v1.json", t)
+	writeJSONToAnnotationsService(service, "v1", "annotations-v1", contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v1.json", t)
+	writeJSONToAnnotationsService(service, "v1", "annotations-v1", contentWithParentAndChildBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-2a2a-961a-e5065392bb31-v1.json", t)
+	writeJSONToAnnotationsService(service, "v1", "annotations-v1", contentWithThreeLevelsOfBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-3a3a-961a-e5065392bb31-v1.json", t)
+	writeJSONToAnnotationsService(service, "v1", "annotations-v1", contentWithCircularBrandUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4a4a-961a-e5065392bb31-v1.json", t)
+	writeJSONToAnnotationsService(service, "v1", "annotations-v1", contentWithOnlyFTUUID, "./fixtures/Annotations-3fc9fe3e-af8c-5a5a-961a-e5065392bb31-v1.json", t)
+	writeJSONToAnnotationsService(service, "v1", "annotations-v1", contentWithBrandsDiffTypesUUID, "./fixtures/Annotations-3fc9fe3e-af8c-6a6a-961a-e5065392bb31-v1.json", t)
 	return service
 }
 
 func writeV2Annotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "v2", "annotations-v2")
+	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
-	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v2.json", t)
+	writeJSONToAnnotationsService(service, "v2", "annotations-v2", contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-v2.json", t)
 	return service
 }
 
 func writePacAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "pac", "annotations-pac")
+	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
-	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-pac.json", t)
+	writeJSONToAnnotationsService(service, "pac", "annotations-pac", contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-pac.json", t)
 	return service
 }
 
 func writeBrokenPacAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
-	service := annrw.NewCypherAnnotationsService(db, "pac", "annotations-pac")
+	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
-	writeJSONToAnnotationsService(service, contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-broken-pac.json", t)
+	writeJSONToAnnotationsService(service, "pac", "annotations-pac", contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-broken-pac.json", t)
 	return service
 }
 
-func writeJSONToService(service baseftrwapp.Service, pathToJSONFile string, t testing.TB) {
+func writeJSONToBaseService(service baseftrwapp.Service, pathToJSONFile string, t testing.TB) {
 	absPath, _ := filepath.Abs(pathToJSONFile)
 	f, err := os.Open(absPath)
 	assert.NoError(t, err)
 	dec := json.NewDecoder(f)
-	inst, _, errr := service.DecodeJSON(dec)
-	assert.NoError(t, errr)
-	errrr := service.Write(inst, "TEST_TRANS_ID")
-	assert.NoError(t, errrr)
+	inst, _, err := service.DecodeJSON(dec)
+	assert.NoError(t, err)
+	err = service.Write(inst, "TEST_TRANS_ID")
+	assert.NoError(t, err)
 }
 
-func writeJSONToAnnotationsService(service annrw.Service, contentUUID string, pathToJSONFile string, t testing.TB) {
+func writeJSONToService(service concepts.ConceptService, pathToJSONFile string, t testing.TB) {
 	absPath, _ := filepath.Abs(pathToJSONFile)
 	f, err := os.Open(absPath)
 	assert.NoError(t, err)
 	dec := json.NewDecoder(f)
-	inst, errr := service.DecodeJSON(dec)
-	assert.NoError(t, errr, "Error parsing file %s", pathToJSONFile)
-	errrr := service.Write(contentUUID, inst)
-	assert.NoError(t, errrr)
+	inst, _, err := service.DecodeJSON(dec)
+	assert.NoError(t, err)
+	_, err = service.Write(inst, "TEST_TRANS_ID")
+	assert.NoError(t, err)
+}
+
+func writeJSONToAnnotationsService(service annrw.Service, platformVersion string, lifecycle string, contentUUID string, pathToJSONFile string, t testing.TB) {
+	absPath, _ := filepath.Abs(pathToJSONFile)
+	f, err := os.Open(absPath)
+	assert.NoError(t, err)
+	dec := json.NewDecoder(f)
+	inst, err := service.DecodeJSON(dec)
+	assert.NoError(t, err, "Error parsing file %s", pathToJSONFile)
+	err = service.Write(contentUUID, lifecycle, platformVersion, "TID_TEST", inst)
+	assert.NoError(t, err)
 }
 
 func assertListContainsAll(t *testing.T, list interface{}, items ...interface{}) {
@@ -452,15 +462,15 @@ func cleanDB(t testing.TB, db neoutils.NeoConnection) {
 
 func getExpectedV1Annotations() annotations {
 
-	av := getExpectedAlphavilleSeriesAnnotation("", v1PlatformVersion)
+	av := getExpectedAlphavilleSeriesAnnotation(v1Lifecycle, v1PlatformVersion)
 	av.TmeIDs = []string{"FOOBAR"}
 	av.UUIDs = []string{"747894f8-a231-4efb-805d-753635eca712"}
 
-	mm := getExpectedMetalMickeyAnnotation("", v1PlatformVersion)
+	mm := getExpectedMetalMickeyAnnotation(v1Lifecycle, v1PlatformVersion)
 	mm.TmeIDs = []string{"TWV0YWwgTWlja2V5-U3ViamVjdHM="}
 	mm.UUIDs = []string{"0483bef8-5797-40b8-9b25-b12e492f63c6"}
 
-	b := getExpectedBrandGrandChildAnnotation("", v1PlatformVersion)
+	b := getExpectedBrandGrandChildAnnotation(v1Lifecycle, v1PlatformVersion)
 	b.TmeIDs = []string{"MTVkNjNmNzctOTA3Mi00GrandChildUtMmI4MGIyODRiNmI0-QnJhbmRz"}
 	b.UUIDs = []string{"ff691bf8-8d92-2a2a-8326-c273400bff0b"}
 
@@ -485,11 +495,11 @@ func getExpectedPacAnnotations() annotations {
 
 func getExpectedV2Annotations() annotations {
 
-	fb := getExpectedFakebookAnnotation("", v2PlatformVersion)
+	fb := getExpectedFakebookAnnotation(v2Lifecycle, v2PlatformVersion)
 	fb.FactsetIDs = []string{"00AAA-E"}
 	fb.UUIDs = []string{"eac853f5-3859-4c08-8540-55e043719400"}
 
-	msj := getExpectedMallStreetJournalAnnotation("", v2PlatformVersion)
+	msj := getExpectedMallStreetJournalAnnotation(v2Lifecycle, v2PlatformVersion)
 	msj.FactsetIDs = []string{"00BBBB-E"}
 	msj.UUIDs = []string{"5d1510f8-2779-4b74-adab-0a5eb138fca6"}
 
