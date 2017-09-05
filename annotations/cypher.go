@@ -113,23 +113,26 @@ func (cd cypherDriver) filteredRead(contentUUID string, platformVersion string) 
 
 	query := &neoism.CypherQuery{
 		Statement: `
-			MATCH (c:Thing{uuid:{contentUUID}})-[rel{platformVersion:{platformVersion}}]->(cc:Concept)
-			OPTIONAL MATCH (cc)-[:EQUIVALENT_TO]-(canonicalNode:Concept)
-			OPTIONAL MATCH (canonicalNode)-[:EQUIVALENT_TO]-(allSources:Concept)
-			OPTIONAL MATCH (cc)<-[:IDENTIFIES]-(upp:UPPIdentifier)
-			optional MATCH (cc)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
-			OPTIONAL MATCH (cc)<-[:ISSUED_BY]-(fi:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
-			optional MATCH (cc)<-[:IDENTIFIES]-(tme:TMEIdentifier)
-			optional MATCH (cc)<-[:IDENTIFIES]-(fs:FactsetIdentifier)
-			OPTIONAL MATCH (allSources)<-[:IDENTIFIES]-(sourceUPP:UPPIdentifier)
-			optional MATCH (allSources)<-[:IDENTIFIES]-(sourceLEI:LegalEntityIdentifier)
-			optional MATCH (allSources)<-[:IDENTIFIES]-(sourceTME:TMEIdentifier)
-			optional MATCH (allSources)<-[:IDENTIFIES]-(sourceFS:FactsetIdentifier)
-			WITH c, cc, rel, lei, figi, collect(distinct fs.value) + collect(distinct sourceFS.value) as fs,  collect(distinct tme.value) + collect(distinct sourceTME.value) as tme, collect(distinct upp.value) + collect(distinct sourceUPP.value) as upp
-			WITH c, collect({id: cc.uuid, predicate: type(rel), types: labels(cc), prefLabel:cc.prefLabel, uuids:upp, tmeIDs:tme, leiCode:lei.value, figi:figi.value, factsetID:fs, platformVersion:rel.platformVersion}) as rows
-			UNWIND rows as row
-			WITH DISTINCT(row) as drow
-			RETURN drow.id as id, drow.predicate as predicate, drow.types as types, drow.prefLabel as prefLabel, drow.leiCode as leiCode, drow.figi as figi, drow.factsetID as factsetID, drow.uuids as uuids, drow.tmeIDs as tmeIDs, drow.platformVersion as platformVersion
+			MATCH (content:Content{uuid:{contentUUID}})-[rel{platformVersion:{platformVersion}}]->(concept:Concept)
+			OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
+			OPTIONAL MATCH (canonicalConcept)-[:EQUIVALENT_TO]->(leafConcepts:Concept)
+			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
+			OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
+			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(tme:TMEIdentifier)
+			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(fs:FactsetIdentifier)
+			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(upp:UPPIdentifier)
+			OPTIONAL MATCH (leafConcepts)<-[:IDENTIFIES]-(sourceUPP:UPPIdentifier)
+			OPTIONAL MATCH (leafConcepts)<-[:IDENTIFIES]-(sourceLEI:LegalEntityIdentifier)
+			OPTIONAL MATCH (leafConcepts)<-[:IDENTIFIES]-(sourceTME:TMEIdentifier)
+			OPTIONAL MATCH (leafConcepts)<-[:IDENTIFIES]-(sourceFS:FactsetIdentifier)
+			WITH concept, canonicalConcept, rel, figi, lei, collect(distinct fs.value) + collect(distinct sourceFS.value) as fs, collect(distinct tme.value) + collect(distinct sourceTME.value) as tme, collect(distinct upp.value) + collect(distinct sourceUPP.value) as upp
+			RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
+				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle, tme as tmeIDs, fs as factsetID, upp as uuids
+			UNION ALL
+			MATCH (content:Content{uuid:{contentUUID}})-[rel{platformVersion:{platformVersion}}]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
+			OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
+			RETURN distinct coalesce(canonicalParent.prefUUID, parentBrand.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalParent), labels(parentBrand)) as types,
+				coalesce(canonicalParent.prefLabel, parentBrand.prefLabel) as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle, null as tmeIDs, null as factsetID, null as uuids
 			`,
 		Parameters: neoism.Props{"contentUUID": contentUUID, "platformVersion": platformVersion},
 		Result:     &results,
