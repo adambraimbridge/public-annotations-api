@@ -1,7 +1,6 @@
 package annotations
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -65,9 +64,8 @@ func NewAnnotationsPredicateFilter() *AnnotationsPredicateFilter {
 }
 
 func (f *AnnotationsPredicateFilter) FilterAnnotations(annotations []annotation) {
-	for index, ann := range annotations {
+	for _, ann := range annotations {
 		f.Add(ann)
-		fmt.Println(index)
 	}
 }
 

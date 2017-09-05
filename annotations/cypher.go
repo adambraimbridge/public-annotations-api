@@ -127,12 +127,12 @@ func (cd cypherDriver) filteredRead(contentUUID string, platformVersion string) 
 			OPTIONAL MATCH (leafConcepts)<-[:IDENTIFIES]-(sourceFS:FactsetIdentifier)
 			WITH concept, canonicalConcept, rel, figi, lei, collect(distinct fs.value) + collect(distinct sourceFS.value) as fs, collect(distinct tme.value) + collect(distinct sourceTME.value) as tme, collect(distinct upp.value) + collect(distinct sourceUPP.value) as upp
 			RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
-				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle, tme as tmeIDs, fs as factsetID, upp as uuids
+				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, {platformVersion} as platformVersion, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle, tme as tmeIDs, fs as factsetID, upp as uuids
 			UNION ALL
 			MATCH (content:Content{uuid:{contentUUID}})-[rel{platformVersion:{platformVersion}}]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
 			OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
 			RETURN distinct coalesce(canonicalParent.prefUUID, parentBrand.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalParent), labels(parentBrand)) as types,
-				coalesce(canonicalParent.prefLabel, parentBrand.prefLabel) as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle, null as tmeIDs, null as factsetID, null as uuids
+				coalesce(canonicalParent.prefLabel, parentBrand.prefLabel) as prefLabel, {platformVersion} as platformVersion, null as leiCode, null as figi, rel.lifecycle as lifecycle, null as tmeIDs, null as factsetID, null as uuids
 			`,
 		Parameters: neoism.Props{"contentUUID": contentUUID, "platformVersion": platformVersion},
 		Result:     &results,
