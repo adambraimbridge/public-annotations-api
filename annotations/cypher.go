@@ -62,14 +62,14 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	query := &neoism.CypherQuery{
 		Statement: `
-			MATCH (content:Content{uuid:{contentUUID}})-[rel]-(concept:Concept)
+			MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(concept:Concept)
 			OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
 			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
 			OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
 			RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
 				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle
 			UNION ALL
-			MATCH (content:Content{uuid:{contentUUID}})-[rel]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
+			MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
 			OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
 			RETURN distinct coalesce(canonicalParent.prefUUID, parentBrand.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalParent), labels(parentBrand)) as types,
 				coalesce(canonicalParent.prefLabel, parentBrand.prefLabel) as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle
@@ -113,7 +113,7 @@ func (cd cypherDriver) filteredRead(contentUUID string, platformVersion string) 
 
 	query := &neoism.CypherQuery{
 		Statement: `
-			MATCH (content:Content{uuid:{contentUUID}})-[rel{platformVersion:{platformVersion}}]->(concept:Concept)
+			MATCH (content:Thing{uuid:{contentUUID}})-[rel{platformVersion:{platformVersion}}]->(concept:Concept)
 			OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
 			OPTIONAL MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(leafConcepts:Concept)
 			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
