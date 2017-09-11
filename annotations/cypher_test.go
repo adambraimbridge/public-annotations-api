@@ -41,6 +41,7 @@ const (
 	MSJConceptUUID         = "5d1510f8-2779-4b74-adab-0a5eb138fca6"
 	FakebookConceptUUID    = "eac853f5-3859-4c08-8540-55e043719400"
 	MetalMickeyConceptUUID = "0483bef8-5797-40b8-9b25-b12e492f63c6"
+	JohnSmithConceptUUID   = "75e2f7e9-cb5e-40a5-a074-86d69fe09f69"
 	brokenPacUUID          = "8d965e66-5454-4856-972d-f64cc1a18a5d"
 
 	v1PlatformVersion    = "v1"
@@ -53,7 +54,7 @@ const (
 var allUUIDs = []string{contentUUID, contentWithNoAnnotationsUUID, contentWithParentAndChildBrandUUID,
 	contentWithThreeLevelsOfBrandUUID, contentWithCircularBrandUUID, contentWithOnlyFTUUID, alphavilleSeriesUUID,
 	brandParentUUID, brandChildUUID, brandGrandChildUUID, brandCircularAUUID, brandCircularBUUID, contentWithBrandsDiffTypesUUID,
-	FakebookConceptUUID, MSJConceptUUID, MetalMickeyConceptUUID, brokenPacUUID, financialInstrumentUUID}
+	FakebookConceptUUID, MSJConceptUUID, MetalMickeyConceptUUID, brokenPacUUID, financialInstrumentUUID, JohnSmithConceptUUID}
 
 func getDatabaseConnection(t *testing.T, assert *assert.Assertions) neoutils.NeoConnection {
 	url := os.Getenv("NEO4J_TEST_URL")
