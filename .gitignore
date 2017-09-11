@@ -1,4 +1,4 @@
-public-annotations-api*
+/public-annotations-api*
 .idea
 /.project
 vendor/*/
