@@ -562,7 +562,7 @@ func getExpectedMetalMickeyAnnotation(lifecycle string, platformVersion string) 
 
 func getExpectedFacebookAnnotation(lifecycle string, platformVersion string) annotation {
 	return annotation{
-		Predicate: "http://www.ft.com/ontology/annotation/hasDisplayTag",
+		Predicate: "http://www.ft.com/ontology/hasDisplayTag",
 		ID:        "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
 		APIURL:    "http://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
 		Types: []string{
@@ -582,7 +582,7 @@ func getExpectedFacebookAnnotation(lifecycle string, platformVersion string) ann
 
 func getExpectedJohnSmithAnnotation(lifecycle string, platformVersion string) annotation {
 	return annotation{
-		Predicate: "http://www.ft.com/ontology/annotation/hasContributor",
+		Predicate: "http://www.ft.com/ontology/hasContributor",
 		ID:        "http://api.ft.com/things/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
 		APIURL:    "http://api.ft.com/people/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
 		Types: []string{
