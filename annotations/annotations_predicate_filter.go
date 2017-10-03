@@ -145,3 +145,8 @@ func (f *AnnotationsPredicateFilter) getImportanceValueForGroupId(predicate stri
 	//should not occur in normal circumstances
 	return -1
 }
+
+func (f *AnnotationsPredicateFilter) filter(in []annotation, chain *annotationsFilterChain) []annotation {
+	f.FilterAnnotations(in)
+	return chain.doNext(f.ProduceResponseList())
+}

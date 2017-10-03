@@ -11,12 +11,12 @@
 			"revision": ""
 		},
 		{
-			"checksumSHA1": "wBLPK8scuQUxKEoW8OZBoE8tGXk=",
+			"checksumSHA1": "aXxnxRchBYOultmFLFv1WcZVPRk=",
 			"path": "github.com/Financial-Times/annotations-rw-neo4j/annotations",
-			"revision": "f9086e7e56a93fdd9ba32cfa5942add50ada5e2d",
-			"revisionTime": "2017-08-31T17:44:14Z",
-			"version": "=1.0.2",
-			"versionExact": "1.0.2"
+			"revision": "268bf9d5dafad000a07a17517d350fcd8108d473",
+			"revisionTime": "2017-09-18T14:39:07Z",
+			"version": "2.1.0",
+			"versionExact": "2.1.0"
 		},
 		{
 			"checksumSHA1": "6mjazgSyxCKJWzOcNfqHL/T/VWA=",
@@ -69,6 +69,12 @@
 			"revisionTime": "2017-05-25T09:50:41Z",
 			"version": "0.3.0",
 			"versionExact": "0.3.0"
+		},
+		{
+			"checksumSHA1": "J21jb1gEj3rsMEzfCyDLRStH6yM=",
+			"path": "github.com/Financial-Times/go-logger",
+			"revision": "83fc3e64dc5506fdb4e56b704949d157a121c76c",
+			"revisionTime": "2017-09-14T08:19:45Z"
 		},
 		{
 			"checksumSHA1": "/xshkhtKNzMRlV2Ud9P0QgH+B4g=",
@@ -239,6 +245,12 @@
 		{
 			"checksumSHA1": "t5W90J4d7vhrs6+LDp0BalvCZEU=",
 			"path": "github.com/sirupsen/logrus",
+			"revision": "89742aefa4b206dcf400792f3bd35b542998eb3b",
+			"revisionTime": "2017-08-22T13:27:46Z"
+		},
+		{
+			"checksumSHA1": "bEYPw3QRqpj0ID7Q2FAr0xnF1Xw=",
+			"path": "github.com/sirupsen/logrus/hooks/test",
 			"revision": "89742aefa4b206dcf400792f3bd35b542998eb3b",
 			"revisionTime": "2017-08-22T13:27:46Z"
 		},
