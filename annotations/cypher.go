@@ -26,7 +26,6 @@ type cypherDriver struct {
 
 var (
 	pacLifecycleFilter   = newLifecycleFilter(pacLifecycle)
-	pacBrandsDedupFilter = newDedupFilter(predicates["IMPLICITLY_CLASSIFIED_BY"], predicates["IS_CLASSIFIED_BY"])
 )
 
 func NewCypherDriver(conn neoutils.NeoConnection, env string) cypherDriver {
@@ -104,13 +103,15 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		}
 	}
 
-	var chain *annotationsFilterChain
+	var filter annotationsFilter
 	//return  pac lifecycle (tagme) annotations, hide annotations with any other lifcycle or no lifecycle
 	if isLifecyclePresent(pacLifecycle, mappedAnnotations) {
-		chain = newAnnotationsFilterChain([]annotationsFilter{pacLifecycleFilter, pacBrandsDedupFilter})
+		filter = pacLifecycleFilter
 	} else {
-		chain = newAnnotationsFilterChain([]annotationsFilter{NewAnnotationsPredicateFilter()})
+		filter = NewAnnotationsPredicateFilter()
 	}
+
+	chain := newAnnotationsFilterChain(filter)
 	return chain.doNext(mappedAnnotations), found, nil
 }
 
