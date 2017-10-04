@@ -66,7 +66,7 @@ var (
 	}
 
 	conceptTypes = map[string][]string{
-		brandType: []string{
+		brandType: {
 			"http://www.ft.com/ontology/core/Thing",
 			"http://www.ft.com/ontology/concept/Concept",
 			"http://www.ft.com/ontology/classification/Classification",
@@ -126,9 +126,9 @@ func (s *cypherDriverTestSuite) TestRetrieveMultipleAnnotations() {
 		getExpectedMallStreetJournalAnnotation(v2Lifecycle, emptyPlatformVersion),
 		getExpectedMetalMickeyAnnotation(v1Lifecycle, emptyPlatformVersion),
 		getExpectedAlphavilleSeriesAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandChildAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandGrandChildAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandParentAnnotation(v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -167,9 +167,9 @@ func (s *cypherDriverTestSuite) TestRetrieveMultipleAnnotationsIfPacAnnotationCa
 		getExpectedMallStreetJournalAnnotation(v2Lifecycle, emptyPlatformVersion),
 		getExpectedMetalMickeyAnnotation(v1Lifecycle, emptyPlatformVersion),
 		getExpectedAlphavilleSeriesAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandChildAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandGrandChildAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandParentAnnotation(v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -187,9 +187,11 @@ func (s *cypherDriverTestSuite) TestRetrieveMultipleAnnotationsIfPacAnnotationCa
 }
 
 func (s *cypherDriverTestSuite) TestRetrieveContentWithParentBrand() {
-	expectedAnnotations := annotations{getExpectedBrandChildAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandParentAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandGrandChildAnnotation(v1Lifecycle, emptyPlatformVersion)}
+	expectedAnnotations := annotations{
+		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+	}
 
 	driver := NewCypherDriver(s.db, "prod")
 	anns := getAndCheckAnnotations(driver, contentWithParentAndChildBrandUUID, s.T())
@@ -198,9 +200,11 @@ func (s *cypherDriverTestSuite) TestRetrieveContentWithParentBrand() {
 }
 
 func (s *cypherDriverTestSuite) TestRetrieveContentWithGrandParentBrand() {
-	expectedAnnotations := annotations{getExpectedBrandChildAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandParentAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandGrandChildAnnotation(v1Lifecycle, emptyPlatformVersion)}
+	expectedAnnotations := annotations{
+		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+	}
 
 	driver := NewCypherDriver(s.db, "prod")
 	anns := getAndCheckAnnotations(driver, contentWithThreeLevelsOfBrandUUID, s.T())
@@ -209,8 +213,10 @@ func (s *cypherDriverTestSuite) TestRetrieveContentWithGrandParentBrand() {
 }
 
 func (s *cypherDriverTestSuite) TestRetrieveContentWithCircularBrand() {
-	expectedAnnotations := annotations{getExpectedBrandCircularAAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedBrandCircularBAnnotation(v1Lifecycle, emptyPlatformVersion)}
+	expectedAnnotations := annotations{
+		expectedAnnotation(brandCircularAUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandCircularBUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+	}
 
 	driver := NewCypherDriver(s.db, "prod")
 	anns := getAndCheckAnnotations(driver, contentWithCircularBrandUUID, s.T())
@@ -219,7 +225,9 @@ func (s *cypherDriverTestSuite) TestRetrieveContentWithCircularBrand() {
 }
 
 func (s *cypherDriverTestSuite) TestRetrieveContentWithJustParentBrand() {
-	expectedAnnotations := annotations{getExpectedBrandParentAnnotation(v1Lifecycle, emptyPlatformVersion)}
+	expectedAnnotations := annotations{
+		expectedAnnotation(brandParentUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+	}
 
 	driver := NewCypherDriver(s.db, "prod")
 	anns := getAndCheckAnnotations(driver, contentWithOnlyFTUUID, s.T())
@@ -230,8 +238,10 @@ func (s *cypherDriverTestSuite) TestRetrieveContentWithJustParentBrand() {
 //Tests filtering Annotations where content is related to Brand A as isClassifiedBy and to Brand B as isPrimarilyClassifiedBy
 // and Brands A and B have a circular relation HasParent
 func (s *cypherDriverTestSuite) TestRetrieveContentBrandsOfDifferentTypes() {
-	expectedAnnotations := annotations{getExpectedBrandCircularAAnnotation(v1Lifecycle, ""),
-		getExpectedBrandCircularBAnnotation(v1Lifecycle, "")}
+	expectedAnnotations := annotations{
+		expectedAnnotation(brandCircularAUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandCircularBUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+	}
 
 	driver := NewCypherDriver(s.db, "prod")
 	anns := getAndCheckAnnotations(driver, contentWithCircularBrandUUID, s.T())
@@ -528,7 +538,8 @@ func getExpectedV1Annotations() annotations {
 	mm.TmeIDs = []string{"TWV0YWwgTWlja2V5-U3ViamVjdHM="}
 	mm.UUIDs = []string{"0483bef8-5797-40b8-9b25-b12e492f63c6"}
 
-	b := getExpectedBrandGrandChildAnnotation(v1Lifecycle, v1PlatformVersion)
+	b := expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, v1PlatformVersion)
+
 	b.TmeIDs = []string{"MTVkNjNmNzctOTA3Mi00GrandChildUtMmI4MGIyODRiNmI0-QnJhbmRz"}
 	b.UUIDs = []string{"ff691bf8-8d92-2a2a-8326-c273400bff0b"}
 
@@ -654,14 +665,6 @@ func getExpectedAlphavilleSeriesAnnotation(lifecycle string, platformVersion str
 	}
 }
 
-func getExpectedBrandParentAnnotation(lifecycle string, platformVersion string) annotation {
-	return expectedAnnotation(brandParentUUID, brandType, predicates["IS_CLASSIFIED_BY"], lifecycle, platformVersion)
-}
-
-func getExpectedBrandChildAnnotation(lifecycle string, platformVersion string) annotation {
-	return expectedAnnotation(brandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], lifecycle, platformVersion)
-}
-
 func expectedAnnotation(conceptUuid string, conceptType string, predicate string, lifecycle string, platformVersion string) annotation {
 	return annotation{
 		Predicate:       predicate,
@@ -672,18 +675,6 @@ func expectedAnnotation(conceptUuid string, conceptType string, predicate string
 		Lifecycle:       lifecycle,
 		PlatformVersion: platformVersion,
 	}
-}
-
-func getExpectedBrandGrandChildAnnotation(lifecycle string, platformVersion string) annotation {
-	return expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], lifecycle, platformVersion)
-}
-
-func getExpectedBrandCircularAAnnotation(lifecycle string, platformVersion string) annotation {
-	return expectedAnnotation(brandCircularAUUID, brandType, predicates["IS_CLASSIFIED_BY"], lifecycle, platformVersion)
-}
-
-func getExpectedBrandCircularBAnnotation(lifecycle string, platformVersion string) annotation {
-	return expectedAnnotation(brandCircularBUUID, brandType, predicates["IS_CLASSIFIED_BY"], lifecycle, platformVersion)
 }
 
 func count(annotationLifecycle string, db neoutils.NeoConnection) (int, error) {
