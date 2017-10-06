@@ -24,6 +24,11 @@ type cypherDriver struct {
 	env  string
 }
 
+var (
+	pacLifecycleFilter   = newLifecycleFilter(pacLifecycle)
+	pacBrandsDedupFilter = newDedupFilter(predicates["IMPLICITLY_CLASSIFIED_BY"], predicates["IS_CLASSIFIED_BY"])
+)
+
 func NewCypherDriver(conn neoutils.NeoConnection, env string) cypherDriver {
 	return cypherDriver{conn, env}
 }
@@ -89,7 +94,6 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 	}
 
 	mappedAnnotations := []annotation{}
-	predicateFilter := NewAnnotationsPredicateFilter()
 	found = false
 
 	for idx := range results {
@@ -99,12 +103,15 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 			mappedAnnotations = append(mappedAnnotations, annotation)
 		}
 	}
+
+	var chain *annotationsFilterChain
 	//return  pac lifecycle (tagme) annotations, hide annotations with any other lifcycle or no lifecycle
 	if isLifecyclePresent(pacLifecycle, mappedAnnotations) {
-		return filterByLifecycle(pacLifecycle, mappedAnnotations), found, nil
+		chain = newAnnotationsFilterChain([]annotationsFilter{pacLifecycleFilter, pacBrandsDedupFilter})
+	} else {
+		chain = newAnnotationsFilterChain([]annotationsFilter{NewAnnotationsPredicateFilter()})
 	}
-	predicateFilter.FilterAnnotations(mappedAnnotations)
-	return predicateFilter.ProduceResponseList(), found, nil
+	return chain.doNext(mappedAnnotations), found, nil
 }
 
 // Returns all the annotations with the specified platformVersion enriched with all the existing concept IDs for a given content
@@ -226,14 +233,4 @@ func isLifecyclePresent(lifecycle string, annotations []annotation) bool {
 		}
 	}
 	return false
-}
-
-func filterByLifecycle(lifecycle string, annotations []annotation) []annotation {
-	filtered := []annotation{}
-	for _, annotation := range annotations {
-		if annotation.Lifecycle == lifecycle {
-			filtered = append(filtered, annotation)
-		}
-	}
-	return filtered
 }

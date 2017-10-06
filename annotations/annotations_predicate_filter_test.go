@@ -169,11 +169,8 @@ func TestFilterForBasicSingleConcept(t *testing.T) {
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%s", test.testDesc), func(t *testing.T) {
 			filter := NewAnnotationsPredicateFilter()
-			//for _, a := range test.input {
-			//			filter.Add(a)
-			//	}
-			filter.FilterAnnotations(test.input)
-			actualOutput := filter.ProduceResponseList()
+			chain := newAnnotationsFilterChain([]annotationsFilter{filter})
+			actualOutput := chain.doNext(test.input)
 
 			By(byUuid).Sort(test.expectedOutput)
 			By(byUuid).Sort(actualOutput)
