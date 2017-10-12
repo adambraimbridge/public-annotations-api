@@ -8,7 +8,7 @@ import (
 
 func TestLifecycleFilter(t *testing.T) {
 	f := newLifecycleFilter("foo")
-	chain := newAnnotationsFilterChain([]annotationsFilter{f})
+	chain := newAnnotationsFilterChain(f)
 
 	ann := []annotation{
 		{
@@ -26,8 +26,8 @@ func TestLifecycleFilter(t *testing.T) {
 }
 
 func TestDedupFilterPassthrough(t *testing.T) {
-	f := newDedupFilter("baz", "bar")
-	chain := newAnnotationsFilterChain([]annotationsFilter{f})
+	f := defaultDedupFilter
+	chain := newAnnotationsFilterChain(f)
 
 	ann := []annotation{
 		{
@@ -42,74 +42,9 @@ func TestDedupFilterPassthrough(t *testing.T) {
 	assert.Equal(t, ann[0], actual[0], "pass-through predicate")
 }
 
-func TestDedupFilterDropAnnotation(t *testing.T) {
-	f := newDedupFilter("baz", "bar")
-	chain := newAnnotationsFilterChain([]annotationsFilter{f})
-
-	ann := []annotation{
-		{
-			ID: "2",
-			Predicate:"bar",
-		},
-		{
-			ID: "2",
-			Predicate:"baz",
-		},
-	}
-
-	actual := chain.doNext(ann)
-
-	assert.Len(t, actual, 1)
-	assert.Equal(t, ann[1], actual[0], "filtered annotations")
-}
-
-func TestDedupFilterRetainsOtherPredicatesForConcept(t *testing.T) {
-	f := newDedupFilter("baz", "bar")
-	chain := newAnnotationsFilterChain([]annotationsFilter{f})
-
-	ann := []annotation{
-		{
-			ID: "2",
-			Predicate:"foo",
-		},
-		{
-			ID: "2",
-			Predicate:"baz",
-		},
-	}
-
-	actual := chain.doNext(ann)
-
-	assert.Len(t, actual, 2)
-	assert.Contains(t, actual, ann[0])
-	assert.Contains(t, actual, ann[1])
-}
-
-func TestDedupFilterRetainsDifferentConcepts(t *testing.T) {
-	f := newDedupFilter("baz", "bar")
-	chain := newAnnotationsFilterChain([]annotationsFilter{f})
-
-	ann := []annotation{
-		{
-			ID: "2",
-			Predicate:"bar",
-		},
-		{
-			ID: "3",
-			Predicate:"baz",
-		},
-	}
-
-	actual := chain.doNext(ann)
-
-	assert.Len(t, actual, 2)
-	assert.Contains(t, actual, ann[0])
-	assert.Contains(t, actual, ann[1])
-}
-
 func TestDedupFilterDedups(t *testing.T) {
-	f := newDedupFilter("baz", "bar")
-	chain := newAnnotationsFilterChain([]annotationsFilter{f})
+	f := defaultDedupFilter
+	chain := newAnnotationsFilterChain(f)
 
 	ann := []annotation{
 		{

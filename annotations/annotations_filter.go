@@ -5,12 +5,18 @@ type annotationsFilter interface {
 }
 
 type annotationsFilterChain struct {
-	filters []annotationsFilter
 	index int
+	filters []annotationsFilter
 }
 
-func newAnnotationsFilterChain(filters []annotationsFilter) *annotationsFilterChain {
-	return &annotationsFilterChain{filters, 0}
+func newAnnotationsFilterChain(filters ...annotationsFilter) *annotationsFilterChain {
+	size := len(filters)
+	f := make([]annotationsFilter, size + 1)
+	for i, t := range filters {
+		f[i] = t
+	}
+	f[size] = defaultDedupFilter
+	return &annotationsFilterChain{0, f}
 }
 
 func (chain *annotationsFilterChain) doNext(ann []annotation) []annotation {
@@ -43,33 +49,15 @@ func (f *lifecycleFilter) filter(annotations []annotation, chain *annotationsFil
 }
 
 type dedupFilter struct {
-	predicateToRetain string
-	inFavourOf        string
 }
 
-func newDedupFilter(retain string, inFavourOf string) annotationsFilter {
-	return &dedupFilter{retain, inFavourOf}
-}
+var defaultDedupFilter = &dedupFilter{}
 
 func (f *dedupFilter) filter(in []annotation, chain *annotationsFilterChain) []annotation {
-	concepts := map[string]struct{}{}
-
 	out := []annotation{}
-
-	for _, ann := range in {
-		if ann.Predicate == f.predicateToRetain {
-			concepts[ann.ID] = struct{}{}
-		}
-	}
 
 	OUTER:
 	for _, ann := range in {
-		if ann.Predicate == f.inFavourOf {
-			if _, duplicated := concepts[ann.ID]; duplicated {
-				continue
-			}
-		}
-
 		for _, copied := range out {
 			if copied.Predicate == ann.Predicate && copied.ID == ann.ID {
 				continue OUTER
