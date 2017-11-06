@@ -20,6 +20,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rcrowley/go-metrics"
 	log "github.com/sirupsen/logrus"
+	_ "net/http/pprof"
 )
 
 func main() {
