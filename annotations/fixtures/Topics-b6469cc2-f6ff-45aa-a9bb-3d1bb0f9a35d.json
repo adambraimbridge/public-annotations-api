@@ -1,0 +1,22 @@
+{
+  "prefUUID": "b6469cc2-f6ff-45aa-a9bb-3d1bb0f9a35d",
+  "prefLabel": "Cricket",
+  "type": "Topic",
+  "aliases": [
+    "Cricket"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "b6469cc2-f6ff-45aa-a9bb-3d1bb0f9a35d",
+      "prefLabel": "Cricket",
+      "type": "Topic",
+      "authority": "Smartlogic",
+      "authorityValue": "b6469cc2-f6ff-45aa-a9bb-3d1bb0f9a35d",
+      "lastModifiedEpoch": 1507036591,
+      "aliases": [
+        "Cricket"
+      ],
+      "broaderUUIDs": []
+    }
+  ]
+}

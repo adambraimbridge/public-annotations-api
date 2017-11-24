@@ -1,0 +1,24 @@
+{
+  "prefUUID": "e404e3bd-beff-4324-83f4-beb044baf916",
+  "prefLabel": "Dodgy Cyclic Topic A",
+  "type": "Topic",
+  "aliases": [
+    "Dodgy Cyclic Topic A"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "e404e3bd-beff-4324-83f4-beb044baf916",
+      "prefLabel": "Dodgy Cyclic Topic A",
+      "type": "Topic",
+      "authority": "Smartlogic",
+      "authorityValue": "e404e3bd-beff-4324-83f4-beb044baf916",
+      "lastModifiedEpoch": 1507036591,
+      "aliases": [
+        "Dodgy Cyclic Topic A"
+      ],
+      "broaderUUIDs": [
+        "7e22c8b8-b280-4e52-aa22-fa1c6dffd894"
+      ]
+    }
+  ]
+}
