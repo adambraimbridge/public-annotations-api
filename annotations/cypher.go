@@ -2,6 +2,7 @@ package annotations
 
 import (
 	"fmt"
+	"time"
 
 	"errors"
 
@@ -89,11 +90,17 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		Result:     &results,
 	}
 
+	start := time.Now()
 	err = cd.conn.CypherBatch([]*neoism.CypherQuery{query})
+	end := time.Now()
+
+	log.Infof("Annotations query (including implicit relationships) completed in [duration=%vms]", end.Sub(start).Nanoseconds()/1e6)
+
 	if err != nil {
 		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
 		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
 	}
+
 	log.Debugf("Found %d Annotations for uuid: %s", len(results), contentUUID)
 	if (len(results)) == 0 {
 		return annotations{}, false, nil
