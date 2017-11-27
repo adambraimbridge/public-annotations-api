@@ -94,7 +94,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 	err = cd.conn.CypherBatch([]*neoism.CypherQuery{query})
 	end := time.Now()
 
-	log.Infof("Annotations query (including implicit relationships) completed in [duration=%vms]", end.Sub(start).Nanoseconds()/1e6)
+	log.WithField("duration", fmt.Sprintf("%vms", end.Sub(start).Nanoseconds()/1e6)).Info("Annotations query (including implicit relationships) completed.")
 
 	if err != nil {
 		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
