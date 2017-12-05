@@ -1,0 +1,12 @@
+[
+  {
+    "thing": {
+      "id": "http://api.ft.com/things/ca982370-66cd-43bd-b2e3-7bfcb73efb1e",
+      "prefLabel": "Ashes 2017",
+      "types": [
+        "http://www.ft.com/ontology/Topic"
+      ],
+      "predicate": "about"
+    }
+  }
+]

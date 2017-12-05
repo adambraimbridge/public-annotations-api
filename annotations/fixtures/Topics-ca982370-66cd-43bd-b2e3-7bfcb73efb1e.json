@@ -1,0 +1,24 @@
+{
+  "prefUUID": "ca982370-66cd-43bd-b2e3-7bfcb73efb1e",
+  "prefLabel": "Ashes 2017",
+  "type": "Topic",
+  "aliases": [
+    "Ashes 2017"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "ca982370-66cd-43bd-b2e3-7bfcb73efb1e",
+      "prefLabel": "Ashes 2017",
+      "type": "Topic",
+      "authority": "Smartlogic",
+      "authorityValue": "ca982370-66cd-43bd-b2e3-7bfcb73efb1e",
+      "lastModifiedEpoch": 1507036591,
+      "aliases": [
+        "Ashes 2017"
+      ],
+      "broaderUUIDs": [
+        "fde5eee9-3260-4125-adb6-3d91a4888be5"
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ package annotations
 
 import (
 	"fmt"
+	"time"
 
 	"errors"
 
@@ -25,7 +26,7 @@ type cypherDriver struct {
 }
 
 var (
-	pacLifecycleFilter   = newLifecycleFilter(pacLifecycle)
+	pacLifecycleFilter = newLifecycleFilter(pacLifecycle)
 )
 
 func NewCypherDriver(conn neoutils.NeoConnection, env string) cypherDriver {
@@ -66,27 +67,40 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	query := &neoism.CypherQuery{
 		Statement: `
-			MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(concept:Concept)
-			OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
-			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
-			OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
-			RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
+      MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(concept:Concept)
+      OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
+      OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
+      OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
+      RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
 				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle
-			UNION ALL
-			MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
-			OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
-			RETURN distinct coalesce(canonicalParent.prefUUID, parentBrand.uuid) as id, "IMPLICITLY_CLASSIFIED_BY" as predicate, coalesce(labels(canonicalParent), labels(parentBrand)) as types,
+
+      UNION ALL
+      MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
+      OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
+      RETURN distinct coalesce(canonicalParent.prefUUID, parentBrand.uuid) as id, "IMPLICITLY_CLASSIFIED_BY" as predicate, coalesce(labels(canonicalParent), labels(parentBrand)) as types,
 				coalesce(canonicalParent.prefLabel, parentBrand.prefLabel) as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle
+
+      UNION ALL
+      MATCH (content:Thing{uuid:{contentUUID}})-[rel:ABOUT]-(concept:Concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
+      MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(leafConcept:Concept)-[:HAS_BROADER*1..]->(implicit:Concept)-[:EQUIVALENT_TO]->(canonicalImplicit)
+      WHERE NOT (canonicalImplicit)<-[:EQUIVALENT_TO]-(:Concept)<-[:ABOUT]-(content) // filter out the original abouts
+      RETURN distinct canonicalImplicit.prefUUID as id, "IMPLICITLY_ABOUT" as predicate, labels(canonicalImplicit) as types, canonicalImplicit.prefLabel as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle
       `,
 		Parameters: neoism.Props{"contentUUID": contentUUID},
 		Result:     &results,
 	}
 
+	start := time.Now()
 	err = cd.conn.CypherBatch([]*neoism.CypherQuery{query})
+	end := time.Now()
+
+	log.WithField("contentUUID", contentUUID).WithField("duration", fmt.Sprintf("%vms", end.Sub(start).Nanoseconds()/1e6)).Info("Annotations query (including implicit relationships) completed.")
+
 	if err != nil {
 		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
 		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
 	}
+
 	log.Debugf("Found %d Annotations for uuid: %s", len(results), contentUUID)
 	if (len(results)) == 0 {
 		return annotations{}, false, nil

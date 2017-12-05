@@ -29,4 +29,5 @@ var predicates = map[string]string{
 	"IS_CLASSIFIED_BY":           "http://www.ft.com/ontology/classification/isClassifiedBy",
 	"IS_PRIMARILY_CLASSIFIED_BY": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
 	"IMPLICITLY_CLASSIFIED_BY":   "http://www.ft.com/ontology/implicitlyClassifiedBy",
+	"IMPLICITLY_ABOUT":           "http://www.ft.com/ontology/implicitlyAbout",
 }
