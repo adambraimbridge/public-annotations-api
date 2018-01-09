@@ -120,9 +120,9 @@ func routeRequests(port string) {
 	// Standard endpoints
 	healthCheck := fthealth.TimedHealthCheck{
 		HealthCheck: fthealth.HealthCheck{
-			SystemCode:  "up-csa",
-			Name:        "Amazon Elasticsearch Service Healthcheck",
-			Description: "Checks for AES",
+			SystemCode:  "public-annotations-api",
+			Name:        "Public Annotations API Healthcheck",
+			Description: "Checking Neo4j",
 			Checks: []fthealth.Check{
 				annotations.HealthCheck(),
 			},
