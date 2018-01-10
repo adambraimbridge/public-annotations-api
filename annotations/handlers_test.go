@@ -78,8 +78,9 @@ func message(errMsg string) string {
 }
 
 type dummyService struct {
-	contentUUID string
-	failRead    bool
+	contentUUID       string
+	failRead          bool
+	connectivityError error
 }
 
 func (dS dummyService) read(contentUUID string) (annotations, bool, error) {
@@ -103,5 +104,5 @@ func (dS dummyService) filteredRead(contentUUID string, platformVersion string) 
 }
 
 func (dS dummyService) checkConnectivity() error {
-	return nil
+	return dS.connectivityError
 }

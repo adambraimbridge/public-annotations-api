@@ -51,24 +51,12 @@
 			"versionExact": "0.0.9"
 		},
 		{
-			"checksumSHA1": "fNgRM8ZlaDzdvSpuhSdGxEOrWi4=",
+			"checksumSHA1": "G8lW8pPVLieqh/MTJZkvI/i/WyM=",
 			"path": "github.com/Financial-Times/go-fthealth/v1_1",
-			"revision": "e7ccca038327a0091303a52445ec1f0fb66cb97b",
-			"revisionTime": "2017-05-25T09:50:41Z"
-		},
-		{
-			"checksumSHA1": "fNgRM8ZlaDzdvSpuhSdGxEOrWi4=",
-			"path": "github.com/Financial-Times/go-fthealth/v1_1",
-			"revision": "e7ccca038327a0091303a52445ec1f0fb66cb97b",
-			"revisionTime": "2017-05-25T09:50:41Z"
-		},
-		{
-			"checksumSHA1": "FUhczVSvt/VQAlWfzATo1YLez2E=",
-			"path": "github.com/Financial-Times/go-fthealth/v1a",
-			"revision": "e7ccca038327a0091303a52445ec1f0fb66cb97b",
-			"revisionTime": "2017-05-25T09:50:41Z",
-			"version": "0.3.0",
-			"versionExact": "0.3.0"
+			"revision": "1b007e2b37b7936dfb6671fa17e5a29fd35a08ea",
+			"revisionTime": "2017-12-04T12:48:31Z",
+			"version": "0.4",
+			"versionExact": "0.4.0"
 		},
 		{
 			"checksumSHA1": "R32X8CuDAJV1JimomUEh9SFmc8s=",
@@ -132,9 +120,7 @@
 			"checksumSHA1": "973POGyMCoyaKQuIYX2f7EKFwlQ=",
 			"path": "github.com/Financial-Times/service-status-go/httphandlers",
 			"revision": "3f5199736a3d7ae52394c63aac36834786825e21",
-			"revisionTime": "2016-03-23T11:15:42Z",
-			"version": "0.1.0",
-			"versionExact": "0.1.0"
+			"revisionTime": "2016-03-23T11:15:42Z"
 		},
 		{
 			"checksumSHA1": "+sjiZBzrsk91W1A3Md1azCkZadg=",
@@ -309,7 +295,7 @@
 			"revisionTime": "2016-09-14T00:11:54Z"
 		},
 		{
-			"checksumSHA1": "w70GrQt8nhjc6j0i3rEZjWuSpKY=",
+			"checksumSHA1": "6Yh/sh2D/OyNxKqPVs8alWUhTms=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "7ddbeae9ae08c6a06a59597f0c9edbc5ff2444ce",
 			"revisionTime": "2017-09-01T16:16:44Z"
