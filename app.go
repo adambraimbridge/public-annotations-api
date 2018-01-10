@@ -28,7 +28,7 @@ const (
 )
 
 func main() {
-	app := cli.App("public-annotations-api-neo4j", appDescription)
+	app := cli.App("public-annotations-api", appDescription)
 	neoURL := app.String(cli.StringOpt{
 		Name:   "neo-url",
 		Value:  "http://localhost:7474/db/data",
@@ -124,7 +124,7 @@ func routeRequests(port string) {
 	// Standard endpoints
 	healthCheck := fthealth.TimedHealthCheck{
 		HealthCheck: fthealth.HealthCheck{
-			SystemCode:  "up-nvam",
+			SystemCode:  "annotationsapi",
 			Name:        "public-annotations-api",
 			Description: appDescription,
 			Checks: []fthealth.Check{

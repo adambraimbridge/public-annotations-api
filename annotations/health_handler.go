@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	deweyUrl = "https://dewey.in.ft.com/view/system/up-nvam"
+	deweyUrl = "https://dewey.in.ft.com/view/system/annotationsapi"
 )
 
 func HealthCheck() fthealth.Check {
