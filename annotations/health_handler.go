@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	deweyUrl = "https://dewey.ft.com/up-csa.html"
+	deweyUrl = "https://dewey.in.ft.com/view/system/up-nvam"
 )
 
 func HealthCheck() fthealth.Check {
@@ -23,22 +23,15 @@ func HealthCheck() fthealth.Check {
 
 func Neo4jChecker() (string, error) {
 	err := AnnotationsDriver.checkConnectivity()
-	if err == nil {
-		return "Connectivity to neo4j is ok", err
+	if err != nil {
+		return "Error connecting to neo4j", err
 	}
-	return "Error connecting to neo4j", err
+
+	return "Connectivity to neo4j is ok", nil
 }
 
 func GoodToGo() gtg.Status {
-	statusCheck := func() gtg.Status {
-		return gtgCheck(Neo4jChecker)
-	}
-
-	return gtg.FailFastParallelCheck([]gtg.StatusChecker{statusCheck})()
-}
-
-func gtgCheck(handler func() (string, error)) gtg.Status {
-	if _, err := handler(); err != nil {
+	if _, err := Neo4jChecker(); err != nil {
 		return gtg.Status{GoodToGo: false, Message: err.Error()}
 	}
 	return gtg.Status{GoodToGo: true}

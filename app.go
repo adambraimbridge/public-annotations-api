@@ -23,8 +23,12 @@ import (
 	_ "net/http/pprof"
 )
 
+const (
+	appDescription = "A public RESTful API for accessing Annotations in neo4j"
+)
+
 func main() {
-	app := cli.App("public-annotations-api-neo4j", "A public RESTful API for accessing Annotations in neo4j")
+	app := cli.App("public-annotations-api-neo4j", appDescription)
 	neoURL := app.String(cli.StringOpt{
 		Name:   "neo-url",
 		Value:  "http://localhost:7474/db/data",
@@ -120,9 +124,9 @@ func routeRequests(port string) {
 	// Standard endpoints
 	healthCheck := fthealth.TimedHealthCheck{
 		HealthCheck: fthealth.HealthCheck{
-			SystemCode:  "public-annotations-api",
-			Name:        "Public Annotations API Healthcheck",
-			Description: "Checking Neo4j",
+			SystemCode:  "up-nvam",
+			Name:        "public-annotations-api",
+			Description: appDescription,
 			Checks: []fthealth.Check{
 				annotations.HealthCheck(),
 			},
