@@ -22,7 +22,7 @@ _Optional arguments are:
 Continuosly built be CircleCI. The docker image of the service is built by Dockerhub based on the git release tag. 
 To prepare a new git release, go to the repo page on GitHub and create a new release.
 * Docker Hub builds: [coco/public-annotations-api](https://hub.docker.com/r/coco/public-annotations-api/)
-* Cluster deployment:  [public-annotations-api@service](https://github.com/Financial-Times/up-service-files)
+* Cluster deployment:  [public-annotations-api](https://upp-k8s-jenkins.in.ft.com/job/k8s-deployment/job/apps-deployment/job/public-annotations-api-auto-deploy/)
 * CI provided by CircleCI: [public-annotations-api](https://circleci.com/gh/Financial-Times/public-annotations-api)
 * Code coverage provided by Coverall: [public-annotations-api](https://coveralls.io/github/Financial-Times/public-annotations-api)
 
