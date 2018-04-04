@@ -45,43 +45,6 @@ only the annotation with "About" relationship will be returned.
 Similarly if a piece of content is annotated with a Concept "Is Classified By" and "Is Primarily Classified By"
 only the annotation with "Is Primarily Classified By" relationship will be returned.
 
-### GET content/{uuid}/annotations/{platformVersion} endpoint
-
-This endpoint returns all the existing annotations for a specific platformVersion - if any.
-Note:
-The response here is an enriched format of the simple /content/{uuid}/annotations response, containing fields like `platformVersion`, and the referenced concepts' identifiers.
-This endpoint does not show inferred Brands annotations, as the other endpoint does.
-
-### Response Example
-The structure of the the response is the same both endpoints and would look like this:
-```
-[...
-    {
-        predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
-        id: "http://api.ft.com/things/{concepts_canonical_uuid}",
-        apiUrl: "http://api.ft.com/things/{concepts_canonical_uuid}",
-        types: [
-            "http://www.ft.com/ontology/core/Thing",
-            "http://www.ft.com/ontology/concept/Concept",
-            "http://www.ft.com/ontology/classification/Classification",
-            "http://www.ft.com/ontology/Subject"
-        ],
-        prefLabel: "Company News",
-        leiCode: "leicode_value",
-        FIGI: "figi_value",
-        factsetID: "factsetID_value"
-        tmeIDs: [
-            "tmeid__value"
-        ],
-        uuids: [
-            "uuid1","uuid2","canonical_uuid"
-        ],
-        platformVersion: "v1",
-    },
-...
-]
-```
-
 ## Admin endpoints
 
 Healthchecks: [http://localhost:8080/__health](http://localhost:8080/__health)  

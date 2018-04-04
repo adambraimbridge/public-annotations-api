@@ -141,7 +141,6 @@ func routeRequests(port string) {
 	servicesRouter := mux.NewRouter()
 
 	servicesRouter.HandleFunc("/content/{uuid}/annotations", annotations.GetAnnotations).Methods("GET")
-	servicesRouter.HandleFunc("/content/{uuid}/annotations/{platformVersion}", annotations.GetFilteredAnnotations).Methods("GET")
 	servicesRouter.HandleFunc("/content/{uuid}/annotations", annotations.MethodNotAllowedHandler)
 
 	var monitoringRouter http.Handler = servicesRouter
