@@ -4,10 +4,10 @@ __Provides a public API for Annotations stored in a Neo4J graph database__
 
 ## Installation & running locally
 
-* `go get -u github.com/kardianos/govendor`
+* `curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh`
 * `go get -u github.com/Financial-Times/public-annotations-api`
 * `cd $GOPATH/src/github.com/Financial-Times/public-annotations-api`
-* `govendor sync`
+* `dep ensure -vendor-only`
 * `go test ./...`
 * `go install`
 * `$GOPATH/bin/public-annotations-api --neo-url={neo4jUrl} --port={port} --log-level={DEBUG|INFO|WARN|ERROR}--cache-duration{e.g. 22h10m3s}`   
