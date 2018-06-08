@@ -66,7 +66,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	query := &neoism.CypherQuery{
 		Statement: `
-      MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(concept:Concept)
+      MATCH (content:Content{uuid:{contentUUID}})-[rel]-(concept:Concept)
       OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
       OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
       OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
@@ -74,13 +74,13 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle
 
       UNION ALL
-      MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
+      MATCH (content:Content{uuid:{contentUUID}})-[rel]-(brand:Concept)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
       OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
       RETURN distinct coalesce(canonicalParent.prefUUID, parentBrand.uuid) as id, "IMPLICITLY_CLASSIFIED_BY" as predicate, coalesce(labels(canonicalParent), labels(parentBrand)) as types,
 				coalesce(canonicalParent.prefLabel, parentBrand.prefLabel) as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle
 
       UNION ALL
-      MATCH (content:Thing{uuid:{contentUUID}})-[rel:ABOUT]-(concept:Concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
+      MATCH (content:Content{uuid:{contentUUID}})-[rel:ABOUT]-(concept:Concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
       MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(leafConcept:Concept)-[:HAS_BROADER*1..]->(implicit:Concept)-[:EQUIVALENT_TO]->(canonicalImplicit)
       WHERE NOT (canonicalImplicit)<-[:EQUIVALENT_TO]-(:Concept)<-[:ABOUT]-(content) // filter out the original abouts
       RETURN distinct canonicalImplicit.prefUUID as id, "IMPLICITLY_ABOUT" as predicate, labels(canonicalImplicit) as types, canonicalImplicit.prefLabel as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle
