@@ -12,10 +12,10 @@ func TestLifecycleFilter(t *testing.T) {
 
 	ann := []annotation{
 		{
-			Lifecycle:"foo",
+			Lifecycle: "foo",
 		},
 		{
-			Lifecycle:"bar",
+			Lifecycle: "bar",
 		},
 	}
 
@@ -31,8 +31,8 @@ func TestDedupFilterPassthrough(t *testing.T) {
 
 	ann := []annotation{
 		{
-			ID: "1",
-			Predicate:"foo",
+			ID:        "1",
+			Predicate: "foo",
 		},
 	}
 
@@ -48,12 +48,12 @@ func TestDedupFilterDedups(t *testing.T) {
 
 	ann := []annotation{
 		{
-			ID: "2",
-			Predicate:"baz",
+			ID:        "2",
+			Predicate: "baz",
 		},
 		{
-			ID: "2",
-			Predicate:"baz",
+			ID:        "2",
+			Predicate: "baz",
 		},
 	}
 

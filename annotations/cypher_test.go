@@ -38,14 +38,22 @@ const (
 	brandGrandChildUUID                = "ff691bf8-8d92-2a2a-8326-c273400bff0b"
 	brandCircularAUUID                 = "ff691bf8-8d92-3a3a-8326-c273400bff0b"
 	brandCircularBUUID                 = "ff691bf8-8d92-4a4a-8326-c273400bff0b"
-	contentWithBrandsDiffTypesUUID     = "3fc9fe3e-af8c-6a6a-961a-e5065392bb31"
-	financialInstrumentUUID            = "77f613ad-1470-422c-bf7c-1dd4c3fd1693"
+
+	contentWithBrandsDiffTypesUUID = "3fc9fe3e-af8c-6a6a-961a-e5065392bb31"
+	financialInstrumentUUID        = "77f613ad-1470-422c-bf7c-1dd4c3fd1693"
 
 	MSJConceptUUID         = "5d1510f8-2779-4b74-adab-0a5eb138fca6"
 	FakebookConceptUUID    = "eac853f5-3859-4c08-8540-55e043719400"
 	MetalMickeyConceptUUID = "0483bef8-5797-40b8-9b25-b12e492f63c6"
 	JohnSmithConceptUUID   = "75e2f7e9-cb5e-40a5-a074-86d69fe09f69"
 	brokenPacUUID          = "8d965e66-5454-4856-972d-f64cc1a18a5d"
+
+	narrowerTopic = "7e22c8b8-b280-4e52-aa22-fa1c6dffd894"
+	aboutTopic    = "ca982370-66cd-43bd-b2e3-7bfcb73efb1e"
+	broaderTopicA = "fde5eee9-3260-4125-adb6-3d91a4888be5"
+	broaderTopicB = "b6469cc2-f6ff-45aa-a9bb-3d1bb0f9a35d"
+	cyclicTopicA  = "e404e3bd-beff-4324-83f4-beb044baf916"
+	cyclicTopicB  = "77a410a3-6857-4654-80ef-6aae29be852a"
 
 	v1PlatformVersion    = "v1"
 	v2PlatformVersion    = "v2"
@@ -54,6 +62,7 @@ const (
 	emptyPlatformVersion = ""
 
 	brandType = "http://www.ft.com/ontology/product/Brand"
+	topicType = "http://www.ft.com/ontology/Topic"
 )
 
 var (
@@ -63,6 +72,12 @@ var (
 		brandParentUUID:     "Financial Times",
 		brandCircularAUUID:  "Circular Business School video - A",
 		brandCircularBUUID:  "Circular Business School video - B",
+		aboutTopic:          "Ashes 2017",
+		broaderTopicA:       "The Ashes",
+		broaderTopicB:       "Cricket",
+		narrowerTopic:       "England Ashes 2017 Victory",
+		cyclicTopicA:        "Dodgy Cyclic Topic A",
+		cyclicTopicB:        "Dodgy Cyclic Topic B",
 	}
 
 	conceptTypes = map[string][]string{
@@ -72,10 +87,16 @@ var (
 			"http://www.ft.com/ontology/classification/Classification",
 			brandType,
 		},
+		topicType: {
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
+			topicType,
+		},
 	}
 
 	conceptApiUrlTemplates = map[string]string{
 		brandType: "http://api.ft.com/brands/%s",
+		topicType: "http://api.ft.com/things/%s",
 	}
 )
 
@@ -87,7 +108,8 @@ type cypherDriverTestSuite struct {
 var allUUIDs = []string{contentUUID, contentWithNoAnnotationsUUID, contentWithParentAndChildBrandUUID,
 	contentWithThreeLevelsOfBrandUUID, contentWithCircularBrandUUID, contentWithOnlyFTUUID, alphavilleSeriesUUID,
 	brandParentUUID, brandChildUUID, brandGrandChildUUID, brandCircularAUUID, brandCircularBUUID, contentWithBrandsDiffTypesUUID,
-	FakebookConceptUUID, MSJConceptUUID, MetalMickeyConceptUUID, brokenPacUUID, financialInstrumentUUID, JohnSmithConceptUUID}
+	FakebookConceptUUID, MSJConceptUUID, MetalMickeyConceptUUID, brokenPacUUID, financialInstrumentUUID, JohnSmithConceptUUID,
+	aboutTopic, broaderTopicA, broaderTopicB, narrowerTopic, cyclicTopicA, cyclicTopicB}
 
 func TestCypherDriverSuite(t *testing.T) {
 	logger.InitLogger("public-annotations-api-test", log.DebugLevel.String())
@@ -108,6 +130,11 @@ func (s *cypherDriverTestSuite) TearDownTest() {
 }
 
 func getDatabaseConnection(t *testing.T) neoutils.NeoConnection {
+	if testing.Short() {
+		t.Skip("Skipping Neo4j integration tests.")
+		return nil
+	}
+
 	url := os.Getenv("NEO4J_TEST_URL")
 	if url == "" {
 		url = "http://localhost:7474/db/data"
@@ -126,9 +153,9 @@ func (s *cypherDriverTestSuite) TestRetrieveMultipleAnnotations() {
 		getExpectedMallStreetJournalAnnotation(v2Lifecycle, emptyPlatformVersion),
 		getExpectedMetalMickeyAnnotation(v1Lifecycle, emptyPlatformVersion),
 		getExpectedAlphavilleSeriesAnnotation(v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -142,9 +169,9 @@ func (s *cypherDriverTestSuite) TestRetrievePacAnnotationsAsPriority() {
 		getExpectedMetalMickeyAnnotation(pacLifecycle, emptyPlatformVersion),
 		getExpectedFacebookAnnotation(pacLifecycle, emptyPlatformVersion),
 		getExpectedJohnSmithAnnotation(pacLifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle),
+		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle),
 	}
 	driver := NewCypherDriver(s.db, "prod")
 	writePacAnnotations(s.T(), s.db)
@@ -161,15 +188,52 @@ func (s *cypherDriverTestSuite) TestRetrievePacAnnotationsAsPriority() {
 	assertListContainsAll(s.T(), anns, expectedAnnotations)
 }
 
+func (s *cypherDriverTestSuite) TestRetrieveImplicitAbouts() {
+	expectedAnnotations := annotations{
+		expectedAnnotation(aboutTopic, topicType, predicates["ABOUT"], pacLifecycle),
+		expectedAnnotation(broaderTopicA, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+		expectedAnnotation(broaderTopicB, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+	}
+
+	driver := NewCypherDriver(s.db, "prod")
+	writeAboutAnnotations(s.T(), s.db)
+
+	anns := getAndCheckAnnotations(driver, contentUUID, s.T())
+
+	assert.Len(s.T(), anns, len(expectedAnnotations), "Didn't get the same number of annotations")
+	assertListContainsAll(s.T(), anns, expectedAnnotations)
+}
+
+func (s *cypherDriverTestSuite) TestRetrieveCyclicImplicitAbouts() {
+	expectedAnnotations := annotations{
+		expectedAnnotation(narrowerTopic, topicType, predicates["ABOUT"], pacLifecycle),
+		expectedAnnotation(aboutTopic, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+		expectedAnnotation(broaderTopicA, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+		expectedAnnotation(broaderTopicB, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+		expectedAnnotation(cyclicTopicA, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+		expectedAnnotation(cyclicTopicB, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+	}
+
+	driver := NewCypherDriver(s.db, "prod")
+	writeCyclicAboutAnnotations(s.T(), s.db)
+
+	anns := getAndCheckAnnotations(driver, contentUUID, s.T())
+	d, _ := json.MarshalIndent(anns, "", "   ")
+	s.T().Log(string(d))
+
+	assert.Len(s.T(), anns, len(expectedAnnotations), "Didn't get the same number of annotations")
+	assertListContainsAll(s.T(), anns, expectedAnnotations)
+}
+
 func (s *cypherDriverTestSuite) TestRetrieveMultipleAnnotationsIfPacAnnotationCannotBeMapped() {
 	expectedAnnotations := annotations{
 		getExpectedFakebookAnnotation(v2Lifecycle, emptyPlatformVersion),
 		getExpectedMallStreetJournalAnnotation(v2Lifecycle, emptyPlatformVersion),
 		getExpectedMetalMickeyAnnotation(v1Lifecycle, emptyPlatformVersion),
 		getExpectedAlphavilleSeriesAnnotation(v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -188,9 +252,9 @@ func (s *cypherDriverTestSuite) TestRetrieveMultipleAnnotationsIfPacAnnotationCa
 
 func (s *cypherDriverTestSuite) TestRetrieveContentWithParentBrand() {
 	expectedAnnotations := annotations{
-		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -201,9 +265,9 @@ func (s *cypherDriverTestSuite) TestRetrieveContentWithParentBrand() {
 
 func (s *cypherDriverTestSuite) TestRetrieveContentWithGrandParentBrand() {
 	expectedAnnotations := annotations{
-		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -214,8 +278,8 @@ func (s *cypherDriverTestSuite) TestRetrieveContentWithGrandParentBrand() {
 
 func (s *cypherDriverTestSuite) TestRetrieveContentWithCircularBrand() {
 	expectedAnnotations := annotations{
-		expectedAnnotation(brandCircularAUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandCircularBUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandCircularAUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandCircularBUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -226,7 +290,7 @@ func (s *cypherDriverTestSuite) TestRetrieveContentWithCircularBrand() {
 
 func (s *cypherDriverTestSuite) TestRetrieveContentWithJustParentBrand() {
 	expectedAnnotations := annotations{
-		expectedAnnotation(brandParentUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -239,40 +303,14 @@ func (s *cypherDriverTestSuite) TestRetrieveContentWithJustParentBrand() {
 // and Brands A and B have a circular relation HasParent
 func (s *cypherDriverTestSuite) TestRetrieveContentBrandsOfDifferentTypes() {
 	expectedAnnotations := annotations{
-		expectedAnnotation(brandCircularAUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
-		expectedAnnotation(brandCircularBUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(brandCircularAUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle),
+		expectedAnnotation(brandCircularBUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
 	anns := getAndCheckAnnotations(driver, contentWithCircularBrandUUID, s.T())
 	assert.Equal(s.T(), len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
 	assertListContainsAll(s.T(), anns, expectedAnnotations)
-}
-
-func (s *cypherDriverTestSuite) TestRetrieveMultipleV1Annotations() {
-	expectedAnnotations := getExpectedV1Annotations()
-	driver := NewCypherDriver(s.db, "prod")
-	anns := getAndCheckFilteredAnnotations(driver, contentUUID, "v1", s.T())
-	assert.Equal(s.T(), len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(s.T(), anns, expectedAnnotations)
-
-	for _, ann := range anns {
-		log.Info(ann)
-		assert.Equal(s.T(), "v1", ann.PlatformVersion)
-	}
-}
-
-func (s *cypherDriverTestSuite) TestRetrieveMultipleV2Annotations() {
-	expectedAnnotations := getExpectedV2Annotations()
-	driver := NewCypherDriver(s.db, "prod")
-	anns := getAndCheckFilteredAnnotations(driver, contentUUID, "v2", s.T())
-	assert.Equal(s.T(), len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
-	assertListContainsAll(s.T(), anns, expectedAnnotations)
-
-	for _, ann := range anns {
-		log.Info(ann)
-		assert.Equal(s.T(), "v2", ann.PlatformVersion)
-	}
 }
 
 func TestRetrieveNoAnnotationsWhenThereAreNonePresentExceptBrands(t *testing.T) {
@@ -320,7 +358,6 @@ func TestRetrieveAnnotationWithCorrectValues(t *testing.T) {
 			}
 		}
 	}
-
 }
 
 func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
@@ -347,13 +384,6 @@ func getAndCheckAnnotations(driver cypherDriver, contentUUID string, t *testing.
 	return anns
 }
 
-func getAndCheckFilteredAnnotations(driver cypherDriver, contentUUID string, platformVersion string, t *testing.T) annotations {
-	anns, found, err := driver.filteredRead(contentUUID, platformVersion)
-	assert.NoError(t, err, "Unexpected error for content %s", contentUUID)
-	assert.True(t, found, "Found no annotations for content %s", contentUUID)
-	return anns
-}
-
 // Utility functions
 func writeAllDataToDB(t testing.TB, db neoutils.NeoConnection) {
 	writeBrands(t, db)
@@ -365,6 +395,7 @@ func writeAllDataToDB(t testing.TB, db neoutils.NeoConnection) {
 	writeAlphavilleSeries(t, db)
 	writeV1Annotations(t, db)
 	writeV2Annotations(t, db)
+	writeTopics(t, db)
 }
 
 func writeBrands(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
@@ -389,6 +420,18 @@ func writeContent(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-5a5a-961a-e5065392bb31.json", t)
 	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-6a6a-961a-e5065392bb31.json", t)
 	return contentRW
+}
+
+func writeTopics(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
+	topicsRW := concepts.NewConceptService(db)
+	assert.NoError(t, topicsRW.Initialise())
+	writeJSONToService(topicsRW, "./fixtures/Topics-7e22c8b8-b280-4e52-aa22-fa1c6dffd894.json", t)
+	writeJSONToService(topicsRW, "./fixtures/Topics-b6469cc2-f6ff-45aa-a9bb-3d1bb0f9a35d.json", t)
+	writeJSONToService(topicsRW, "./fixtures/Topics-ca982370-66cd-43bd-b2e3-7bfcb73efb1e.json", t)
+	writeJSONToService(topicsRW, "./fixtures/Topics-fde5eee9-3260-4125-adb6-3d91a4888be5.json", t)
+	writeJSONToService(topicsRW, "./fixtures/Topics-77a410a3-6857-4654-80ef-6aae29be852a.json", t)
+	writeJSONToService(topicsRW, "./fixtures/Topics-e404e3bd-beff-4324-83f4-beb044baf916.json", t)
+	return topicsRW
 }
 
 func writeOrganisations(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
@@ -452,6 +495,20 @@ func writePacAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Service 
 	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
 	writeJSONToAnnotationsService(t, service, "pac", "annotations-pac", contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-pac.json")
+	return service
+}
+
+func writeAboutAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
+	service := annrw.NewCypherAnnotationsService(db)
+	assert.NoError(t, service.Initialise())
+	writeJSONToAnnotationsService(t, service, "pac", "annotations-pac", contentUUID, "./fixtures/Annotations-ca982370-66cd-43bd-b2e3-7bfcb73efb1e-implicit-abouts.json")
+	return service
+}
+
+func writeCyclicAboutAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
+	service := annrw.NewCypherAnnotationsService(db)
+	assert.NoError(t, service.Initialise())
+	writeJSONToAnnotationsService(t, service, "pac", "annotations-pac", contentUUID, "./fixtures/Annotations-7e22c8b8-b280-4e52-aa22-fa1c6dffd894-cyclic-implicit-abouts.json")
 	return service
 }
 
@@ -528,37 +585,6 @@ func cleanDB(t testing.TB, db neoutils.NeoConnection) {
 	assert.NoError(t, err)
 }
 
-func getExpectedV1Annotations() annotations {
-
-	av := getExpectedAlphavilleSeriesAnnotation(v1Lifecycle, v1PlatformVersion)
-	av.TmeIDs = []string{"FOOBAR"}
-	av.UUIDs = []string{"747894f8-a231-4efb-805d-753635eca712"}
-
-	mm := getExpectedMetalMickeyAnnotation(v1Lifecycle, v1PlatformVersion)
-	mm.TmeIDs = []string{"TWV0YWwgTWlja2V5-U3ViamVjdHM="}
-	mm.UUIDs = []string{"0483bef8-5797-40b8-9b25-b12e492f63c6"}
-
-	b := expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle, v1PlatformVersion)
-
-	b.TmeIDs = []string{"MTVkNjNmNzctOTA3Mi00GrandChildUtMmI4MGIyODRiNmI0-QnJhbmRz"}
-	b.UUIDs = []string{"ff691bf8-8d92-2a2a-8326-c273400bff0b"}
-
-	return []annotation{av, mm, b}
-}
-
-func getExpectedV2Annotations() annotations {
-
-	fb := getExpectedFakebookAnnotation(v2Lifecycle, v2PlatformVersion)
-	fb.FactsetIDs = []string{"00AAA-E"}
-	fb.UUIDs = []string{"eac853f5-3859-4c08-8540-55e043719400"}
-
-	msj := getExpectedMallStreetJournalAnnotation(v2Lifecycle, v2PlatformVersion)
-	msj.FactsetIDs = []string{"00BBBB-E"}
-	msj.UUIDs = []string{"5d1510f8-2779-4b74-adab-0a5eb138fca6"}
-
-	return []annotation{fb, msj}
-}
-
 func getExpectedFakebookAnnotation(lifecycle string, platformVersion string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/annotation/mentions",
@@ -571,11 +597,10 @@ func getExpectedFakebookAnnotation(lifecycle string, platformVersion string) ann
 			"http://www.ft.com/ontology/company/Company",
 			"http://www.ft.com/ontology/company/PublicCompany",
 		},
-		LeiCode:         "BQ4BKCS1HXDV9TTTTTTTT",
-		FIGI:            "BB8000C3P0-R2D2",
-		PrefLabel:       "Fakebook, Inc.",
-		Lifecycle:       lifecycle,
-		PlatformVersion: platformVersion,
+		LeiCode:   "BQ4BKCS1HXDV9TTTTTTTT",
+		FIGI:      "BB8000C3P0-R2D2",
+		PrefLabel: "Fakebook, Inc.",
+		Lifecycle: lifecycle,
 	}
 }
 
@@ -589,9 +614,8 @@ func getExpectedMallStreetJournalAnnotation(lifecycle string, platformVersion st
 			"http://www.ft.com/ontology/concept/Concept",
 			"http://www.ft.com/ontology/organisation/Organisation",
 		},
-		PrefLabel:       "The Mall Street Journal",
-		Lifecycle:       lifecycle,
-		PlatformVersion: platformVersion,
+		PrefLabel: "The Mall Street Journal",
+		Lifecycle: lifecycle,
 	}
 }
 
@@ -606,9 +630,8 @@ func getExpectedMetalMickeyAnnotation(lifecycle string, platformVersion string) 
 			"http://www.ft.com/ontology/classification/Classification",
 			"http://www.ft.com/ontology/Subject",
 		},
-		PrefLabel:       "Metal Mickey",
-		Lifecycle:       lifecycle,
-		PlatformVersion: platformVersion,
+		PrefLabel: "Metal Mickey",
+		Lifecycle: lifecycle,
 	}
 }
 
@@ -624,11 +647,10 @@ func getExpectedFacebookAnnotation(lifecycle string, platformVersion string) ann
 			"http://www.ft.com/ontology/company/Company",
 			"http://www.ft.com/ontology/company/PublicCompany",
 		},
-		PrefLabel:       "Fakebook, Inc.",
-		Lifecycle:       lifecycle,
-		PlatformVersion: platformVersion,
-		LeiCode:         "BQ4BKCS1HXDV9TTTTTTTT",
-		FIGI:            "BB8000C3P0-R2D2",
+		PrefLabel: "Fakebook, Inc.",
+		Lifecycle: lifecycle,
+		LeiCode:   "BQ4BKCS1HXDV9TTTTTTTT",
+		FIGI:      "BB8000C3P0-R2D2",
 	}
 }
 
@@ -642,9 +664,8 @@ func getExpectedJohnSmithAnnotation(lifecycle string, platformVersion string) an
 			"http://www.ft.com/ontology/concept/Concept",
 			"http://www.ft.com/ontology/person/Person",
 		},
-		PrefLabel:       "John Smith",
-		Lifecycle:       lifecycle,
-		PlatformVersion: platformVersion,
+		PrefLabel: "John Smith",
+		Lifecycle: lifecycle,
 	}
 }
 
@@ -659,21 +680,19 @@ func getExpectedAlphavilleSeriesAnnotation(lifecycle string, platformVersion str
 			"http://www.ft.com/ontology/classification/Classification",
 			"http://www.ft.com/ontology/AlphavilleSeries",
 		},
-		PrefLabel:       "Test Alphaville Series",
-		Lifecycle:       lifecycle,
-		PlatformVersion: platformVersion,
+		PrefLabel: "Test Alphaville Series",
+		Lifecycle: lifecycle,
 	}
 }
 
-func expectedAnnotation(conceptUuid string, conceptType string, predicate string, lifecycle string, platformVersion string) annotation {
+func expectedAnnotation(conceptUuid string, conceptType string, predicate string, lifecycle string) annotation {
 	return annotation{
-		Predicate:       predicate,
-		ID:              fmt.Sprintf("http://api.ft.com/things/%s", conceptUuid),
-		APIURL:          fmt.Sprintf(conceptApiUrlTemplates[conceptType], conceptUuid),
-		Types:           conceptTypes[conceptType],
-		PrefLabel:       conceptLabels[conceptUuid],
-		Lifecycle:       lifecycle,
-		PlatformVersion: platformVersion,
+		Predicate: predicate,
+		ID:        fmt.Sprintf("http://api.ft.com/things/%s", conceptUuid),
+		APIURL:    fmt.Sprintf(conceptApiUrlTemplates[conceptType], conceptUuid),
+		Types:     conceptTypes[conceptType],
+		PrefLabel: conceptLabels[conceptUuid],
+		Lifecycle: lifecycle,
 	}
 }
 

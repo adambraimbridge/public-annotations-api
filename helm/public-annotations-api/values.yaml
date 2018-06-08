@@ -13,5 +13,7 @@ public_annotations_api:
   log_metrics: "false"
   cache_duration: 30s
 resources:
+  requests:
+    memory: 30Mi
   limits:
     memory: 256Mi

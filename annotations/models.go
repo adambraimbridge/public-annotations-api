@@ -10,11 +10,6 @@ type annotation struct {
 	LeiCode   string   `json:"leiCode,omitempty"`
 	FIGI      string   `json:"FIGI,omitempty"`
 	PrefLabel string   `json:"prefLabel,omitempty"`
-	//the fields below are populated only for the /content/{uuid}/annotations/{plaformVersion} endpoint
-	FactsetIDs      []string `json:"factsetIDs,omitempty"`
-	TmeIDs          []string `json:"tmeIDs,omitempty"`
-	UUIDs           []string `json:"uuids,omitempty"`
-	PlatformVersion string   `json:"platformVersion,omitempty"`
 	//used for filtering, e.g. pac not exposed
 	Lifecycle string `json:"-"`
 }
@@ -29,4 +24,5 @@ var predicates = map[string]string{
 	"IS_CLASSIFIED_BY":           "http://www.ft.com/ontology/classification/isClassifiedBy",
 	"IS_PRIMARILY_CLASSIFIED_BY": "http://www.ft.com/ontology/classification/isPrimarilyClassifiedBy",
 	"IMPLICITLY_CLASSIFIED_BY":   "http://www.ft.com/ontology/implicitlyClassifiedBy",
+	"IMPLICITLY_ABOUT":           "http://www.ft.com/ontology/implicitlyAbout",
 }

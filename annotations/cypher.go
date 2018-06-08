@@ -2,6 +2,7 @@ package annotations
 
 import (
 	"fmt"
+	"time"
 
 	"errors"
 
@@ -14,7 +15,6 @@ import (
 // Driver interface
 type driver interface {
 	read(id string) (anns annotations, found bool, err error)
-	filteredRead(id string, platformVersion string) (anns annotations, found bool, err error)
 	checkConnectivity() error
 }
 
@@ -25,7 +25,7 @@ type cypherDriver struct {
 }
 
 var (
-	pacLifecycleFilter   = newLifecycleFilter(pacLifecycle)
+	pacLifecycleFilter = newLifecycleFilter(pacLifecycle)
 )
 
 func NewCypherDriver(conn neoutils.NeoConnection, env string) cypherDriver {
@@ -66,27 +66,40 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	query := &neoism.CypherQuery{
 		Statement: `
-			MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(concept:Concept)
-			OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
-			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
-			OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
-			RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
+      MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(concept:Concept)
+      OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
+      OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
+      OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
+      RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
 				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle
-			UNION ALL
-			MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
-			OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
-			RETURN distinct coalesce(canonicalParent.prefUUID, parentBrand.uuid) as id, "IMPLICITLY_CLASSIFIED_BY" as predicate, coalesce(labels(canonicalParent), labels(parentBrand)) as types,
+
+      UNION ALL
+      MATCH (content:Thing{uuid:{contentUUID}})-[rel]-(brand:Brand)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
+      OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
+      RETURN distinct coalesce(canonicalParent.prefUUID, parentBrand.uuid) as id, "IMPLICITLY_CLASSIFIED_BY" as predicate, coalesce(labels(canonicalParent), labels(parentBrand)) as types,
 				coalesce(canonicalParent.prefLabel, parentBrand.prefLabel) as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle
+
+      UNION ALL
+      MATCH (content:Thing{uuid:{contentUUID}})-[rel:ABOUT]-(concept:Concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
+      MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(leafConcept:Concept)-[:HAS_BROADER*1..]->(implicit:Concept)-[:EQUIVALENT_TO]->(canonicalImplicit)
+      WHERE NOT (canonicalImplicit)<-[:EQUIVALENT_TO]-(:Concept)<-[:ABOUT]-(content) // filter out the original abouts
+      RETURN distinct canonicalImplicit.prefUUID as id, "IMPLICITLY_ABOUT" as predicate, labels(canonicalImplicit) as types, canonicalImplicit.prefLabel as prefLabel, null as leiCode, null as figi, rel.lifecycle as lifecycle
       `,
 		Parameters: neoism.Props{"contentUUID": contentUUID},
 		Result:     &results,
 	}
 
+	start := time.Now()
 	err = cd.conn.CypherBatch([]*neoism.CypherQuery{query})
+	end := time.Now()
+
+	log.WithField("contentUUID", contentUUID).WithField("duration", fmt.Sprintf("%vms", end.Sub(start).Nanoseconds()/1e6)).Info("Annotations query (including implicit relationships) completed.")
+
 	if err != nil {
 		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
 		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
 	}
+
 	log.Debugf("Found %d Annotations for uuid: %s", len(results), contentUUID)
 	if (len(results)) == 0 {
 		return annotations{}, false, nil
@@ -115,59 +128,6 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 	return chain.doNext(mappedAnnotations), found, nil
 }
 
-// Returns all the annotations with the specified platformVersion enriched with all the existing concept IDs for a given content
-func (cd cypherDriver) filteredRead(contentUUID string, platformVersion string) (anns annotations, found bool, err error) {
-	results := []neoAnnotation{}
-
-	query := &neoism.CypherQuery{
-		Statement: `
-			MATCH (content:Thing{uuid:{contentUUID}})-[rel{platformVersion:{platformVersion}}]->(concept:Concept)
-			OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
-			OPTIONAL MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(leafConcepts:Concept)
-			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
-			OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
-			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(tme:TMEIdentifier)
-			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(fs:FactsetIdentifier)
-			OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(upp:UPPIdentifier)
-			OPTIONAL MATCH (leafConcepts)<-[:IDENTIFIES]-(sourceUPP:UPPIdentifier)
-			OPTIONAL MATCH (leafConcepts)<-[:IDENTIFIES]-(sourceLEI:LegalEntityIdentifier)
-			OPTIONAL MATCH (leafConcepts)<-[:IDENTIFIES]-(sourceTME:TMEIdentifier)
-			OPTIONAL MATCH (leafConcepts)<-[:IDENTIFIES]-(sourceFS:FactsetIdentifier)
-			WITH concept, canonicalConcept, rel, figi, lei, collect(distinct fs.value) + collect(distinct sourceFS.value) as fs, collect(distinct tme.value) + collect(distinct sourceTME.value) as tme, collect(distinct upp.value) + collect(distinct sourceUPP.value) as upp
-			RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
-				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, {platformVersion} as platformVersion, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle, tme as tmeIDs, fs as factsetID, upp as uuids
-			`,
-		Parameters: neoism.Props{"contentUUID": contentUUID, "platformVersion": platformVersion},
-		Result:     &results,
-	}
-
-	err = cd.conn.CypherBatch([]*neoism.CypherQuery{query})
-	if err != nil {
-		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
-		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
-	}
-	log.Debugf("Found %d Annotations for uuid: %s with platformVersion: %s", len(results), contentUUID, platformVersion)
-	if (len(results)) == 0 {
-		return annotations{}, false, nil
-	}
-
-	mappedAnnotations := []annotation{}
-
-	found = false
-
-	for _, ann := range results {
-		if ann.ID != "" {
-			annotation, err := mapToResponseFormat(ann, cd.env)
-			if err == nil {
-				mappedAnnotations = append(mappedAnnotations, annotation)
-				found = true
-			}
-		}
-	}
-
-	return mappedAnnotations, found, nil
-}
-
 func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	var ann annotation
 
@@ -189,19 +149,8 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 		return ann, err
 	}
 	ann.Predicate = predicate
-
-	ann.PlatformVersion = neoAnn.PlatformVersion
 	ann.Lifecycle = neoAnn.Lifecycle
 
-	if len(neoAnn.TmeIDs) > 0 {
-		ann.TmeIDs = deduplicateList(neoAnn.TmeIDs)
-	}
-	if len(neoAnn.FactsetIDs) > 0 {
-		ann.FactsetIDs = deduplicateList(neoAnn.FactsetIDs)
-	}
-	if len(neoAnn.UUIDs) > 0 {
-		ann.UUIDs = deduplicateList(neoAnn.UUIDs)
-	}
 	return ann, nil
 }
 

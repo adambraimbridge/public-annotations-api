@@ -5,13 +5,13 @@ type annotationsFilter interface {
 }
 
 type annotationsFilterChain struct {
-	index int
+	index   int
 	filters []annotationsFilter
 }
 
 func newAnnotationsFilterChain(filters ...annotationsFilter) *annotationsFilterChain {
 	size := len(filters)
-	f := make([]annotationsFilter, size + 1)
+	f := make([]annotationsFilter, size+1)
 	for i, t := range filters {
 		f[i] = t
 	}
@@ -56,7 +56,7 @@ var defaultDedupFilter = &dedupFilter{}
 func (f *dedupFilter) filter(in []annotation, chain *annotationsFilterChain) []annotation {
 	out := []annotation{}
 
-	OUTER:
+OUTER:
 	for _, ann := range in {
 		for _, copied := range out {
 			if copied.Predicate == ann.Predicate && copied.ID == ann.ID {

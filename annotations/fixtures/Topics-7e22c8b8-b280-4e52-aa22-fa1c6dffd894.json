@@ -1,0 +1,25 @@
+{
+  "prefUUID": "7e22c8b8-b280-4e52-aa22-fa1c6dffd894",
+  "prefLabel": "England Ashes 2017 Victory",
+  "type": "Topic",
+  "aliases": [
+    "England Ashes 2017 Victory"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "7e22c8b8-b280-4e52-aa22-fa1c6dffd894",
+      "prefLabel": "England Ashes 2017 Victory",
+      "type": "Topic",
+      "authority": "Smartlogic",
+      "authorityValue": "7e22c8b8-b280-4e52-aa22-fa1c6dffd894",
+      "lastModifiedEpoch": 1507036591,
+      "aliases": [
+        "England Ashes 2017 Victory"
+      ],
+      "broaderUUIDs": [
+        "ca982370-66cd-43bd-b2e3-7bfcb73efb1e",
+        "77a410a3-6857-4654-80ef-6aae29be852a"
+      ]
+    }
+  ]
+}

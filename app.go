@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
-	"github.com/Financial-Times/go-fthealth/v1a"
+	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
 
@@ -20,10 +20,15 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rcrowley/go-metrics"
 	log "github.com/sirupsen/logrus"
+	_ "net/http/pprof"
+)
+
+const (
+	appDescription = "A public RESTful API for accessing Annotations in neo4j"
 )
 
 func main() {
-	app := cli.App("public-annotations-api-neo4j", "A public RESTful API for accessing Annotations in neo4j")
+	app := cli.App("public-annotations-api", appDescription)
 	neoURL := app.String(cli.StringOpt{
 		Name:   "neo-url",
 		Value:  "http://localhost:7474/db/data",
@@ -111,38 +116,40 @@ func runServer(neoURL string, port string, cacheDuration string, env string) {
 	}
 
 	annotations.AnnotationsDriver = annotations.NewCypherDriver(db, env)
-
-	// The following endpoints should not be monitored or logged (varnish calls one of these every second, depending on config)
-	// The top one of these build info endpoints feels more correct, but the lower one matches what we have in Dropwizard,
-	// so it's what apps expect currently same as ping, the content of build-info needs more definition
-	http.HandleFunc(status.PingPath, status.PingHandler)
-	http.HandleFunc(status.PingPathDW, status.PingHandler)
-	http.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
-	http.HandleFunc(status.BuildInfoPathDW, status.BuildInfoHandler)
-	http.HandleFunc("/__gtg", annotations.GoodToGo)
-
-	http.Handle("/", router())
-
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatalf("Unable to start server: %v", err)
-	}
+	routeRequests(port)
 }
 
-func router() http.Handler {
+func routeRequests(port string) {
+
+	// Standard endpoints
+	healthCheck := fthealth.TimedHealthCheck{
+		HealthCheck: fthealth.HealthCheck{
+			SystemCode:  "annotationsapi",
+			Name:        "public-annotations-api",
+			Description: appDescription,
+			Checks: []fthealth.Check{
+				annotations.HealthCheck(),
+			},
+		},
+		Timeout: 10 * time.Second,
+	}
+	http.HandleFunc("/__health", fthealth.Handler(healthCheck))
+	http.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(annotations.GoodToGo))
+	http.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
+
+	// API specific endpoints
 	servicesRouter := mux.NewRouter()
 
-	// Healthchecks and standards first
-	servicesRouter.HandleFunc("/__health", v1a.Handler("AnnotationsReadWriteNeo4j Healthchecks",
-		"Checks for accessing neo4j", annotations.HealthCheck()))
-
-	// Then API specific ones:
 	servicesRouter.HandleFunc("/content/{uuid}/annotations", annotations.GetAnnotations).Methods("GET")
-	servicesRouter.HandleFunc("/content/{uuid}/annotations/{platformVersion}", annotations.GetFilteredAnnotations).Methods("GET")
 	servicesRouter.HandleFunc("/content/{uuid}/annotations", annotations.MethodNotAllowedHandler)
 
 	var monitoringRouter http.Handler = servicesRouter
 	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
 	monitoringRouter = httphandlers.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
 
-	return monitoringRouter
+	http.Handle("/", monitoringRouter)
+
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatalf("Unable to start server: %v", err)
+	}
 }

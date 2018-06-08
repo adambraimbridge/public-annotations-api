@@ -1,0 +1,24 @@
+{
+  "prefUUID": "fde5eee9-3260-4125-adb6-3d91a4888be5",
+  "prefLabel": "The Ashes",
+  "type": "Topic",
+  "aliases": [
+    "The Ashes"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "fde5eee9-3260-4125-adb6-3d91a4888be5",
+      "prefLabel": "The Ashes",
+      "type": "Topic",
+      "authority": "Smartlogic",
+      "authorityValue": "fde5eee9-3260-4125-adb6-3d91a4888be5",
+      "lastModifiedEpoch": 1507036591,
+      "aliases": [
+        "The Ashes"
+      ],
+      "broaderUUIDs": [
+        "b6469cc2-f6ff-45aa-a9bb-3d1bb0f9a35d"
+      ]
+    }
+  ]
+}

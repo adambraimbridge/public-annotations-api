@@ -21,8 +21,7 @@ _Optional arguments are:
 ## Build & deployment
 Continuosly built be CircleCI. The docker image of the service is built by Dockerhub based on the git release tag. 
 To prepare a new git release, go to the repo page on GitHub and create a new release.
-* Docker Hub builds: [coco/public-annotations-api](https://hub.docker.com/r/coco/public-annotations-api/)
-* Cluster deployment:  [public-annotations-api@service](https://github.com/Financial-Times/up-service-files)
+* Cluster deployment:  [public-annotations-api](https://upp-k8s-jenkins.in.ft.com/job/k8s-deployment/job/apps-deployment/job/public-annotations-api-auto-deploy/)
 * CI provided by CircleCI: [public-annotations-api](https://circleci.com/gh/Financial-Times/public-annotations-api)
 * Code coverage provided by Coverall: [public-annotations-api](https://coveralls.io/github/Financial-Times/public-annotations-api)
 
@@ -45,43 +44,6 @@ _For example_, if a piece of content is annotated with a concept with "About", "
 only the annotation with "About" relationship will be returned.    
 Similarly if a piece of content is annotated with a Concept "Is Classified By" and "Is Primarily Classified By"
 only the annotation with "Is Primarily Classified By" relationship will be returned.
-
-### GET content/{uuid}/annotations/{platformVersion} endpoint
-
-This endpoint returns all the existing annotations for a specific platformVersion - if any.
-Note:
-The response here is an enriched format of the simple /content/{uuid}/annotations response, containing fields like `platformVersion`, and the referenced concepts' identifiers.
-This endpoint does not show inferred Brands annotations, as the other endpoint does.
-
-### Response Example
-The structure of the the response is the same both endpoints and would look like this:
-```
-[...
-    {
-        predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
-        id: "http://api.ft.com/things/{concepts_canonical_uuid}",
-        apiUrl: "http://api.ft.com/things/{concepts_canonical_uuid}",
-        types: [
-            "http://www.ft.com/ontology/core/Thing",
-            "http://www.ft.com/ontology/concept/Concept",
-            "http://www.ft.com/ontology/classification/Classification",
-            "http://www.ft.com/ontology/Subject"
-        ],
-        prefLabel: "Company News",
-        leiCode: "leicode_value",
-        FIGI: "figi_value",
-        factsetID: "factsetID_value"
-        tmeIDs: [
-            "tmeid__value"
-        ],
-        uuids: [
-            "uuid1","uuid2","canonical_uuid"
-        ],
-        platformVersion: "v1",
-    },
-...
-]
-```
 
 ## Admin endpoints
 
