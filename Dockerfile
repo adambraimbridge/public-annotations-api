@@ -1,31 +1,36 @@
-FROM golang:1.8-alpine
+FROM golang:1.10-alpine
 
-ENV PROJECT=public-annotations-api
-COPY . /${PROJECT}-sources/
+# Set up our extra bits in the image
+RUN apk --no-cache add git curl
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
-RUN apk --no-cache --virtual .build-dependencies add git \
-  && ORG_PATH="github.com/Financial-Times" \
-  && REPO_PATH="${ORG_PATH}/${PROJECT}" \
-  && mkdir -p $GOPATH/src/${ORG_PATH} \
-  # Linking the project sources in the GOPATH folder
-  && ln -s /${PROJECT}-sources $GOPATH/src/${REPO_PATH} \
-  && cd $GOPATH/src/${REPO_PATH} \
-  && BUILDINFO_PACKAGE="${ORG_PATH}/${PROJECT}/vendor/${ORG_PATH}/service-status-go/buildinfo." \
-  && VERSION="version=$(git describe --tag --always 2> /dev/null)" \
-  && DATETIME="dateTime=$(date -u +%Y%m%d%H%M%S)" \
-  && REPOSITORY="repository=$(git config --get remote.origin.url)" \
-  && REVISION="revision=$(git rev-parse HEAD)" \
-  && BUILDER="builder=$(go version)" \
-  && LDFLAGS="-X '"${BUILDINFO_PACKAGE}$VERSION"' -X '"${BUILDINFO_PACKAGE}$DATETIME"' -X '"${BUILDINFO_PACKAGE}$REPOSITORY"' -X '"${BUILDINFO_PACKAGE}$REVISION"' -X '"${BUILDINFO_PACKAGE}$BUILDER"'" \
-  && echo "Build flags: $LDFLAGS" \
-  && echo "Fetching dependencies..." \
-  && go get -u github.com/kardianos/govendor \
-  && $GOPATH/bin/govendor sync \
-  && go build -ldflags="${LDFLAGS}" \
-  && mv ${PROJECT} /${PROJECT} \
-  && apk del .build-dependencies \
-  && rm -rf $GOPATH /var/cache/apk/*
+# Set up app information in the environment
+ENV PROJECT="public-annotations-api"
+ENV ORG_PATH="github.com/Financial-Times"
+ENV SRC_FOLDER="${GOPATH}/src/${ORG_PATH}/${PROJECT}"
+ENV BUILDINFO_PACKAGE="${ORG_PATH}/${PROJECT}/vendor/${ORG_PATH}/service-status-go/buildinfo."
+ENV VERSION="version=$(git describe --tag --always 2> /dev/null)"
+ENV DATETIME="dateTime=$(date -u +%Y%m%d%H%M%S)"
+ENV REPOSITORY="repository=$(git config --get remote.origin.url)"
+ENV REVISION="revision=$(git rev-parse HEAD)"
+ENV BUILDER="builder=$(go version)"
+ENV LDFLAGS="-X '"${BUILDINFO_PACKAGE}$VERSION"' -X '"${BUILDINFO_PACKAGE}$DATETIME"' -X '"${BUILDINFO_PACKAGE}$REPOSITORY"' -X '"${BUILDINFO_PACKAGE}$REVISION"' -X '"${BUILDINFO_PACKAGE}$BUILDER"'"
+RUN echo "Build flags: $LDFLAGS"
 
+# Include code
+COPY . ${SRC_FOLDER}
+WORKDIR ${SRC_FOLDER}
+
+# Install dependancies and build app
+RUN $GOPATH/bin/dep ensure -vendor-only
+RUN go build -o /artifacts/${PROJECT} -ldflags="${LDFLAGS}"
+
+
+
+# Multi-stage build - copy only the certs and the binary into the image
+FROM scratch
 WORKDIR /
+COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=0 /artifacts/public-annotations-api /
 
 CMD [ "/public-annotations-api" ]
