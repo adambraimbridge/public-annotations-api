@@ -12,12 +12,9 @@ import (
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
 	"github.com/Financial-Times/concepts-rw-neo4j/concepts"
 	"github.com/Financial-Times/content-rw-neo4j/content"
-	"github.com/Financial-Times/financial-instruments-rw-neo4j/financialinstruments"
-	"github.com/Financial-Times/go-logger"
+		"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
-	"github.com/Financial-Times/organisations-rw-neo4j/organisations"
-	"github.com/Financial-Times/people-rw-neo4j/people"
-	"github.com/jmcvetta/neoism"
+			"github.com/jmcvetta/neoism"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -434,25 +431,25 @@ func writeTopics(t testing.TB, db neoutils.NeoConnection) concepts.ConceptServic
 	return topicsRW
 }
 
-func writeOrganisations(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
-	organisationRW := organisations.NewCypherOrganisationService(db)
+func writeOrganisations(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
+	organisationRW := concepts.NewConceptService(db)
 	assert.NoError(t, organisationRW.Initialise())
-	writeJSONToBaseService(organisationRW, "./fixtures/Organisation-MSJ-5d1510f8-2779-4b74-adab-0a5eb138fca6.json", t)
-	writeJSONToBaseService(organisationRW, "./fixtures/Organisation-Fakebook-eac853f5-3859-4c08-8540-55e043719400.json", t)
+	writeJSONToService(organisationRW, "./fixtures/Organisation-MSJ-5d1510f8-2779-4b74-adab-0a5eb138fca6.json", t)
+	writeJSONToService(organisationRW, "./fixtures/Organisation-Fakebook-eac853f5-3859-4c08-8540-55e043719400.json", t)
 	return organisationRW
 }
 
-func writePeople(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
-	peopleRW := people.NewCypherPeopleService(db)
+func writePeople(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
+	peopleRW := concepts.NewConceptService(db)
 	assert.NoError(t, peopleRW.Initialise())
-	writeJSONToBaseService(peopleRW, "./fixtures/People-75e2f7e9-cb5e-40a5-a074-86d69fe09f69.json", t)
+	writeJSONToService(peopleRW, "./fixtures/People-75e2f7e9-cb5e-40a5-a074-86d69fe09f69.json", t)
 	return peopleRW
 }
 
-func writeFinancialInstruments(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
-	fiRW := financialinstruments.NewCypherFinancialInstrumentService(db)
+func writeFinancialInstruments(t testing.TB, db neoutils.NeoConnection) concepts.ConceptService {
+	fiRW := concepts.NewConceptService(db)
 	assert.NoError(t, fiRW.Initialise())
-	writeJSONToBaseService(fiRW, "./fixtures/FinancialInstrument-77f613ad-1470-422c-bf7c-1dd4c3fd1693.json", t)
+	writeJSONToService(fiRW, "./fixtures/FinancialInstrument-77f613ad-1470-422c-bf7c-1dd4c3fd1693.json", t)
 	return fiRW
 }
 

@@ -68,10 +68,9 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		Statement: `
       MATCH (content:Content{uuid:{contentUUID}})-[rel]-(concept:Concept)
       OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
-      OPTIONAL MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(:Concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
-      OPTIONAL MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(:Concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
+      OPTIONAL MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(:Concept)<-[:ISSUED_BY]-(figi:FinancialInstrument)
       RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
-				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle
+				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, canonicalConcept.leiCode as leiCode, figi.figiCode as figi, rel.lifecycle as lifecycle
 
       UNION ALL
       MATCH (content:Content{uuid:{contentUUID}})-[rel]-(brand:Concept)-[:EQUIVALENT_TO]->(canonicalBrand:Brand)
