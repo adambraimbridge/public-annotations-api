@@ -2,15 +2,15 @@ FROM golang:1.10-alpine
 
 ENV PROJECT="public-annotations-api"
 
-# Set up our extra bits in the image
-RUN apk --no-cache add git curl
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-
 # Include code
 ENV ORG_PATH="github.com/Financial-Times"
 ENV SRC_FOLDER="${GOPATH}/src/${ORG_PATH}/${PROJECT}"
 COPY . ${SRC_FOLDER}
 WORKDIR ${SRC_FOLDER}
+
+# Set up our extra bits in the image
+RUN apk --no-cache add git curl
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
 # Install dependancies and build app
 RUN $GOPATH/bin/dep ensure -vendor-only
