@@ -62,14 +62,14 @@ type neoAnnotation struct {
 const pacLifecycle = "annotations-pac"
 
 func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, err error) {
-	results := []neoAnnotation{}
+	var results []neoAnnotation
 
 	query := &neoism.CypherQuery{
 		Statement: `
       MATCH (content:Content{uuid:{contentUUID}})-[rel]-(concept:Concept)
       OPTIONAL MATCH (concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
-      OPTIONAL MATCH (concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
-      OPTIONAL MATCH (concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
+      OPTIONAL MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(:Concept)<-[:IDENTIFIES]-(lei:LegalEntityIdentifier)
+      OPTIONAL MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(:Concept)<-[:ISSUED_BY]-(:FinancialInstrument)<-[:IDENTIFIES]-(figi:FIGIIdentifier)
       RETURN coalesce(canonicalConcept.prefUUID, concept.uuid) as id, type(rel) as predicate, coalesce(labels(canonicalConcept), labels(concept)) as types,
 				coalesce(canonicalConcept.prefLabel, concept.prefLabel) as prefLabel, lei.value as leiCode, figi.value as figi, rel.lifecycle as lifecycle
 
