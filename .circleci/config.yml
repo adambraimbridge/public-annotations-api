@@ -24,9 +24,9 @@ jobs:
           name: Create test folder
           command: mkdir -p $CIRCLE_TEST_REPORTS
       - run: |
-          go get -u github.com/kardianos/govendor
+          curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - run: |
-          govendor sync
+          dep ensure -vendor-only
       - run: |
           go build -v
       - run:
