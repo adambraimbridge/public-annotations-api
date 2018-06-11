@@ -22,7 +22,6 @@ RUN BUILDINFO_PACKAGE="${ORG_PATH}/${PROJECT}/vendor/${ORG_PATH}/service-status-
     && BUILDER="builder=$(go version)" \
     && LDFLAGS="-s -w -X '"${BUILDINFO_PACKAGE}$VERSION"' -X '"${BUILDINFO_PACKAGE}$DATETIME"' -X '"${BUILDINFO_PACKAGE}$REPOSITORY"' -X '"${BUILDINFO_PACKAGE}$REVISION"' -X '"${BUILDINFO_PACKAGE}$BUILDER"'" \
     && CGO_ENABLED=0 go build -a -installsuffix cgo -o /artifacts/${PROJECT} -ldflags="${LDFLAGS}"
-RUN ls /artifacts
 
 
 # Multi-stage build - copy only the certs and the binary into the image
