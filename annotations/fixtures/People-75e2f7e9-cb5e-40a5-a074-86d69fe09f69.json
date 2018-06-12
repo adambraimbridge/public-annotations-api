@@ -1,20 +1,19 @@
 {
-  "uuid": "75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
-  "alternativeIdentifiers": {
-    "uuids": [
-      "75e2f7e9-cb5e-40a5-a074-86d69fe09f69"
-    ],
-    "factsetIdentifier": "000ZZZ-E"
-  },
-  "name": "John Smith",
+  "prefUUID": "75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
   "prefLabel": "John Smith",
+  "name": "John Smith",
+  "type": "Person",
   "salutation": "Mr.",
   "aliases": [
     "John Smith"
   ],
-  "types": [
-    "Thing",
-    "Concept",
-    "Person"
+  "sourceRepresentations": [
+    {
+      "uuid": "75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
+      "prefLabel": "John Smith",
+      "type": "Person",
+      "authority": "FACTSET",
+      "authorityValue": "000ZZZ-E"
+    }
   ]
 }
