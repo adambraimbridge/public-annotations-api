@@ -24,10 +24,6 @@ type cypherDriver struct {
 	env  string
 }
 
-var (
-	pacLifecycleFilter = newLifecycleFilter(pacLifecycle)
-)
-
 func NewCypherDriver(conn neoutils.NeoConnection, env string) cypherDriver {
 	return cypherDriver{conn, env}
 }
@@ -58,8 +54,6 @@ type neoAnnotation struct {
 	UUIDs           []string `json:"uuids,omitempty"`
 	PlatformVersion string   `json:"platformVersion,omitempty"`
 }
-
-const pacLifecycle = "annotations-pac"
 
 func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, err error) {
 	results := []neoAnnotation{}
@@ -116,15 +110,10 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		}
 	}
 
-	var filter annotationsFilter
-	//return  pac lifecycle (tagme) annotations, hide annotations with any other lifcycle or no lifecycle
-	if isLifecyclePresent(pacLifecycle, mappedAnnotations) {
-		filter = pacLifecycleFilter
-	} else {
-		filter = NewAnnotationsPredicateFilter()
-	}
+	lifecycleFilter := newLifecycleFilter()
+	predicateFilter := NewAnnotationsPredicateFilter()
 
-	chain := newAnnotationsFilterChain(filter)
+	chain := newAnnotationsFilterChain(lifecycleFilter, predicateFilter)
 	return chain.doNext(mappedAnnotations), found, nil
 }
 
@@ -174,13 +163,4 @@ func getPredicateFromRelationship(relationship string) (predicate string, err er
 		return "", errors.New("Not a valid annotation type")
 	}
 	return predicate, nil
-}
-
-func isLifecyclePresent(lifecycle string, annotations []annotation) bool {
-	for _, annotation := range annotations {
-		if annotation.Lifecycle == lifecycle {
-			return true
-		}
-	}
-	return false
 }

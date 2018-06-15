@@ -6,25 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLifecycleFilter(t *testing.T) {
-	f := newLifecycleFilter("foo")
-	chain := newAnnotationsFilterChain(f)
-
-	ann := []annotation{
-		{
-			Lifecycle: "foo",
-		},
-		{
-			Lifecycle: "bar",
-		},
-	}
-
-	actual := chain.doNext(ann)
-
-	assert.Len(t, actual, 1)
-	assert.Equal(t, ann[0], actual[0], "filtered annotations")
-}
-
 func TestDedupFilterPassthrough(t *testing.T) {
 	f := defaultDedupFilter
 	chain := newAnnotationsFilterChain(f)

@@ -58,11 +58,12 @@ const (
 	v1PlatformVersion    = "v1"
 	v2PlatformVersion    = "v2"
 	v1Lifecycle          = "annotations-v1"
-	v2Lifecycle          = "annotations-v2"
+	nextVideoLifecycle   = "annotations-next-video"
 	emptyPlatformVersion = ""
 
-	brandType = "http://www.ft.com/ontology/product/Brand"
-	topicType = "http://www.ft.com/ontology/Topic"
+	brandType         = "http://www.ft.com/ontology/product/Brand"
+	topicType         = "http://www.ft.com/ontology/Topic"
+	publicCompanyType = "http://www.ft.com/ontology/company/PublicCompany"
 )
 
 var (
@@ -193,6 +194,8 @@ func (s *cypherDriverTestSuite) TestRetrieveImplicitAbouts() {
 		expectedAnnotation(aboutTopic, topicType, predicates["ABOUT"], pacLifecycle),
 		expectedAnnotation(broaderTopicA, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
 		expectedAnnotation(broaderTopicB, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+		getExpectedMallStreetJournalAnnotation(v2Lifecycle, emptyPlatformVersion),
+		expectedAnnotation(FakebookConceptUUID, publicCompanyType, predicates["MENTIONS"], v2Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")

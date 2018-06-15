@@ -30,24 +30,6 @@ func (chain *annotationsFilterChain) doNext(ann []annotation) []annotation {
 	return ann
 }
 
-type lifecycleFilter struct {
-	lifecycle string
-}
-
-func newLifecycleFilter(lifecycle string) annotationsFilter {
-	return &lifecycleFilter{lifecycle}
-}
-
-func (f *lifecycleFilter) filter(annotations []annotation, chain *annotationsFilterChain) []annotation {
-	filtered := []annotation{}
-	for _, annotation := range annotations {
-		if annotation.Lifecycle == f.lifecycle {
-			filtered = append(filtered, annotation)
-		}
-	}
-	return chain.doNext(filtered)
-}
-
 type dedupFilter struct {
 }
 
