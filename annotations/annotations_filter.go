@@ -36,7 +36,7 @@ type dedupFilter struct {
 var defaultDedupFilter = &dedupFilter{}
 
 func (f *dedupFilter) filter(in []annotation, chain *annotationsFilterChain) []annotation {
-	out := []annotation{}
+	var out []annotation
 
 OUTER:
 	for _, ann := range in {

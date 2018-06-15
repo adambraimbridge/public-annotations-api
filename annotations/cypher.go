@@ -90,7 +90,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	if err != nil {
 		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
-		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
+		return annotations{}, false, fmt.Errorf("error accessing Annotations datastore for uuid: %s", contentUUID)
 	}
 
 	log.Debugf("Found %d Annotations for uuid: %s", len(results), contentUUID)
@@ -98,7 +98,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		return annotations{}, false, nil
 	}
 
-	mappedAnnotations := []annotation{}
+	var mappedAnnotations []annotation
 	found = false
 
 	for idx := range results {
@@ -127,7 +127,7 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	types := mapper.TypeURIs(neoAnn.Types)
 	if types == nil || len(types) == 0 {
 		log.Debugf("Could not map type URIs for ID %s with types %s", ann.ID, ann.Types)
-		return ann, errors.New("Concept not found")
+		return ann, errors.New("concept not found")
 	}
 	ann.Types = types
 
@@ -145,7 +145,7 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 func getPredicateFromRelationship(relationship string) (predicate string, err error) {
 	predicate = predicates[relationship]
 	if predicate == "" {
-		return "", errors.New("Not a valid annotation type")
+		return "", errors.New("not a valid annotation type")
 	}
 	return predicate, nil
 }

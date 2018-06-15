@@ -1,7 +1,9 @@
 package annotations
 
-const pacLifecycle = "annotations-pac"
-const v2Lifecycle = "annotations-v2"
+const (
+	pacLifecycle = "annotations-pac"
+	v2Lifecycle  = "annotations-v2"
+)
 
 type lifecycleFilter struct{}
 
