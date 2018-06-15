@@ -142,20 +142,6 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	return ann, nil
 }
 
-func deduplicateList(inList []string) []string {
-	outList := []string{}
-	deduped := map[string]bool{}
-	for _, v := range inList {
-		deduped[v] = true
-	}
-	for k, o := range deduped {
-		if o {
-			outList = append(outList, k)
-		}
-	}
-	return outList
-}
-
 func getPredicateFromRelationship(relationship string) (predicate string, err error) {
 	predicate = predicates[relationship]
 	if predicate == "" {
