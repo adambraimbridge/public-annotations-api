@@ -21,6 +21,16 @@
   },
   {
     "thing": {
+      "id": "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
+      "prefLabel": "Fakebook, Inc.",
+      "types": [
+        "http://www.ft.com/ontology/organisation/Organisation"
+      ],
+      "predicate": "about"
+    }
+  },
+  {
+    "thing": {
       "id": "http://api.ft.com/things/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
       "prefLabel": "John Smith",
       "types": [
