@@ -4,8 +4,8 @@
 [[projects]]
   name = "github.com/Financial-Times/annotations-rw-neo4j"
   packages = ["annotations"]
-  revision = "268bf9d5dafad000a07a17517d350fcd8108d473"
-  version = "2.1.0"
+  revision = "e12b6cbadfa4fc89efd8d531f831efd442705512"
+  version = "2.2.1"
 
 [[projects]]
   name = "github.com/Financial-Times/base-ft-rw-app-go"
@@ -16,20 +16,14 @@
 [[projects]]
   name = "github.com/Financial-Times/concepts-rw-neo4j"
   packages = ["concepts"]
-  revision = "e0170d7608d230f3b6710b19488053e34259120b"
-  version = "1.1.5"
+  revision = "d49a23fd8c0b2b25d28af1f87d23f57937f7764e"
+  version = "1.9.0"
 
 [[projects]]
   name = "github.com/Financial-Times/content-rw-neo4j"
   packages = ["content"]
   revision = "315eb09dc04b493198b76a4a32b0d4b198806c01"
   version = "2.0.0"
-
-[[projects]]
-  name = "github.com/Financial-Times/financial-instruments-rw-neo4j"
-  packages = ["financialinstruments"]
-  revision = "2dd53f7729a145e8e491cf327aa0efdbcf5351bf"
-  version = "0.0.9"
 
 [[projects]]
   name = "github.com/Financial-Times/go-fthealth"
@@ -40,8 +34,8 @@
 [[projects]]
   name = "github.com/Financial-Times/go-logger"
   packages = ["."]
-  revision = "83fc3e64dc5506fdb4e56b704949d157a121c76c"
-  version = "0.0.2"
+  revision = "febee6537e90971bab6f6fe60b71b4a0562dcab3"
+  version = "0.0.4"
 
 [[projects]]
   name = "github.com/Financial-Times/http-handlers-go"
@@ -52,26 +46,14 @@
 [[projects]]
   name = "github.com/Financial-Times/neo-model-utils-go"
   packages = ["mapper"]
-  revision = "1a5407658c842183647f4799bb66ecac73af97a8"
-  version = "0.2.0"
+  revision = "a4260e67ed65bb877cc74a8c71f2f1abc226a335"
+  version = "0.3.3"
 
 [[projects]]
   name = "github.com/Financial-Times/neo-utils-go"
   packages = ["neoutils"]
   revision = "5cb1750096545b3c8f7384326247e3e30996a905"
   version = "1.0.2"
-
-[[projects]]
-  name = "github.com/Financial-Times/organisations-rw-neo4j"
-  packages = ["organisations"]
-  revision = "1dce3ba256e3a7e3f5cf1c2a9ebd5091daa6e9b8"
-  version = "0.5.9"
-
-[[projects]]
-  name = "github.com/Financial-Times/people-rw-neo4j"
-  packages = ["people"]
-  revision = "02e3fd84a717dc8359d54c8eecba46c33c7ecd5c"
-  version = "2.0.0"
 
 [[projects]]
   name = "github.com/Financial-Times/service-status-go"
@@ -97,6 +79,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/bradfitz/slice"
+  packages = ["."]
+  revision = "d9036e2120b5ddfa53f3ebccd618c4af275f47da"
+
+[[projects]]
+  branch = "master"
   name = "github.com/cyberdelia/go-metrics-graphite"
   packages = ["."]
   revision = "39f87cc3b432bbb898d7c643c0e93cac2bc865ad"
@@ -104,7 +92,8 @@
 [[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
-  revision = "a476722483882dd40b8111f0eb64e1d7f43f56e4"
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/gorilla/context"
@@ -135,10 +124,11 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "master"
+  branch = "refactor/bring-to-date"
   name = "github.com/jmcvetta/neoism"
   packages = ["."]
-  revision = "4674154f870d19b356581843f481dccd6792dcc0"
+  revision = "0de0617bae8eb5f72e94b3fbfc7f06c857f7eef5"
+  source = "github.com/Financial-Times/neoism"
 
 [[projects]]
   branch = "master"
@@ -157,12 +147,19 @@
 [[projects]]
   name = "github.com/kr/pretty"
   packages = ["."]
-  revision = "cfb55aafdaf3ec08f0db22699ab822c50091b1c4"
+  revision = "73f6ac0b30a98e433b289500d779f50c1a6f0712"
+  version = "v0.1.0"
 
 [[projects]]
   name = "github.com/kr/text"
   packages = ["."]
   revision = "7cafcd837844e784b526369c9bce262804aebc60"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/hashstructure"
+  packages = ["."]
+  revision = "2bca23e0e452137f789efbc8610126fd8b94f73b"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -177,36 +174,32 @@
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
-  packages = [
-    ".",
-    "hooks/test"
-  ]
+  packages = ["."]
   revision = "89742aefa4b206dcf400792f3bd35b542998eb3b"
 
 [[projects]]
-  name = "github.com/spaolacci/murmur3"
+  name = "github.com/stretchr/objx"
   packages = ["."]
-  revision = "9f5d223c60793748f04a9d5b4b4eacddfc1f755d"
-  version = "v1.1"
+  revision = "477a77ecc69700c7cdeb1fa9e129548e1c1c393c"
+  version = "v0.1.1"
 
 [[projects]]
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
+    "mock",
     "require",
     "suite"
   ]
-  revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
-  version = "v1.1.4"
-
-[[projects]]
-  name = "github.com/ugorji/go"
-  packages = ["codec"]
-  revision = "8c0409fcbb70099c748d71f714529204975f6c3f"
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   name = "go4.org"
-  packages = ["osutil"]
+  packages = [
+    "osutil",
+    "reflectutil"
+  ]
   revision = "034d17a462f7b2dcd1a4a73553ec5357ff6e6c6e"
 
 [[projects]]
@@ -236,6 +229,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "472ecd28cf1e660b6e98fe02afdfa4ee421685480e30e65779d934928d8292d7"
+  inputs-digest = "727a52664a0ac15c013cb70605085a782290bc020c8d29e75b31d289fa66ed4d"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -1,11 +1,21 @@
 {
-  "uuid": "eac853f5-3859-4c08-8540-55e043719400",
-  "properName": "Fakebook, Inc.",
+  "prefUUID": "eac853f5-3859-4c08-8540-55e043719400",
   "prefLabel": "Fakebook, Inc.",
-  "alternativeIdentifiers": {
-    "uuids": ["eac853f5-3859-4c08-8540-55e043719400"],
-    "factsetIdentifier": "00AAA-E",
-    "leiCode": "BQ4BKCS1HXDV9TTTTTTTT"
-  },
-  "type": "PublicCompany"
+  "type": "PublicCompany",
+  "aliases": [
+    "Fakebook",
+    "Fakebook, Inc"
+  ],
+  "shortName": "Fakebook",
+  "sourceRepresentations": [
+    {
+      "uuid": "eac853f5-3859-4c08-8540-55e043719400",
+      "prefLabel": "Fakebook, Inc.",
+      "type": "PublicCompany",
+      "authority": "FACTSET",
+      "authorityValue": "00AAA-E"
+    }
+  ],
+  "properName": "Fakebook, Inc.",
+  "leiCode": "BQ4BKCS1HXDV9TTTTTTTT"
 }
