@@ -36,7 +36,7 @@ Returns all annotations for a given uuid of a piece of content in json format.
 This is because it will return also the parent of the brands from any brands annotations. 
 If those brands have parents, then they too will be brought into the result.
 
-* the `public-annotations-api` curated (tag-me) annotations (life cycle pac) for a piece of content take precedence, if present they are returned, all non-pac lifecycle annotations are omitted .
+* the `public-annotations-api` uses annotations lifecyle to determine which annotations are returned. If curated (tag-me) annotations (life cycle pac) for a piece of content exist, they will be returned combined with V2 annotations by default, other non-pac lifecycle annotations are omitted.
 If there are no pac life cycle annotations, non-pac annotations will be returned. The filtering described in the next paragraph relates to non-pac annotations.
 
 * the `public-annotations-api` will filter out less important annotations if a more important annotation is also present for the same concept.  
