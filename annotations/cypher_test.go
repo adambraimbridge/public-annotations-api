@@ -12,9 +12,9 @@ import (
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
 	"github.com/Financial-Times/concepts-rw-neo4j/concepts"
 	"github.com/Financial-Times/content-rw-neo4j/content"
-		"github.com/Financial-Times/go-logger"
+	"github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
-			"github.com/jmcvetta/neoism"
+	"github.com/jmcvetta/neoism"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,7 +55,7 @@ const (
 	v1PlatformVersion    = "v1"
 	v2PlatformVersion    = "v2"
 	v1Lifecycle          = "annotations-v1"
-	v2Lifecycle          = "annotations-v2"
+	nextVideoLifecycle   = "annotations-next-video"
 	emptyPlatformVersion = ""
 
 	brandType = "http://www.ft.com/ontology/product/Brand"
@@ -146,10 +146,10 @@ func getDatabaseConnection(t *testing.T) neoutils.NeoConnection {
 
 func (s *cypherDriverTestSuite) TestRetrieveMultipleAnnotations() {
 	expectedAnnotations := annotations{
-		getExpectedFakebookAnnotation(v2Lifecycle, emptyPlatformVersion),
-		getExpectedMallStreetJournalAnnotation(v2Lifecycle, emptyPlatformVersion),
-		getExpectedMetalMickeyAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedAlphavilleSeriesAnnotation(v1Lifecycle, emptyPlatformVersion),
+		getExpectedMentionsFakebookAnnotation(v2Lifecycle),
+		getExpectedMallStreetJournalAnnotation(v2Lifecycle),
+		getExpectedMetalMickeyAnnotation(v1Lifecycle),
+		getExpectedAlphavilleSeriesAnnotation(v1Lifecycle),
 		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle),
 		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
 		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
@@ -161,11 +161,13 @@ func (s *cypherDriverTestSuite) TestRetrieveMultipleAnnotations() {
 	assertListContainsAll(s.T(), anns, expectedAnnotations)
 }
 
-func (s *cypherDriverTestSuite) TestRetrievePacAnnotationsAsPriority() {
+func (s *cypherDriverTestSuite) TestRetrievePacAndV2AnnotationsAsPriority() {
 	expectedAnnotations := annotations{
-		getExpectedMetalMickeyAnnotation(pacLifecycle, emptyPlatformVersion),
-		getExpectedFacebookAnnotation(pacLifecycle, emptyPlatformVersion),
-		getExpectedJohnSmithAnnotation(pacLifecycle, emptyPlatformVersion),
+		getExpectedMetalMickeyAnnotation(pacLifecycle),
+		getExpectedHasDisplayTagFakebookAnnotation(pacLifecycle),
+		getExpectedAboutFakebookAnnotation(pacLifecycle),
+		getExpectedJohnSmithAnnotation(pacLifecycle),
+		getExpectedMallStreetJournalAnnotation(v2Lifecycle),
 		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle),
 		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle),
 		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle),
@@ -174,10 +176,11 @@ func (s *cypherDriverTestSuite) TestRetrievePacAnnotationsAsPriority() {
 	writePacAnnotations(s.T(), s.db)
 	//assert data for filtering
 	numOfV1Annotations, _ := count(v1Lifecycle, s.db)
-	numOfv2Annotations, _ := count(v2Lifecycle, s.db)
-	numOfpacAnnotations, _ := count(pacLifecycle, s.db)
-	assert.True(s.T(), (numOfV1Annotations+numOfv2Annotations) > 0)
-	assert.True(s.T(), numOfpacAnnotations > 0)
+	numOfV2Annotations, _ := count(v2Lifecycle, s.db)
+	numOfPACAnnotations, _ := count(pacLifecycle, s.db)
+	assert.True(s.T(), numOfV1Annotations > 0)
+	assert.True(s.T(), numOfV2Annotations > 0)
+	assert.True(s.T(), numOfPACAnnotations > 0)
 
 	anns := getAndCheckAnnotations(driver, contentUUID, s.T())
 
@@ -190,6 +193,8 @@ func (s *cypherDriverTestSuite) TestRetrieveImplicitAbouts() {
 		expectedAnnotation(aboutTopic, topicType, predicates["ABOUT"], pacLifecycle),
 		expectedAnnotation(broaderTopicA, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
 		expectedAnnotation(broaderTopicB, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+		getExpectedMallStreetJournalAnnotation(v2Lifecycle),
+		getExpectedMentionsFakebookAnnotation(v2Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -209,6 +214,8 @@ func (s *cypherDriverTestSuite) TestRetrieveCyclicImplicitAbouts() {
 		expectedAnnotation(broaderTopicB, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
 		expectedAnnotation(cyclicTopicA, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
 		expectedAnnotation(cyclicTopicB, topicType, predicates["IMPLICITLY_ABOUT"], pacLifecycle),
+		getExpectedMentionsFakebookAnnotation(v2Lifecycle),
+		getExpectedMallStreetJournalAnnotation(v2Lifecycle),
 	}
 
 	driver := NewCypherDriver(s.db, "prod")
@@ -224,10 +231,10 @@ func (s *cypherDriverTestSuite) TestRetrieveCyclicImplicitAbouts() {
 
 func (s *cypherDriverTestSuite) TestRetrieveMultipleAnnotationsIfPacAnnotationCannotBeMapped() {
 	expectedAnnotations := annotations{
-		getExpectedFakebookAnnotation(v2Lifecycle, emptyPlatformVersion),
-		getExpectedMallStreetJournalAnnotation(v2Lifecycle, emptyPlatformVersion),
-		getExpectedMetalMickeyAnnotation(v1Lifecycle, emptyPlatformVersion),
-		getExpectedAlphavilleSeriesAnnotation(v1Lifecycle, emptyPlatformVersion),
+		getExpectedMentionsFakebookAnnotation(v2Lifecycle),
+		getExpectedMallStreetJournalAnnotation(v2Lifecycle),
+		getExpectedMetalMickeyAnnotation(v1Lifecycle),
+		getExpectedAlphavilleSeriesAnnotation(v1Lifecycle),
 		expectedAnnotation(brandGrandChildUUID, brandType, predicates["IS_CLASSIFIED_BY"], v1Lifecycle),
 		expectedAnnotation(brandChildUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
 		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], v1Lifecycle),
@@ -336,8 +343,8 @@ func TestRetrieveAnnotationWithCorrectValues(t *testing.T) {
 	defer cleanDB(t, db)
 
 	expectedAnnotations := annotations{
-		getExpectedFakebookAnnotation(v2Lifecycle, emptyPlatformVersion),
-		getExpectedMallStreetJournalAnnotation(v2Lifecycle, emptyPlatformVersion),
+		getExpectedMentionsFakebookAnnotation(v2Lifecycle),
+		getExpectedMallStreetJournalAnnotation(v2Lifecycle),
 	}
 
 	driver := NewCypherDriver(db, "prod")
@@ -516,10 +523,6 @@ func writeBrokenPacAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Se
 	return service
 }
 
-type writeSevice interface {
-	DecodeJSON(*json.Decoder) (thing interface{}, identity string, err error)
-}
-
 func writeJSONToBaseService(service baseftrwapp.Service, pathToJSONFile string, t testing.TB) {
 	absPath, _ := filepath.Abs(pathToJSONFile)
 	f, err := os.Open(absPath)
@@ -582,7 +585,7 @@ func cleanDB(t testing.TB, db neoutils.NeoConnection) {
 	assert.NoError(t, err)
 }
 
-func getExpectedFakebookAnnotation(lifecycle string, platformVersion string) annotation {
+func getExpectedMentionsFakebookAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/annotation/mentions",
 		ID:        "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
@@ -601,7 +604,26 @@ func getExpectedFakebookAnnotation(lifecycle string, platformVersion string) ann
 	}
 }
 
-func getExpectedMallStreetJournalAnnotation(lifecycle string, platformVersion string) annotation {
+func getExpectedAboutFakebookAnnotation(lifecycle string) annotation {
+	return annotation{
+		Predicate: "http://www.ft.com/ontology/annotation/about",
+		ID:        "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
+		APIURL:    "http://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
+		Types: []string{
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
+			"http://www.ft.com/ontology/organisation/Organisation",
+			"http://www.ft.com/ontology/company/Company",
+			"http://www.ft.com/ontology/company/PublicCompany",
+		},
+		LeiCode:   "BQ4BKCS1HXDV9TTTTTTTT",
+		FIGI:      "BB8000C3P0-R2D2",
+		PrefLabel: "Fakebook, Inc.",
+		Lifecycle: lifecycle,
+	}
+}
+
+func getExpectedMallStreetJournalAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/annotation/mentions",
 		ID:        "http://api.ft.com/things/5d1510f8-2779-4b74-adab-0a5eb138fca6",
@@ -616,7 +638,7 @@ func getExpectedMallStreetJournalAnnotation(lifecycle string, platformVersion st
 	}
 }
 
-func getExpectedMetalMickeyAnnotation(lifecycle string, platformVersion string) annotation {
+func getExpectedMetalMickeyAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
 		ID:        "http://api.ft.com/things/0483bef8-5797-40b8-9b25-b12e492f63c6",
@@ -632,7 +654,7 @@ func getExpectedMetalMickeyAnnotation(lifecycle string, platformVersion string) 
 	}
 }
 
-func getExpectedFacebookAnnotation(lifecycle string, platformVersion string) annotation {
+func getExpectedHasDisplayTagFakebookAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/hasDisplayTag",
 		ID:        "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
@@ -651,7 +673,7 @@ func getExpectedFacebookAnnotation(lifecycle string, platformVersion string) ann
 	}
 }
 
-func getExpectedJohnSmithAnnotation(lifecycle string, platformVersion string) annotation {
+func getExpectedJohnSmithAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/hasContributor",
 		ID:        "http://api.ft.com/things/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
@@ -666,7 +688,7 @@ func getExpectedJohnSmithAnnotation(lifecycle string, platformVersion string) an
 	}
 }
 
-func getExpectedAlphavilleSeriesAnnotation(lifecycle string, platformVersion string) annotation {
+func getExpectedAlphavilleSeriesAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
 		ID:        "http://api.ft.com/things/" + alphavilleSeriesUUID,
@@ -694,9 +716,9 @@ func expectedAnnotation(conceptUuid string, conceptType string, predicate string
 }
 
 func count(annotationLifecycle string, db neoutils.NeoConnection) (int, error) {
-	results := []struct {
+	var results []struct {
 		Count int `json:"c"`
-	}{}
+	}
 	query := &neoism.CypherQuery{
 		Statement: `MATCH (c:Content)-[r]->( t:Thing)
 					WHERE r.lifecycle = {lifecycle}

@@ -4,10 +4,10 @@ __Provides a public API for Annotations stored in a Neo4J graph database__
 
 ## Installation & running locally
 
-* `go get -u github.com/kardianos/govendor`
+* `curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh`
 * `go get -u github.com/Financial-Times/public-annotations-api`
 * `cd $GOPATH/src/github.com/Financial-Times/public-annotations-api`
-* `govendor sync`
+* `dep ensure -vendor-only`
 * `go test ./...`
 * `go install`
 * `$GOPATH/bin/public-annotations-api --neo-url={neo4jUrl} --port={port} --log-level={DEBUG|INFO|WARN|ERROR}--cache-duration{e.g. 22h10m3s}`   
@@ -36,7 +36,7 @@ Returns all annotations for a given uuid of a piece of content in json format.
 This is because it will return also the parent of the brands from any brands annotations. 
 If those brands have parents, then they too will be brought into the result.
 
-* the `public-annotations-api` curated (tag-me) annotations (life cycle pac) for a piece of content take precedence, if present they are returned, all non-pac lifecycle annotations are omitted .
+* the `public-annotations-api` uses annotations lifecyle to determine which annotations are returned. If curated (tag-me) annotations (life cycle pac) for a piece of content exist, they will be returned combined with V2 annotations by default, other non-pac lifecycle annotations are omitted.
 If there are no pac life cycle annotations, non-pac annotations will be returned. The filtering described in the next paragraph relates to non-pac annotations.
 
 * the `public-annotations-api` will filter out less important annotations if a more important annotation is also present for the same concept.  

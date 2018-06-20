@@ -24,10 +24,6 @@ type cypherDriver struct {
 	env  string
 }
 
-var (
-	pacLifecycleFilter = newLifecycleFilter(pacLifecycle)
-)
-
 func NewCypherDriver(conn neoutils.NeoConnection, env string) cypherDriver {
 	return cypherDriver{conn, env}
 }
@@ -58,8 +54,6 @@ type neoAnnotation struct {
 	UUIDs           []string `json:"uuids,omitempty"`
 	PlatformVersion string   `json:"platformVersion,omitempty"`
 }
-
-const pacLifecycle = "annotations-pac"
 
 func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, err error) {
 	var results []neoAnnotation
@@ -96,7 +90,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 
 	if err != nil {
 		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
-		return annotations{}, false, fmt.Errorf("Error accessing Annotations datastore for uuid: %s", contentUUID)
+		return annotations{}, false, fmt.Errorf("error accessing Annotations datastore for uuid: %s", contentUUID)
 	}
 
 	log.Debugf("Found %d Annotations for uuid: %s", len(results), contentUUID)
@@ -104,7 +98,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		return annotations{}, false, nil
 	}
 
-	mappedAnnotations := []annotation{}
+	var mappedAnnotations []annotation
 	found = false
 
 	for idx := range results {
@@ -115,15 +109,10 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		}
 	}
 
-	var filter annotationsFilter
-	//return  pac lifecycle (tagme) annotations, hide annotations with any other lifcycle or no lifecycle
-	if isLifecyclePresent(pacLifecycle, mappedAnnotations) {
-		filter = pacLifecycleFilter
-	} else {
-		filter = NewAnnotationsPredicateFilter()
-	}
+	lifecycleFilter := newLifecycleFilter()
+	predicateFilter := NewAnnotationsPredicateFilter()
 
-	chain := newAnnotationsFilterChain(filter)
+	chain := newAnnotationsFilterChain(lifecycleFilter, predicateFilter)
 	return chain.doNext(mappedAnnotations), found, nil
 }
 
@@ -138,7 +127,7 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	types := mapper.TypeURIs(neoAnn.Types)
 	if types == nil || len(types) == 0 {
 		log.Debugf("Could not map type URIs for ID %s with types %s", ann.ID, ann.Types)
-		return ann, errors.New("Concept not found")
+		return ann, errors.New("concept not found")
 	}
 	ann.Types = types
 
@@ -153,33 +142,10 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	return ann, nil
 }
 
-func deduplicateList(inList []string) []string {
-	outList := []string{}
-	deduped := map[string]bool{}
-	for _, v := range inList {
-		deduped[v] = true
-	}
-	for k, o := range deduped {
-		if o {
-			outList = append(outList, k)
-		}
-	}
-	return outList
-}
-
 func getPredicateFromRelationship(relationship string) (predicate string, err error) {
 	predicate = predicates[relationship]
 	if predicate == "" {
-		return "", errors.New("Not a valid annotation type")
+		return "", errors.New("not a valid annotation type")
 	}
 	return predicate, nil
-}
-
-func isLifecyclePresent(lifecycle string, annotations []annotation) bool {
-	for _, annotation := range annotations {
-		if annotation.Lifecycle == lifecycle {
-			return true
-		}
-	}
-	return false
 }
