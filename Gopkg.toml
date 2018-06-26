@@ -47,7 +47,7 @@
 
 [[constraint]]
   name = "github.com/Financial-Times/go-logger"
-  version = "0.0.4"
+  version = "1.0.0"
 
 [[constraint]]
   name = "github.com/Financial-Times/http-handlers-go"
@@ -70,9 +70,9 @@
   version = "1.0.1"
 
 [[constraint]]
-  branch = "refactor/bring-to-date"
   name = "github.com/jmcvetta/neoism"
   source = "github.com/Financial-Times/neoism"
+  version = "^2.0.0"
 
 [[constraint]]
   name = "github.com/stretchr/testify"
