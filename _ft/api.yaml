@@ -1,0 +1,116 @@
+swagger: "2.0"
+info:
+  title: Public Annotations API
+  description: Provides a public API for Annotations stored in a Neo4J 
+    graph database
+  version: "2.0.0"
+  contact:
+    name: Universal Publishing
+    email: Universal.Publishing.Platform@ft.com
+  license:
+    name: Apache-2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+host: api.ft.com
+schemes:
+  - https
+basePath: /
+paths:
+  /content/{contentUUID}/annotations:
+    get:
+      summary: Retrieves the annotations for a piece of content.
+      description: Given UUID of some content as a path parameter, responds 
+        with the annotations of the requested pience of content in json format.
+      tags:
+        - Public API
+      parameters:
+        - in: path
+          name: contentUUID
+          type: string
+          required: true
+          description: UUID of a piece of content
+      responses:
+        200:
+          description: Success body if the content is found.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Annotation"
+        400:
+          description: Bad request if the uuid path parameter is badly 
+            formed or missing.
+        404:
+          description: Not Found if there is no person record for the uuid 
+            path parameter is found.
+        500:
+          description: Internal Server Error if there was an issue 
+            processing the records.
+        503:
+          description: Service Unavailable if it cannot connect to Neo4j.
+  /__health:
+    get:
+      summary: Healthchecks
+      description: Runs application healthchecks and returns FT Healthcheck 
+        style json.
+      produces:
+        - application/json
+      tags:
+        - Health
+      responses:
+        200:
+          description: Should always return 200 along with the output of the 
+            healthchecks - regardless of whether the healthchecks failed or 
+            not. Please inspect the overall `ok` property to see whether or 
+            not the application is healthy.
+  /__build-info:
+    get:
+      summary: Build Information
+      description: Returns application build info, such as the git 
+        repository and revision, the golang version it was built with, and 
+        the app release version.
+      produces:
+       - application/json; charset=UTF-8
+      tags:
+        - Info
+      responses:
+        200:
+          description: Outputs build information as described in the summary.
+  /__gtg:
+    get:
+      summary: Good To Go
+      description: Lightly healthchecks the application, and returns a 200 
+        if it's Good-To-Go.
+      tags:
+        - Health
+      responses:
+        200:
+           description: The application is healthy enough to perform all its 
+            functions correctly - i.e. good to go.
+        503:
+           description: One or more of the applications healthchecks have 
+            failed, so please do not use the app. See the /__health endpoint 
+            for more detailed information.
+components:
+  schemas:
+    Annotation:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID of the related object
+        apiUrl:
+          type: string
+          description: URL of the related object
+        prefLabel:
+          type: string
+          description: Label of the related object
+        types:
+          type: array
+          items:
+            type: string
+          descriptin: Types of the related object
+        predicate:
+          type: string
+          descriptin: Describes the type of annotation
+        
