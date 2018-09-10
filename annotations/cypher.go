@@ -33,14 +33,15 @@ func (cd cypherDriver) checkConnectivity() error {
 }
 
 type neoAnnotation struct {
-	Predicate string
-	ID        string
-	APIURL    string
-	Types     []string
-	LeiCode   string
-	FIGI      string
-	PrefLabel string
-	Lifecycle string
+	Predicate    string
+	ID           string
+	APIURL       string
+	Types        []string
+	LeiCode      string
+	FIGI         string
+	PrefLabel    string
+	Lifecycle    string
+	IsDeprecated bool
 
 	// Canonical information
 	PrefUUID           string
@@ -64,6 +65,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		OPTIONAL MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(:Concept)<-[:ISSUED_BY]-(figi:FinancialInstrument)
 		RETURN
 			canonicalConcept.prefUUID as id,
+			canonicalConcept.isDeprecated as isDeprecated,
 			type(rel) as predicate,
 			labels(canonicalConcept) as types,
 			canonicalConcept.prefLabel as prefLabel,
@@ -75,6 +77,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
 		RETURN 
 			DISTINCT canonicalParent.prefUUID as id,
+			canonicalBrand.isDeprecated as isDeprecated,
 			"IMPLICITLY_CLASSIFIED_BY" as predicate,
 			labels(canonicalParent) as types,
 			canonicalParent.prefLabel as prefLabel,
@@ -87,6 +90,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		WHERE NOT (canonicalImplicit)<-[:EQUIVALENT_TO]-(:Concept)<-[:ABOUT]-(content) // filter out the original abouts
 		RETURN 
 			DISTINCT canonicalImplicit.prefUUID as id,
+			canonicalConcept.isDeprecated as isDeprecated,
 			"IMPLICITLY_ABOUT" as predicate,
 			labels(canonicalImplicit) as types,
 			canonicalImplicit.prefLabel as prefLabel,
@@ -154,6 +158,7 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	}
 	ann.Predicate = predicate
 	ann.Lifecycle = neoAnn.Lifecycle
+	ann.IsDeprecated = neoAnn.IsDeprecated
 
 	return ann, nil
 }

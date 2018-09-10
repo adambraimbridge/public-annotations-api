@@ -11,7 +11,8 @@ type annotation struct {
 	FIGI      string   `json:"FIGI,omitempty"`
 	PrefLabel string   `json:"prefLabel,omitempty"`
 	//used for filtering, e.g. pac not exposed
-	Lifecycle string `json:"-"`
+	Lifecycle    string `json:"-"`
+	IsDeprecated bool   `json:"isDeprecated,omitempty"`
 }
 
 var predicates = map[string]string{
