@@ -77,7 +77,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		OPTIONAL MATCH (canonicalBrand)-[:EQUIVALENT_TO]-(leafBrand:Brand)-[r:HAS_PARENT*0..]->(parentBrand:Brand)-[:EQUIVALENT_TO]->(canonicalParent:Brand)
 		RETURN 
 			DISTINCT canonicalParent.prefUUID as id,
-			canonicalBrand.isDeprecated as isDeprecated,
+			canonicalParent.isDeprecated as isDeprecated,
 			"IMPLICITLY_CLASSIFIED_BY" as predicate,
 			labels(canonicalParent) as types,
 			canonicalParent.prefLabel as prefLabel,
@@ -90,7 +90,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		WHERE NOT (canonicalImplicit)<-[:EQUIVALENT_TO]-(:Concept)<-[:ABOUT]-(content) // filter out the original abouts
 		RETURN 
 			DISTINCT canonicalImplicit.prefUUID as id,
-			canonicalConcept.isDeprecated as isDeprecated,
+			canonicalImplicit.isDeprecated as isDeprecated,
 			"IMPLICITLY_ABOUT" as predicate,
 			labels(canonicalImplicit) as types,
 			canonicalImplicit.prefLabel as prefLabel,
