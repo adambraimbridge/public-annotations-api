@@ -1,0 +1,21 @@
+version: "1.0.0"
+fixtures:
+  /content/906d1dfc-56dd-11df-aa89-00144feab49a/annotations:
+    get:
+      status: 200
+      produces:
+        - application/json
+      headers:
+        content-type: application/json
+      body:
+        predicate: http://www.ft.com/ontology/classification/isClassifiedBy
+        id: http://api.ft.com/things/703e47cf-f2c3-39b4-9dd2-05d7c66f4e8b
+        apiUrl: http://api.ft.com/things/703e47cf-f2c3-39b4-9dd2-05d7c66f4e8b
+        types: [
+            "http://www.ft.com/ontology/core/Thing",
+            "http://www.ft.com/ontology/concept/Concept",
+            "http://www.ft.com/ontology/classification/Classification",
+            "http://www.ft.com/ontology/Subject"
+        ]
+        prefLabel: Deaths
+        

@@ -1,8 +1,7 @@
 swagger: "2.0"
 info:
-  title: Public Annotations API
-  description: Provides a public API for Annotations stored in a Neo4J 
-    graph database
+  title: "Public Annotations API"
+  description: "Provides a public API for Annotations stored in a Neo4J graph database"
   version: "2.0.0"
   contact:
     name: Universal Publishing
@@ -27,25 +26,28 @@ paths:
           name: contentUUID
           type: string
           required: true
+          x-example: 906d1dfc-56dd-11df-aa89-00144feab49a
           description: UUID of a piece of content
       responses:
         200:
-          description: Success body if the content is found.
-          content:
+          description: Returns the Brand concept if it's found.
+          examples:
             application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Annotation"
+              predicate: http://www.ft.com/ontology/classification/isClassifiedBy
+              id: http://api.ft.com/things/c65ad97e-ccf0-4b6a-b34a-0e03744a9431
+              apiUrl: http://api.ft.com/brands/c65ad97e-ccf0-4b6a-b34a-0e03744a9431
+              types:
+              - http://www.ft.com/ontology/core/Thing
+                http://www.ft.com/ontology/concept/Concept
+                http://www.ft.com/ontology/classification/Classification
+                http://www.ft.com/ontology/Subject
+              prefLabel: Deaths
         400:
-          description: Bad request if the uuid path parameter is badly 
-            formed or missing.
+          description: Bad request if the uuid path parameter is  formatted formed or missing.
         404:
-          description: Not Found if there is no person record for the uuid 
-            path parameter is found.
+          description: Not Found if there is no brand record for the uuid path parameter is found.
         500:
-          description: Internal Server Error if there was an issue 
-            processing the records.
+          description: Internal Server Error if there was an issue processing the records.
         503:
           description: Service Unavailable if it cannot connect to Neo4j.
   /__health:
@@ -70,7 +72,7 @@ paths:
         repository and revision, the golang version it was built with, and 
         the app release version.
       produces:
-       - application/json; charset=UTF-8
+        - application/json; charset=UTF-8
       tags:
         - Info
       responses:
@@ -91,26 +93,3 @@ paths:
            description: One or more of the applications healthchecks have 
             failed, so please do not use the app. See the /__health endpoint 
             for more detailed information.
-components:
-  schemas:
-    Annotation:
-      type: object
-      properties:
-        id:
-          type: string
-          description: UUID of the related object
-        apiUrl:
-          type: string
-          description: URL of the related object
-        prefLabel:
-          type: string
-          description: Label of the related object
-        types:
-          type: array
-          items:
-            type: string
-          descriptin: Types of the related object
-        predicate:
-          type: string
-          descriptin: Describes the type of annotation
-        
