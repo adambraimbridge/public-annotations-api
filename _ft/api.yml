@@ -26,22 +26,40 @@ paths:
           name: contentUUID
           type: string
           required: true
-          x-example: 906d1dfc-56dd-11df-aa89-00144feab49a
+          x-example: 3fc9fe3e-af8c-2a2a-961a-e5065392bb31
           description: UUID of a piece of content
       responses:
         200:
           description: Returns the Brand concept if it's found.
           examples:
             application/json:
-              predicate: http://www.ft.com/ontology/classification/isClassifiedBy
-              id: http://api.ft.com/things/c65ad97e-ccf0-4b6a-b34a-0e03744a9431
-              apiUrl: http://api.ft.com/brands/c65ad97e-ccf0-4b6a-b34a-0e03744a9431
-              types:
-              - http://www.ft.com/ontology/core/Thing
-                http://www.ft.com/ontology/concept/Concept
-                http://www.ft.com/ontology/classification/Classification
-                http://www.ft.com/ontology/Subject
-              prefLabel: Deaths
+              - predicate: http://www.ft.com/ontology/classification/isClassifiedBy
+                id: http://api.ft.com/things/ff691bf8-8d92-2a2a-8326-c273400bff0b
+                apiUrl: http://api.ft.com/brands/ff691bf8-8d92-2a2a-8326-c273400bff0b
+                types:
+                  - http://www.ft.com/ontology/core/Thing
+                  - http://www.ft.com/ontology/concept/Concept
+                  - http://www.ft.com/ontology/classification/Classification
+                  - http://www.ft.com/ontology/Brand
+                prefLabel: Child Business School video
+              - predicate: http://www.ft.com/ontology/classification/isClassifiedBy
+                id: http://api.ft.com/things/ff691bf8-8d92-2a2a-8326-c273400bff0b
+                apiUrl: http://api.ft.com/brands/ff691bf8-8d92-2a2a-8326-c273400bff0b
+                types:
+                  - http://www.ft.com/ontology/core/Thing
+                  - http://www.ft.com/ontology/concept/Concept
+                  - http://www.ft.com/ontology/classification/Classification
+                  - http://www.ft.com/ontology/Brand
+                prefLabel: Business School video
+              - predicate: http://www.ft.com/ontology/classification/isClassifiedBy
+                id: http://api.ft.com/things/ff691bf8-8d92-2a2a-8326-c273400bff0b
+                apiUrl: http://api.ft.com/brands/ff691bf8-8d92-2a2a-8326-c273400bff0b
+                types:
+                  - http://www.ft.com/ontology/core/Thing
+                  - http://www.ft.com/ontology/concept/Concept
+                  - http://www.ft.com/ontology/classification/Classification
+                  - http://www.ft.com/ontology/Brand
+                prefLabel: Financial Times
         400:
           description: Bad request if the uuid path parameter is  formatted formed or missing.
         404:
