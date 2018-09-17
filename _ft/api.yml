@@ -118,7 +118,7 @@ paths:
         400:
           description: Bad request if the uuid path parameter is  formatted formed or missing.
         404:
-          description: Not Found if there is no brand record for the uuid path parameter is found.
+          description: Not Found if there is no annotations record for the uuid path parameter is found.
         500:
           description: Internal Server Error if there was an issue processing the records.
         503:
