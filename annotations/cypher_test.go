@@ -684,8 +684,9 @@ func getExpectedJohnSmithAnnotation(lifecycle string) annotation {
 			"http://www.ft.com/ontology/concept/Concept",
 			"http://www.ft.com/ontology/person/Person",
 		},
-		PrefLabel: "John Smith",
-		Lifecycle: lifecycle,
+		PrefLabel:    "John Smith",
+		Lifecycle:    lifecycle,
+		IsDeprecated: true,
 	}
 }
 
