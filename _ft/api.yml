@@ -26,7 +26,7 @@ paths:
           name: contentUUID
           type: string
           required: true
-          x-example: 3fc9fe3e-af8c-2a2a-961a-e5065392bb31
+          x-example: 59439611-a23a-38ae-8615-b35a80d4e6f1
           description: UUID of a piece of content
       responses:
         200:
