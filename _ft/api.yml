@@ -30,7 +30,7 @@ paths:
           description: UUID of a piece of content
       responses:
         200:
-          description: Returns the Brand concept if it's found.
+          description: Returns the annotations if they exists.
           examples:
             application/json:
               - predicate: http://www.ft.com/ontology/annotation/mentions
