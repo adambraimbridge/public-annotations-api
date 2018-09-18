@@ -8,13 +8,11 @@ jobs:
           NEO4J_AUTH: none
           NEO4J_HEAP_MEMORY: 256
           NEO4J_CACHE_MEMORY: 256M
-
     working_directory: /go/src/github.com/Financial-Times/public-annotations-api
     environment:
-          NEO4J_TEST_URL: "http://localhost:7474/db/data/"
-          CIRCLE_TEST_REPORTS: /tmp/test-reports
-          CIRCLE_COVERAGE_REPORT: /tmp/coverage-results
-
+      NEO4J_TEST_URL: "http://localhost:7474/db/data/"
+      CIRCLE_TEST_REPORTS: /tmp/test-reports
+      CIRCLE_COVERAGE_REPORT: /tmp/coverage-results
     steps:
       - checkout
       - run:
@@ -43,18 +41,16 @@ jobs:
           goveralls -coverprofile=$CIRCLE_COVERAGE_REPORT/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
       - store_test_results:
           path: /tmp/test-reports
-
   docker_build:
     working_directory: /public-annotations-api
     docker:
       - image: docker:18.03
     steps:
       - checkout
-      - setup_docker_engine
+      - setup_remote_docker
       - run:
           name: Build Dockerfile
           command: docker build .
-
 workflows:
   version: 2
   tests_and_docker:

@@ -1,6 +1,7 @@
 {
   "prefUUID": "75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
   "prefLabel": "John Smith",
+  "isDeprecated": true,
   "name": "John Smith",
   "type": "Person",
   "salutation": "Mr.",

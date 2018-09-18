@@ -666,10 +666,11 @@ func getExpectedHasDisplayTagFakebookAnnotation(lifecycle string) annotation {
 			"http://www.ft.com/ontology/company/Company",
 			"http://www.ft.com/ontology/company/PublicCompany",
 		},
-		PrefLabel: "Fakebook, Inc.",
-		Lifecycle: lifecycle,
-		LeiCode:   "BQ4BKCS1HXDV9TTTTTTTT",
-		FIGI:      "BB8000C3P0-R2D2",
+		PrefLabel:    "Fakebook, Inc.",
+		Lifecycle:    lifecycle,
+		LeiCode:      "BQ4BKCS1HXDV9TTTTTTTT",
+		FIGI:         "BB8000C3P0-R2D2",
+		IsDeprecated: false,
 	}
 }
 
@@ -683,8 +684,9 @@ func getExpectedJohnSmithAnnotation(lifecycle string) annotation {
 			"http://www.ft.com/ontology/concept/Concept",
 			"http://www.ft.com/ontology/person/Person",
 		},
-		PrefLabel: "John Smith",
-		Lifecycle: lifecycle,
+		PrefLabel:    "John Smith",
+		Lifecycle:    lifecycle,
+		IsDeprecated: true,
 	}
 }
 
