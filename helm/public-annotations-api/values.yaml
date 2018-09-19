@@ -9,8 +9,6 @@ image:
   repository: coco/public-annotations-api
   pullPolicy: IfNotPresent
 public_annotations_api:
-  graphite_prefix: "coco.services.k8s.public-annotations-api"
-  log_metrics: "false"
   cache_duration: 30s
 resources:
   requests:

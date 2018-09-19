@@ -37,15 +37,6 @@ spec:
         env:
         - name: APP_PORT
           value: "8080"
-        - name: GRAPHITE_ADDRESS
-          valueFrom:
-            configMapKeyRef:
-              name: global-config
-              key: graphite.address
-        - name: GRAPHITE_PREFIX
-          value: {{ .Values.public_annotations_api.graphite_prefix }}
-        - name: LOG_METRICS
-          value: "{{ .Values.public_annotations_api.log_metrics }}"
         - name: CACHE_DURATION
           value: {{ .Values.public_annotations_api.cache_duration }}
         - name: NEO_URL
