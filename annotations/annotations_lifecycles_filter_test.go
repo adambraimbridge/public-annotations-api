@@ -6,6 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	v1Lifecycle        = "annotations-v1"
+	nextVideoLifecycle = "annotations-next-video"
+)
+
 var pacAnnotationA = annotation{
 	ID:        "6bbd0457-15ab-4ddc-ab82-0cd5b8d9ce18",
 	Predicate: ABOUT,

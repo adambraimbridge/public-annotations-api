@@ -1,3 +1,5 @@
+// +build integration
+
 package annotations
 
 import (
@@ -54,8 +56,6 @@ const (
 
 	v1PlatformVersion    = "v1"
 	v2PlatformVersion    = "v2"
-	v1Lifecycle          = "annotations-v1"
-	nextVideoLifecycle   = "annotations-next-video"
 	emptyPlatformVersion = ""
 
 	brandType = "http://www.ft.com/ontology/product/Brand"
