@@ -4,16 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
-	knownUUID       = "12345"
-	platformVersion = "v1"
+	knownUUID = "12345"
 )
 
 type test struct {
@@ -21,15 +21,14 @@ type test struct {
 	req          *http.Request
 	dummyService driver
 	statusCode   int
-	contentType  string // Contents of the Content-Type header
 	body         string
 }
 
 func TestGetHandler(t *testing.T) {
 	tests := []test{
-		{"Success", newRequest("GET", fmt.Sprintf("/content/%s/annotations", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusOK, "", "[]"},
-		{"NotFound", newRequest("GET", fmt.Sprintf("/content/%s/annotations", "99999"), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusNotFound, "", message("No annotations found for content with uuid 99999.")},
-		{"ReadError", newRequest("GET", fmt.Sprintf("/content/%s/annotations", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID, failRead: true}, http.StatusServiceUnavailable, "", message("Error getting annotations for content with uuid 12345, err=TEST failing to READ")},
+		{"Success", newRequest("GET", fmt.Sprintf("/content/%s/annotations", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusOK, "[]"},
+		{"NotFound", newRequest("GET", fmt.Sprintf("/content/%s/annotations", "99999"), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusNotFound, message("No annotations found for content with uuid 99999.")},
+		{"ReadError", newRequest("GET", fmt.Sprintf("/content/%s/annotations", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID, failRead: true}, http.StatusServiceUnavailable, message("Error getting annotations for content with uuid 12345, err=TEST failing to READ")},
 	}
 
 	for _, test := range tests {
@@ -45,7 +44,7 @@ func TestGetHandler(t *testing.T) {
 
 func TestMethodeNotFound(t *testing.T) {
 	tests := []test{
-		{"NotFound", newRequest("GET", fmt.Sprintf("/content/%s/annotations/", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusNotFound, "", "404 page not found\n"},
+		{"NotFound", newRequest("GET", fmt.Sprintf("/content/%s/annotations/", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusNotFound, "404 page not found\n"},
 	}
 
 	for _, test := range tests {

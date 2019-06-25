@@ -68,7 +68,11 @@ func main() {
 	}
 	log.SetLevel(lvl)
 	log.Infof("Application started with args %s", os.Args)
-	app.Run(os.Args)
+	err = app.Run(os.Args)
+	if err != nil {
+		log.WithError(err).Error("public-annotations-api could not start!")
+		return
+	}
 }
 
 func runServer(neoURL string, port string, cacheDuration string, env string) {
