@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -32,13 +33,17 @@ func GetAnnotations(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		msg := fmt.Sprintf(`{"message":"Error getting annotations for content with uuid %s, err=%s"}`, uuid, err.Error())
-		w.Write([]byte(msg))
+		if _, err = w.Write([]byte(msg)); err != nil {
+			log.WithError(err).Error("Error while writing response")
+		}
 		return
 	}
 	if !found {
 		w.WriteHeader(http.StatusNotFound)
 		msg := fmt.Sprintf(`{"message":"No annotations found for content with uuid %s."}`, uuid)
-		w.Write([]byte(msg))
+		if _, err = w.Write([]byte(msg)); err != nil {
+			log.WithError(err).Error("Error while writing response")
+		}
 		return
 	}
 
@@ -48,6 +53,8 @@ func GetAnnotations(w http.ResponseWriter, r *http.Request) {
 	if err = json.NewEncoder(w).Encode(annotations); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		msg := fmt.Sprintf(`{"message":"Error parsing annotations for content with uuid %s, err=%s"}`, uuid, err.Error())
-		w.Write([]byte(msg))
+		if _, err = w.Write([]byte(msg)); err != nil {
+			log.WithError(err).Error("Error while writing response")
+		}
 	}
 }
