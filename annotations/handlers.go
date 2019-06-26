@@ -47,6 +47,12 @@ func GetAnnotations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	lifecycleFilter := newLifecycleFilter()
+	predicateFilter := NewAnnotationsPredicateFilter()
+	chain := newAnnotationsFilterChain(lifecycleFilter, predicateFilter)
+
+	annotations = chain.doNext(annotations)
+
 	w.Header().Set("Cache-Control", CacheControlHeader)
 	w.WriteHeader(http.StatusOK)
 

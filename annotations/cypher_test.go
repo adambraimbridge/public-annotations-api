@@ -328,6 +328,7 @@ func TestRetrieveNoAnnotationsWhenThereAreNonePresentExceptBrands(t *testing.T) 
 
 	driver := NewCypherDriver(db, "prod")
 	anns, found, err := driver.read(contentWithNoAnnotationsUUID)
+	anns = applyDefaultFilters(anns)
 	assert.NoError(err, "Unexpected error for content %s", contentWithNoAnnotationsUUID)
 	assert.False(found, "Found annotations for content %s", contentWithNoAnnotationsUUID)
 	assert.Equal(0, len(anns), "Didn't get the same number of annotations") // Two brands, child and parent
@@ -376,6 +377,7 @@ func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
 
 	driver := NewCypherDriver(db, "prod")
 	anns, found, err := driver.read(contentUUID)
+	anns = applyDefaultFilters(anns)
 	assert.NoError(err, "Unexpected error for content %s", contentUUID)
 	assert.False(found, "Found annotations for content %s", contentUUID)
 	assert.Equal(0, len(anns), "Didn't get the same number of annotations, anns=%s", anns)
@@ -383,6 +385,7 @@ func TestRetrieveNoAnnotationsWhenThereAreNoConceptsPresent(t *testing.T) {
 
 func getAndCheckAnnotations(driver cypherDriver, contentUUID string, t *testing.T) annotations {
 	anns, found, err := driver.read(contentUUID)
+	anns = applyDefaultFilters(anns)
 	assert.NoError(t, err, "Unexpected error for content %s", contentUUID)
 	assert.True(t, found, "Found no annotations for content %s", contentUUID)
 	return anns
@@ -734,4 +737,11 @@ func count(annotationLifecycle string, db neoutils.NeoConnection) (int, error) {
 		return 0, err
 	}
 	return results[0].Count, nil
+}
+
+func applyDefaultFilters(anns []annotation) []annotation {
+	lifecycleFilter := newLifecycleFilter()
+	predicateFilter := NewAnnotationsPredicateFilter()
+	chain := newAnnotationsFilterChain(lifecycleFilter, predicateFilter)
+	return chain.doNext(anns)
 }
