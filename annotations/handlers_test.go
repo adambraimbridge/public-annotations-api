@@ -26,7 +26,7 @@ type test struct {
 
 func TestGetHandler(t *testing.T) {
 	tests := []test{
-		{"Success", newRequest("GET", fmt.Sprintf("/content/%s/annotations", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusOK, "[]"},
+		{"Success", newRequest("GET", fmt.Sprintf("/content/%s/annotations", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusOK, "null"},
 		{"NotFound", newRequest("GET", fmt.Sprintf("/content/%s/annotations", "99999"), "application/json", nil), dummyService{contentUUID: knownUUID}, http.StatusNotFound, message("No annotations found for content with uuid 99999.")},
 		{"ReadError", newRequest("GET", fmt.Sprintf("/content/%s/annotations", knownUUID), "application/json", nil), dummyService{contentUUID: knownUUID, failRead: true}, http.StatusServiceUnavailable, message("Error getting annotations for content with uuid 12345, err=TEST failing to READ")},
 	}
