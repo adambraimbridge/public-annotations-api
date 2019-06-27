@@ -8,7 +8,6 @@ __Provides a public API for Annotations stored in a Neo4J graph database__
 * `go get -u github.com/Financial-Times/public-annotations-api`
 * `cd $GOPATH/src/github.com/Financial-Times/public-annotations-api`
 * `dep ensure -vendor-only`
-* `go test ./...`
 * `go install`
 * `$GOPATH/bin/public-annotations-api --neo-url={neo4jUrl} --port={port} --log-level={DEBUG|INFO|WARN|ERROR}--cache-duration{e.g. 22h10m3s}`   
 _Optional arguments are:
@@ -17,6 +16,17 @@ _Optional arguments are:
 --cache-duration defaults to 1 hour._
 * `curl http://localhost:8080/content/143ba45c-2fb3-35bc-b227-a6ed80b5c517/annotations | json_pp`
 * Or using [httpie](https://github.com/jkbrzt/httpie) `http GET http://localhost:8080/content/143ba45c-2fb3-35bc-b227-a6ed80b5c517/annotations`
+
+## Testing
+
+* Run unit tests only: `go test -race ./...`
+* Run unit and integration tests: 
+    
+    ```
+    docker-compose -f docker-compose-tests.yml up -d --build && \
+    docker logs -f test-runner && \
+    docker-compose -f docker-compose-tests.yml down
+    ```
 
 ## Build & deployment
 Continuosly built be CircleCI. The docker image of the service is built by Dockerhub based on the git release tag. 
@@ -37,7 +47,7 @@ This is because it will return also the parent of the brands from any brands ann
 If those brands have parents, then they too will be brought into the result.
 
 * the `public-annotations-api` uses annotations lifecyle to determine which annotations are returned. If curated (tag-me) annotations (life cycle pac) for a piece of content exist, they will be returned combined with V2 annotations by default, other non-pac lifecycle annotations are omitted.
-If there are no pac life cycle annotations, non-pac annotations will be returned. The filtering described in the next paragraph relates to non-pac annotations.
+If there are no pac life cycle annotations, non-pac annotations will be returned. The filtering described in the next paragraph relates to non-pac annotations. Additional filtering by annotations lifecyle could be applied using the optional "lifecycle" query parameter.
 
 * the `public-annotations-api` will filter out less important annotations if a more important annotation is also present for the same concept.  
 _For example_, if a piece of content is annotated with a concept with "About", "Major Mentions" and "Mentions" relationships 
