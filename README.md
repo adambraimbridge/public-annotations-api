@@ -37,7 +37,7 @@ This is because it will return also the parent of the brands from any brands ann
 If those brands have parents, then they too will be brought into the result.
 
 * the `public-annotations-api` uses annotations lifecyle to determine which annotations are returned. If curated (tag-me) annotations (life cycle pac) for a piece of content exist, they will be returned combined with V2 annotations by default, other non-pac lifecycle annotations are omitted.
-If there are no pac life cycle annotations, non-pac annotations will be returned. The filtering described in the next paragraph relates to non-pac annotations.
+If there are no pac life cycle annotations, non-pac annotations will be returned. The filtering described in the next paragraph relates to non-pac annotations. Additional filtering by annotations lifecyle could be applied using the optional "lifecycle" query parameter.
 
 * the `public-annotations-api` will filter out less important annotations if a more important annotation is also present for the same concept.  
 _For example_, if a piece of content is annotated with a concept with "About", "Major Mentions" and "Mentions" relationships 
