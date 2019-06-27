@@ -47,7 +47,23 @@ func GetAnnotations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lifecycleFilter := newLifecycleFilter()
+	params := r.URL.Query()
+
+	var ok bool
+	var lifecycleParams []string
+	if lifecycleParams, ok = params["lifecycle"]; ok {
+		err = validateLifecycleParams(lifecycleParams)
+		if err != nil {
+			log.WithError(err).Error("invalid query parameter")
+			w.WriteHeader(http.StatusBadRequest)
+			if _, err = w.Write([]byte(`{"message":"invalid query parameter"}`)); err != nil {
+				log.WithError(err).Error("Error while writing response")
+			}
+			return
+		}
+	}
+
+	lifecycleFilter := newLifecycleFilter(withLifecycles(lifecycleParams))
 	predicateFilter := NewAnnotationsPredicateFilter()
 	chain := newAnnotationsFilterChain(lifecycleFilter, predicateFilter)
 
@@ -63,4 +79,14 @@ func GetAnnotations(w http.ResponseWriter, r *http.Request) {
 			log.WithError(err).Error("Error while writing response")
 		}
 	}
+}
+
+func validateLifecycleParams(lifecycleParams []string) error {
+	for _, lp := range lifecycleParams {
+		if _, ok := lifecycleMap[lp]; !ok {
+			return fmt.Errorf("invalid lifecycle value: %s", lp)
+		}
+	}
+
+	return nil
 }
