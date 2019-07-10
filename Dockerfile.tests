@@ -1,4 +1,4 @@
-FROM golang:1.10
+FROM golang:1.12
 
 ENV PROJECT=public-annotations-api
 ENV REPO_PATH="github.com/Financial-Times/${PROJECT}"

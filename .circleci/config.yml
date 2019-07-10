@@ -2,12 +2,13 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.10
-      - image: neo4j:3.2.7-enterprise
+      - image: circleci/golang:1.12
+      - image: neo4j:3.4.10-enterprise
         environment:
           NEO4J_AUTH: none
           NEO4J_HEAP_MEMORY: 256
           NEO4J_CACHE_MEMORY: 256M
+          NEO4J_ACCEPT_LICENSE_AGREEMENT: "yes"
     working_directory: /go/src/github.com/Financial-Times/public-annotations-api
     environment:
       NEO4J_TEST_URL: "http://localhost:7474/db/data/"
