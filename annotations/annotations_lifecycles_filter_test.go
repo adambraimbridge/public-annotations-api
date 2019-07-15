@@ -6,6 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	v1Lifecycle        = "annotations-v1"
+	nextVideoLifecycle = "annotations-next-video"
+)
+
 var pacAnnotationA = annotation{
 	ID:        "6bbd0457-15ab-4ddc-ab82-0cd5b8d9ce18",
 	Predicate: ABOUT,
@@ -164,4 +169,88 @@ func TestFilterOnV1V2PACAnnotations(t *testing.T) {
 	assert.Contains(t, filtered, pacAnnotationB)
 	assert.Contains(t, filtered, v2AnnotationA)
 	assert.Contains(t, filtered, v2AnnotationA)
+}
+
+func TestAdditionalFilteringOnV1V2PACAnnotations(t *testing.T) {
+	tests := map[string]struct {
+		lifecycles []string
+		expected   []annotation
+	}{
+		"additional pac filtering should return only pac annotations": {
+			lifecycles: []string{"pac"},
+			expected:   []annotation{pacAnnotationA, pacAnnotationB},
+		},
+		"additional v2 filtering should return only v2 annotations": {
+			lifecycles: []string{"v2"},
+			expected:   []annotation{v2AnnotationA, v2AnnotationB},
+		},
+		"additional v1 filtering should return nil": {
+			lifecycles: []string{"v1"},
+			expected:   nil,
+		},
+		"additional next-video filtering should return nil": {
+			lifecycles: []string{"next-video"},
+			expected:   nil,
+		},
+		"additional v1&next-video filtering should return nil": {
+			lifecycles: []string{"v1", "next-video"},
+			expected:   nil,
+		},
+		"additional pac&v2 filtering should return pac&v2 annotations": {
+			lifecycles: []string{"pac", "v2"},
+			expected:   []annotation{pacAnnotationA, pacAnnotationB, v2AnnotationA, v2AnnotationB},
+		},
+		"additional pac&v1&v2&next-video filtering should return pac&v2 annotations": {
+			lifecycles: []string{"pac", "v1", "v2", "next-video"},
+			expected:   []annotation{pacAnnotationA, pacAnnotationB, v2AnnotationA, v2AnnotationB},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			annotations := []annotation{pacAnnotationA, pacAnnotationB, v1AnnotationA, v1AnnotationB, v2AnnotationA, v2AnnotationB}
+			f := newLifecycleFilter(withLifecycles(tc.lifecycles))
+			chain := newAnnotationsFilterChain(f)
+			filtered := chain.doNext(annotations)
+
+			assert.Len(t, filtered, len(tc.expected))
+			assert.Equal(t, filtered, tc.expected)
+		})
+	}
+}
+
+func TestAdditionalFilteringNoPACAnnotations(t *testing.T) {
+	tests := map[string]struct {
+		lifecycles []string
+		expected   []annotation
+	}{
+		"additional v1 filtering should return only v1 annotations": {
+			lifecycles: []string{"v1"},
+			expected:   []annotation{v1AnnotationA, v1AnnotationB},
+		},
+		"additional v2 filtering should return only v2 annotations": {
+			lifecycles: []string{"v2"},
+			expected:   []annotation{v2AnnotationA, v2AnnotationB},
+		},
+		"additional next-video filtering should return only next-video annotations": {
+			lifecycles: []string{"next-video"},
+			expected:   []annotation{nextVideoAnnotationA, nextVideoAnnotationB},
+		},
+		"additional v1&v2 filtering should return v1&v2 annotations": {
+			lifecycles: []string{"v1", "v2"},
+			expected:   []annotation{v1AnnotationA, v1AnnotationB, v2AnnotationA, v2AnnotationB},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			annotations := []annotation{v1AnnotationA, v1AnnotationB, v2AnnotationA, v2AnnotationB, nextVideoAnnotationA, nextVideoAnnotationB}
+			f := newLifecycleFilter(withLifecycles(tc.lifecycles))
+			chain := newAnnotationsFilterChain(f)
+			filtered := chain.doNext(annotations)
+
+			assert.Len(t, filtered, len(tc.expected))
+			assert.Equal(t, filtered, tc.expected)
+		})
+	}
 }

@@ -28,6 +28,17 @@ paths:
           required: true
           x-example: 59439611-a23a-38ae-8615-b35a80d4e6f1
           description: UUID of a piece of content
+        - name: lifecycle
+          in: query
+          type: array
+          items:
+            type: string
+            enum:
+              - next-video
+              - v1
+              - pac
+              - v2
+          required: false
       responses:
         200:
           description: Returns the annotations if they exists.
@@ -116,9 +127,9 @@ paths:
                   - http://www.ft.com/ontology/product/Brand
                   - prefLabel: Financial Times
         400:
-          description: Bad request if the uuid path parameter is  formatted formed or missing.
+          description: Bad request if the uuid path parameter is malformed or missing, or if the lifecycle query parameter value is not valid.
         404:
-          description: Not Found if there is no annotations record for the uuid path parameter is found.
+          description: Not Found if no annotations record for the uuid path parameter is found.
         500:
           description: Internal Server Error if there was an issue processing the records.
         503:

@@ -129,11 +129,7 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		}
 	}
 
-	lifecycleFilter := newLifecycleFilter()
-	predicateFilter := NewAnnotationsPredicateFilter()
-
-	chain := newAnnotationsFilterChain(lifecycleFilter, predicateFilter)
-	return chain.doNext(mappedAnnotations), found, nil
+	return mappedAnnotations, found, nil
 }
 
 func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {

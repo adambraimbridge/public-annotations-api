@@ -281,14 +281,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2833779a41dca81f0ca87785e98e57af935a10f40fff6a8a2ee05f7ae8b431e7"
+  digest = "1:1d7b65a57dfca378fdc5aadab1fe78b6319db93087d5946aed795c6a111997ce"
   name = "go4.org"
   packages = [
     "osutil",
     "reflectutil",
   ]
   pruneopts = "UT"
-  revision = "9599cf28b011184741f249bd9f9330756b506cbc"
+  revision = "94abd6928b1da39b1d757b60c93fb2419c409fa1"
 
 [[projects]]
   branch = "master"
