@@ -9,16 +9,20 @@ import (
 	"time"
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
-	"github.com/Financial-Times/http-handlers-go/httphandlers"
+	//"github.com/Financial-Times/http-handlers-go/httphandlers"
+
+	//"github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
+	"github.com/Financial-Times/upp-micro-kit"
 
 	"github.com/Financial-Times/public-annotations-api/annotations"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
+
+	"github.com/Financial-Times/go-logger"
 	"github.com/gorilla/mux"
 	cli "github.com/jawher/mow.cli"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rcrowley/go-metrics"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -49,32 +53,35 @@ func main() {
 		Desc:   "Duration Get requests should be cached for. e.g. 2h45m would set the max-age value to '7440' seconds",
 		EnvVar: "CACHE_DURATION",
 	})
-	logLevel := app.String(cli.StringOpt{
-		Name:   "log-level",
-		Value:  "info",
-		Desc:   "Log level for the service",
-		EnvVar: "LOG_LEVEL",
-	})
+	//logLevel := app.String(cli.StringOpt{
+	//	Name:   "log-level",
+	//	Value:  "info",
+	//	Desc:   "Log level for the service",
+	//	EnvVar: "LOG_LEVEL",
+	//})
+
+	//lvl, err := log.ParseLevel(*logLevel)
+	//if err != nil {
+	//	lvl = log.InfoLevel
+	//}
+	//log.SetLevel(lvl)
+	//
+	log := logger.NewInfoLogger("public-annotations-api")
 
 	app.Action = func() {
 		log.Infof("public-annotations-api will listen on port: %s, connecting to: %s", *port, *neoURL)
-		runServer(*neoURL, *port, *cacheDuration, *env)
+		runServer(*neoURL, *port, *cacheDuration, *env, log)
 	}
 
-	lvl, err := log.ParseLevel(*logLevel)
-	if err != nil {
-		lvl = log.InfoLevel
-	}
-	log.SetLevel(lvl)
 	log.Infof("Application started with args %s", os.Args)
-	err = app.Run(os.Args)
+	err := app.Run(os.Args)
 	if err != nil {
 		log.WithError(err).Error("public-annotations-api could not start!")
 		return
 	}
 }
 
-func runServer(neoURL string, port string, cacheDuration string, env string) {
+func runServer(neoURL string, port string, cacheDuration string, env string, log *logger.UPPLogger) {
 	if duration, durationErr := time.ParseDuration(cacheDuration); durationErr != nil {
 		log.Fatalf("Failed to parse cache duration string, %v", durationErr)
 	} else {
@@ -99,10 +106,10 @@ func runServer(neoURL string, port string, cacheDuration string, env string) {
 	}
 
 	annotations.AnnotationsDriver = annotations.NewCypherDriver(db, env)
-	routeRequests(port)
+	routeRequests(port, log)
 }
 
-func routeRequests(port string) {
+func routeRequests(port string, log *logger.UPPLogger) {
 
 	// Standard endpoints
 	healthCheck := fthealth.TimedHealthCheck{
@@ -127,8 +134,8 @@ func routeRequests(port string) {
 	servicesRouter.HandleFunc("/content/{uuid}/annotations", annotations.MethodNotAllowedHandler)
 
 	var monitoringRouter http.Handler = servicesRouter
-	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
-	monitoringRouter = httphandlers.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
+	monitoringRouter = upp_micro_kit.TransactionAwareRequestLoggingHandler(log, monitoringRouter)
+	monitoringRouter = upp_micro_kit.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
 
 	http.Handle("/", monitoringRouter)
 
