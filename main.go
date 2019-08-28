@@ -12,7 +12,7 @@ import (
 	"github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
 
-	"github.com/Financial-Times/public-annotations-api/annotations"
+	"github.com/Financial-Times/public-annotations-api/v3/annotations"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/gorilla/mux"
 	cli "github.com/jawher/mow.cli"

@@ -7,7 +7,8 @@ services:
     container_name: test-runner
     environment:
       - NEO4J_TEST_URL=http://neo4j:7474/db/data
-    command: ["go", "test", "-v", "-race", "-tags=integration", "./..."]
+      - CGO_ENABLED=1
+    command: ["go", "test", "-mod=readonly", "-v", "-race", "-tags=integration", "./..."]
     depends_on:
       - neo4j
   neo4j:
