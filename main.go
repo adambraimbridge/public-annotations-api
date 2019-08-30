@@ -12,13 +12,13 @@ import (
 	"github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
 
+	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/public-annotations-api/v3/annotations"
 	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/gorilla/mux"
 	cli "github.com/jawher/mow.cli"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rcrowley/go-metrics"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -56,30 +56,31 @@ func main() {
 		EnvVar: "LOG_LEVEL",
 	})
 
+	log := logger.NewUPPLogger("public-annotations-api", *logLevel)
+
 	app.Action = func() {
 		log.Infof("public-annotations-api will listen on port: %s, connecting to: %s", *port, *neoURL)
-		runServer(*neoURL, *port, *cacheDuration, *env)
+		err := runServer(*neoURL, *port, *cacheDuration, *env, log)
+		if err != nil {
+			log.WithError(err).Error("failed to start public-annotations-api service")
+			return
+		}
 	}
 
-	lvl, err := log.ParseLevel(*logLevel)
-	if err != nil {
-		lvl = log.InfoLevel
-	}
-	log.SetLevel(lvl)
 	log.Infof("Application started with args %s", os.Args)
-	err = app.Run(os.Args)
+	err := app.Run(os.Args)
 	if err != nil {
 		log.WithError(err).Error("public-annotations-api could not start!")
 		return
 	}
 }
 
-func runServer(neoURL string, port string, cacheDuration string, env string) {
-	if duration, durationErr := time.ParseDuration(cacheDuration); durationErr != nil {
-		log.Fatalf("Failed to parse cache duration string, %v", durationErr)
-	} else {
-		annotations.CacheControlHeader = fmt.Sprintf("max-age=%s, public", strconv.FormatFloat(duration.Seconds(), 'f', 0, 64))
+func runServer(neoURL string, port string, cacheDuration string, env string, log *logger.UPPLogger) error {
+	duration, durationErr := time.ParseDuration(cacheDuration)
+	if durationErr != nil {
+		return fmt.Errorf("failed to parse cache duration string: %w", durationErr)
 	}
+	annotations.CacheControlHeader = fmt.Sprintf("max-age=%s, public", strconv.FormatFloat(duration.Seconds(), 'f', 0, 64))
 
 	conf := neoutils.ConnectionConfig{
 		BatchSize:     1024,
@@ -93,16 +94,15 @@ func runServer(neoURL string, port string, cacheDuration string, env string) {
 		BackgroundConnect: true,
 	}
 	db, err := neoutils.Connect(neoURL, &conf)
-
 	if err != nil {
-		log.Fatalf("Error connecting to neo4j %s", err)
+		return fmt.Errorf("failed connecting to neo4j: %w", err)
 	}
 
 	annotations.AnnotationsDriver = annotations.NewCypherDriver(db, env)
-	routeRequests(port)
+	return routeRequests(port, log)
 }
 
-func routeRequests(port string) {
+func routeRequests(port string, log *logger.UPPLogger) error {
 
 	// Standard endpoints
 	healthCheck := fthealth.TimedHealthCheck{
@@ -127,12 +127,14 @@ func routeRequests(port string) {
 	servicesRouter.HandleFunc("/content/{uuid}/annotations", annotations.MethodNotAllowedHandler)
 
 	var monitoringRouter http.Handler = servicesRouter
-	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log.StandardLogger(), monitoringRouter)
+	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log, monitoringRouter)
 	monitoringRouter = httphandlers.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
 
 	http.Handle("/", monitoringRouter)
 
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatalf("Unable to start server: %v", err)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		return fmt.Errorf("failed to start server: %w", err)
 	}
+	return nil
 }
