@@ -62,7 +62,7 @@ func GetAnnotations(hctx *HandlerCtx) func(http.ResponseWriter, *http.Request) {
 		if err != nil {
 			hctx.Log.WithError(err).WithUUID(uuid).Error("failed getting annotations for content")
 			w.WriteHeader(http.StatusServiceUnavailable)
-			msg := fmt.Sprintf(`{"message":"Error getting annotations for content with uuid %s, err=%s"}`, uuid, err.Error())
+			msg := fmt.Sprintf(`{"message":"Error getting annotations for content with uuid %s"}`, uuid)
 			if _, err = w.Write([]byte(msg)); err != nil {
 				hctx.Log.WithError(err).Errorf("Error while writing response: %s", msg)
 			}

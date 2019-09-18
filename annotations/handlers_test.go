@@ -56,7 +56,7 @@ func TestGetHandler(t *testing.T) {
 				},
 			},
 			expectedStatusCode: http.StatusServiceUnavailable,
-			expectedBody:       message("Error getting annotations for content with uuid 12345, err=TEST failing to READ"),
+			expectedBody:       message("Error getting annotations for content with uuid 12345"),
 		},
 	}
 
