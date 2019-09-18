@@ -9,7 +9,7 @@ const (
 	deweyUrl = "https://dewey.in.ft.com/view/system/annotationsapi"
 )
 
-func HealthCheck() fthealth.Check {
+func HealthCheck(hctx *HandlerCtx) fthealth.Check {
 	return fthealth.Check{
 		ID:               "neo4j-cluster-health",
 		BusinessImpact:   "Unable to respond to Public Annotations api requests",
@@ -17,22 +17,26 @@ func HealthCheck() fthealth.Check {
 		PanicGuide:       deweyUrl,
 		Severity:         1,
 		TechnicalSummary: `Cannot connect to Neo4j. If this check fails, check that Neo4j instance is up and running. You can find the neoUrl as a parameter for this service.`,
-		Checker:          Neo4jChecker,
+		Checker:          Neo4jChecker(hctx.AnnotationsDriver),
 	}
 }
 
-func Neo4jChecker() (string, error) {
-	err := AnnotationsDriver.checkConnectivity()
-	if err != nil {
-		return "Error connecting to neo4j", err
-	}
+func Neo4jChecker(annDriver driver) func() (string, error) {
+	return func() (string, error) {
+		err := annDriver.checkConnectivity()
+		if err != nil {
+			return "Error connecting to neo4j", err
+		}
 
-	return "Connectivity to neo4j is ok", nil
+		return "Connectivity to neo4j is ok", nil
+	}
 }
 
-func GoodToGo() gtg.Status {
-	if _, err := Neo4jChecker(); err != nil {
-		return gtg.Status{GoodToGo: false, Message: err.Error()}
+func GoodToGo(hctx *HandlerCtx) func() gtg.Status {
+	return func() gtg.Status {
+		if _, err := Neo4jChecker(hctx.AnnotationsDriver)(); err != nil {
+			return gtg.Status{GoodToGo: false, Message: err.Error()}
+		}
+		return gtg.Status{GoodToGo: true}
 	}
-	return gtg.Status{GoodToGo: true}
 }

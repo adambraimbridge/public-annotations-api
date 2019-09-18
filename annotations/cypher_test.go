@@ -1,4 +1,5 @@
-// +build integration
+// +build
+// integration
 
 package annotations
 

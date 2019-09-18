@@ -5,80 +5,94 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Financial-Times/go-logger/v2"
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 )
 
-var (
+// HandlerCtx contains objects needed from the annotations http handlers and is being passed to them as param
+type HandlerCtx struct {
 	AnnotationsDriver  driver
 	CacheControlHeader string
-)
+	Log                *logger.UPPLogger
+}
 
-// methodNotAllowedHandler handles 405
+func NewHandlerCtx(d driver, ch string, log *logger.UPPLogger) *HandlerCtx {
+	return &HandlerCtx{
+		AnnotationsDriver:  d,
+		CacheControlHeader: ch,
+		Log:                log,
+	}
+}
+
+// MethodNotAllowedHandler handles 405
 func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	return
 }
 
-func GetAnnotations(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	uuid := vars["uuid"]
+func GetAnnotations(hctx *HandlerCtx) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		uuid := vars["uuid"]
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if uuid == "" {
-		http.Error(w, "uuid required", http.StatusBadRequest)
-		return
-	}
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		if uuid == "" {
+			http.Error(w, "uuid required", http.StatusBadRequest)
+			return
+		}
 
-	params := r.URL.Query()
+		params := r.URL.Query()
 
-	var ok bool
-	var lifecycleParams []string
-	if lifecycleParams, ok = params["lifecycle"]; ok {
-		err := validateLifecycleParams(lifecycleParams)
+		var ok bool
+		var lifecycleParams []string
+		if lifecycleParams, ok = params["lifecycle"]; ok {
+			err := validateLifecycleParams(lifecycleParams)
+			if err != nil {
+				hctx.Log.WithError(err).Error("invalid query parameter")
+				w.WriteHeader(http.StatusBadRequest)
+				msg := `{"message":"invalid query parameter"}`
+				if _, err = w.Write([]byte(msg)); err != nil {
+					hctx.Log.WithError(err).Errorf("Error while writing response: %s", msg)
+				}
+				return
+			}
+		}
+
+		annotations, found, err := hctx.AnnotationsDriver.read(uuid)
 		if err != nil {
-			log.WithError(err).Error("invalid query parameter")
-			w.WriteHeader(http.StatusBadRequest)
-			msg := `{"message":"invalid query parameter"}`
+			hctx.Log.WithError(err).WithUUID(uuid).Error("failed getting annotations for content")
+			w.WriteHeader(http.StatusServiceUnavailable)
+			msg := fmt.Sprintf(`{"message":"Error getting annotations for content with uuid %s, err=%s"}`, uuid, err.Error())
 			if _, err = w.Write([]byte(msg)); err != nil {
-				log.WithError(err).Errorf("Error while writing response: %s", msg)
+				hctx.Log.WithError(err).Errorf("Error while writing response: %s", msg)
 			}
 			return
 		}
-	}
-
-	annotations, found, err := AnnotationsDriver.read(uuid)
-	if err != nil {
-		w.WriteHeader(http.StatusServiceUnavailable)
-		msg := fmt.Sprintf(`{"message":"Error getting annotations for content with uuid %s, err=%s"}`, uuid, err.Error())
-		if _, err = w.Write([]byte(msg)); err != nil {
-			log.WithError(err).Errorf("Error while writing response: %s", msg)
+		if !found {
+			w.WriteHeader(http.StatusNotFound)
+			msg := fmt.Sprintf(`{"message":"No annotations found for content with uuid %s."}`, uuid)
+			if _, err = w.Write([]byte(msg)); err != nil {
+				hctx.Log.WithError(err).Errorf("Error while writing response: %s", msg)
+			}
+			return
 		}
-		return
-	}
-	if !found {
-		w.WriteHeader(http.StatusNotFound)
-		msg := fmt.Sprintf(`{"message":"No annotations found for content with uuid %s."}`, uuid)
-		if _, err = w.Write([]byte(msg)); err != nil {
-			log.WithError(err).Errorf("Error while writing response: %s", msg)
-		}
-		return
-	}
 
-	lifecycleFilter := newLifecycleFilter(withLifecycles(lifecycleParams))
-	predicateFilter := NewAnnotationsPredicateFilter()
-	chain := newAnnotationsFilterChain(lifecycleFilter, predicateFilter)
+		lifecycleFilter := newLifecycleFilter(withLifecycles(lifecycleParams))
+		predicateFilter := NewAnnotationsPredicateFilter()
+		chain := newAnnotationsFilterChain(lifecycleFilter, predicateFilter)
 
-	annotations = chain.doNext(annotations)
+		annotations = chain.doNext(annotations)
 
-	w.Header().Set("Cache-Control", CacheControlHeader)
-	w.WriteHeader(http.StatusOK)
+		w.Header().Set("Cache-Control", hctx.CacheControlHeader)
+		w.WriteHeader(http.StatusOK)
 
-	if err = json.NewEncoder(w).Encode(annotations); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		msg := fmt.Sprintf(`{"message":"Error parsing annotations for content with uuid %s, err=%s"}`, uuid, err.Error())
-		if _, err = w.Write([]byte(msg)); err != nil {
-			log.WithError(err).Errorf("Error while writing response: %s", msg)
+		if err = json.NewEncoder(w).Encode(annotations); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			msg := fmt.Sprintf(`{"message":"Error parsing annotations for content with uuid %s, err=%s"}`, uuid, err.Error())
+			hctx.Log.Error(msg)
+			if _, err = w.Write([]byte(msg)); err != nil {
+				hctx.Log.WithError(err).Errorf("Error while writing response: %s", msg)
+			}
 		}
 	}
 }

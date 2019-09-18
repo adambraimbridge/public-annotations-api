@@ -80,7 +80,7 @@ func runServer(neoURL string, port string, cacheDuration string, env string, log
 	if durationErr != nil {
 		return fmt.Errorf("failed to parse cache duration string: %w", durationErr)
 	}
-	annotations.CacheControlHeader = fmt.Sprintf("max-age=%s, public", strconv.FormatFloat(duration.Seconds(), 'f', 0, 64))
+	cacheControlHeader := fmt.Sprintf("max-age=%s, public", strconv.FormatFloat(duration.Seconds(), 'f', 0, 64))
 
 	conf := neoutils.ConnectionConfig{
 		BatchSize:     1024,
@@ -98,11 +98,12 @@ func runServer(neoURL string, port string, cacheDuration string, env string, log
 		return fmt.Errorf("failed connecting to neo4j: %w", err)
 	}
 
-	annotations.AnnotationsDriver = annotations.NewCypherDriver(db, env)
-	return routeRequests(port, log)
+	annotationsDriver := annotations.NewCypherDriver(db, env)
+	handlersCtx := annotations.NewHandlerCtx(annotationsDriver, cacheControlHeader, log)
+	return routeRequests(port, handlersCtx)
 }
 
-func routeRequests(port string, log *logger.UPPLogger) error {
+func routeRequests(port string, hctx *annotations.HandlerCtx) error {
 
 	// Standard endpoints
 	healthCheck := fthealth.TimedHealthCheck{
@@ -111,23 +112,23 @@ func routeRequests(port string, log *logger.UPPLogger) error {
 			Name:        "public-annotations-api",
 			Description: appDescription,
 			Checks: []fthealth.Check{
-				annotations.HealthCheck(),
+				annotations.HealthCheck(hctx),
 			},
 		},
 		Timeout: 10 * time.Second,
 	}
 	http.HandleFunc("/__health", fthealth.Handler(healthCheck))
-	http.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(annotations.GoodToGo))
+	http.HandleFunc(status.GTGPath, status.NewGoodToGoHandler(annotations.GoodToGo(hctx)))
 	http.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
 
 	// API specific endpoints
 	servicesRouter := mux.NewRouter()
 
-	servicesRouter.HandleFunc("/content/{uuid}/annotations", annotations.GetAnnotations).Methods("GET")
+	servicesRouter.HandleFunc("/content/{uuid}/annotations", annotations.GetAnnotations(hctx)).Methods("GET")
 	servicesRouter.HandleFunc("/content/{uuid}/annotations", annotations.MethodNotAllowedHandler)
 
 	var monitoringRouter http.Handler = servicesRouter
-	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(log, monitoringRouter)
+	monitoringRouter = httphandlers.TransactionAwareRequestLoggingHandler(hctx.Log, monitoringRouter)
 	monitoringRouter = httphandlers.HTTPMetricsHandler(metrics.DefaultRegistry, monitoringRouter)
 
 	http.Handle("/", monitoringRouter)

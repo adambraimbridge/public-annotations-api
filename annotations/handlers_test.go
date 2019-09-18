@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Financial-Times/go-logger/v2"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
@@ -60,10 +61,14 @@ func TestGetHandler(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		AnnotationsDriver = test.annotationsDriver
+		hctx := &HandlerCtx{
+			AnnotationsDriver:  test.annotationsDriver,
+			CacheControlHeader: "test-header",
+			Log:                logger.NewUPPInfoLogger("test-public-annotations-api"),
+		}
 		rec := httptest.NewRecorder()
 		r := mux.NewRouter()
-		r.HandleFunc("/content/{uuid}/annotations", GetAnnotations).Methods("GET")
+		r.HandleFunc("/content/{uuid}/annotations", GetAnnotations(hctx)).Methods("GET")
 		r.ServeHTTP(rec, test.req)
 		assert.True(t, test.expectedStatusCode == rec.Code, fmt.Sprintf("%s: Wrong response code, was %d, should be %d", test.name, rec.Code, test.expectedStatusCode))
 		assert.JSONEq(t, test.expectedBody, rec.Body.String(), fmt.Sprintf("%s: Wrong body", test.name))
@@ -114,7 +119,11 @@ func TestGetHandlerWithLifecycleQueryParams(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			AnnotationsDriver = tc.annotationsDriver
+			hctx := &HandlerCtx{
+				AnnotationsDriver:  tc.annotationsDriver,
+				CacheControlHeader: "test-header",
+				Log:                logger.NewUPPInfoLogger("test-public-annotations-api"),
+			}
 			req, err := http.NewRequest("GET", fmt.Sprintf("/content/%s/annotations?%s", knownUUID, tc.lifecycleParams), nil)
 			if err != nil {
 				t.Fatal(err)
@@ -122,7 +131,7 @@ func TestGetHandlerWithLifecycleQueryParams(t *testing.T) {
 
 			rec := httptest.NewRecorder()
 			r := mux.NewRouter()
-			r.HandleFunc("/content/{uuid}/annotations", GetAnnotations).Methods("GET")
+			r.HandleFunc("/content/{uuid}/annotations", GetAnnotations(hctx)).Methods("GET")
 			r.ServeHTTP(rec, req)
 			assert.True(t, tc.expectedStatusCode == rec.Code, fmt.Sprintf("Wrong response code, was %d, should be %d", rec.Code, tc.expectedStatusCode))
 			assert.JSONEq(t, tc.expectedBody, rec.Body.String(), fmt.Sprintf("Wrong response body"))
@@ -152,10 +161,14 @@ func TestMethodeNotFound(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		AnnotationsDriver = test.annotationsDriver
+		hctx := &HandlerCtx{
+			AnnotationsDriver:  test.annotationsDriver,
+			CacheControlHeader: "test-header",
+			Log:                logger.NewUPPInfoLogger("test-public-annotations-api"),
+		}
 		rec := httptest.NewRecorder()
 		r := mux.NewRouter()
-		r.HandleFunc("/content/{uuid}/annotations", GetAnnotations).Methods("GET")
+		r.HandleFunc("/content/{uuid}/annotations", GetAnnotations(hctx)).Methods("GET")
 		r.ServeHTTP(rec, test.req)
 		assert.True(t, test.expectedStatusCode == rec.Code, fmt.Sprintf("%s: Wrong response code, was %d, should be %d", test.name, rec.Code, test.expectedStatusCode))
 		assert.Equal(t, test.expectedBody, rec.Body.String(), fmt.Sprintf("%s: Wrong body", test.name))
