@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,15 +15,20 @@ func TestGTGUnhealthyCluster(t *testing.T) {
 	//create a request to pass to our handler
 	req := httptest.NewRequest("GET", "/__gtg", nil)
 
-	AnnotationsDriver = mockDriver{
+	annotationsDriver := mockDriver{
 		checkConnectivityFunc: func() error {
 			return errors.New("test error")
 		},
 	}
+	hctx := &HandlerCtx{
+		AnnotationsDriver:  annotationsDriver,
+		CacheControlHeader: "test-header",
+		Log:                logger.NewUPPInfoLogger("test-public-annotations-api"),
+	}
 
 	//create a responseRecorder
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(httphandlers.NewGoodToGoHandler(GoodToGo))
+	handler := http.HandlerFunc(httphandlers.NewGoodToGoHandler(GoodToGo(hctx)))
 
 	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
 	// directly and pass in our Request and ResponseRecorder.
@@ -38,14 +44,19 @@ func TestGTGUnhealthyCluster(t *testing.T) {
 func TestGTGHealthyCluster(t *testing.T) {
 	//create a request to pass to our handler
 	req := httptest.NewRequest("GET", "/__gtg", nil)
-	AnnotationsDriver = mockDriver{
+	annotationsDriver := mockDriver{
 		checkConnectivityFunc: func() error {
 			return nil
 		},
 	}
+	hctx := &HandlerCtx{
+		AnnotationsDriver:  annotationsDriver,
+		CacheControlHeader: "test-header",
+		Log:                logger.NewUPPInfoLogger("test-public-annotations-api"),
+	}
 	//create a responseRecorder
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(httphandlers.NewGoodToGoHandler(GoodToGo))
+	handler := http.HandlerFunc(httphandlers.NewGoodToGoHandler(GoodToGo(hctx)))
 
 	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
 	// directly and pass in our Request and ResponseRecorder.
@@ -59,23 +70,23 @@ func TestGTGHealthyCluster(t *testing.T) {
 }
 
 func TestNeo4jConnectivityChecker_Healthy(t *testing.T) {
-	AnnotationsDriver = mockDriver{
+	annotationsDriver := mockDriver{
 		checkConnectivityFunc: func() error {
 			return nil
 		},
 	}
-	message, err := Neo4jChecker()
+	message, err := Neo4jChecker(annotationsDriver)()
 	assert.Equal(t, "Connectivity to neo4j is ok", message)
 	assert.Equal(t, nil, err)
 }
 
 func TestNeo4jConnectivityChecker_Unhealthy(t *testing.T) {
-	AnnotationsDriver = mockDriver{
+	annotationsDriver := mockDriver{
 		checkConnectivityFunc: func() error {
 			return errors.New("test error")
 		},
 	}
-	message, err := Neo4jChecker()
+	message, err := Neo4jChecker(annotationsDriver)()
 	assert.Equal(t, "Error connecting to neo4j", message)
 	assert.Equal(t, "test error", err.Error())
 }

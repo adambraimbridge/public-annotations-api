@@ -2,14 +2,12 @@ package annotations
 
 import (
 	"fmt"
-	"time"
 
 	"errors"
 
 	"github.com/Financial-Times/neo-model-utils-go/mapper"
 	"github.com/Financial-Times/neo-utils-go/neoutils"
 	"github.com/jmcvetta/neoism"
-	log "github.com/sirupsen/logrus"
 )
 
 // Driver interface
@@ -102,18 +100,13 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 		Result:     &results,
 	}
 
-	start := time.Now()
 	err = cd.conn.CypherBatch([]*neoism.CypherQuery{query})
-	end := time.Now()
-
-	log.WithField("contentUUID", contentUUID).WithField("duration", fmt.Sprintf("%vms", end.Sub(start).Nanoseconds()/1e6)).Info("Annotations query (including implicit relationships) completed.")
 
 	if err != nil {
-		log.Errorf("Error looking up uuid %s with query %s from neoism: %+v", contentUUID, query.Statement, err)
-		return annotations{}, false, fmt.Errorf("error accessing Annotations datastore for uuid: %s", contentUUID)
+		return annotations{}, false,
+			fmt.Errorf("failed looking up annotations for %s with query %s: %w", contentUUID, query.Statement, err)
 	}
 
-	log.Debugf("Found %d Annotations for uuid: %s", len(results), contentUUID)
 	if (len(results)) == 0 {
 		return annotations{}, false, nil
 	}
@@ -142,15 +135,13 @@ func mapToResponseFormat(neoAnn neoAnnotation, env string) (annotation, error) {
 	ann.ID = mapper.IDURL(neoAnn.ID)
 	types := mapper.TypeURIs(neoAnn.Types)
 	if types == nil || len(types) == 0 {
-		log.Debugf("Could not map type URIs for ID %s with types %s", ann.ID, ann.Types)
-		return ann, errors.New("concept not found")
+		return ann, fmt.Errorf("could not map type URIs for ID %s with types %s: concept not found", ann.ID, ann.Types)
 	}
 	ann.Types = types
 
 	predicate, err := getPredicateFromRelationship(neoAnn.Predicate)
 	if err != nil {
-		log.Debugf("Could not find predicate for ID %s for relationship %s", ann.ID, ann.Predicate)
-		return ann, err
+		return ann, fmt.Errorf("could not find predicate for ID %s for relationship %s: %w", ann.ID, ann.Predicate, err)
 	}
 	ann.Predicate = predicate
 	ann.Lifecycle = neoAnn.Lifecycle

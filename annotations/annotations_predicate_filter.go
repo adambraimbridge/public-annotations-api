@@ -3,8 +3,6 @@ package annotations
 import (
 	"reflect"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // Defines all names of predicates that have to be considered by the annotation filter.
@@ -101,7 +99,6 @@ func (f *AnnotationsPredicateFilter) addFiltered(a annotation) {
 	}
 	grpId, pos := f.getGroupIdAndImportanceValue(strings.ToLower(a.Predicate))
 	if grpId == -1 || pos == -1 {
-		log.Debugf("Could not find group for predicate %s \n", strings.ToLower(a.Predicate))
 		return
 	}
 	arr := f.filteredAnnotations[a.ID]
