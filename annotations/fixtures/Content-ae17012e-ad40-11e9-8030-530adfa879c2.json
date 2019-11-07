@@ -1,0 +1,20 @@
+{
+  "uuid": "ae17012e-ad40-11e9-8030-530adfa879c2",
+  "body": "<body>This article have brand Lex with linked with predicated hasBrand, has genre Opinion with predicate isClassifiedBy, has hub page Moral Money with predicate isClassifiedBy.</body>",
+  "title": "UK equities: the Boris Johnson trade",
+  "alternativeTitles": {
+    "promotionalTitle": "UK equities: the Boris Johnson trade"
+  },
+  "standfirst": "What if new Tory leader pulls Britain out of the EU relatively painlessly?",
+  "alternativeStandfirsts": {},
+  "byline": "",
+  "firstPublishedDate": "2019-07-23T14:58:19.000Z",
+  "publishedDate": "2019-07-23T14:58:19.000Z",
+  "brands": [
+    "http://api.ft.com/things/dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54"
+  ],
+  "prefLabel": "UK equities: the Boris Johnson trade",
+  "types": [
+    "http://www.ft.com/ontology/content/Article"
+  ]
+}

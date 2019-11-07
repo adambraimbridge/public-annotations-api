@@ -1,0 +1,22 @@
+{
+  "prefUUID": "6da31a37-691f-4908-896f-2829ebe2309e",
+  "prefLabel": "Opinion",
+  "type": "Genre",
+  "aliases": [
+    "Opinion",
+    "opinion article"
+  ],
+  "scopeNote": "article that reflects the author's opinion about the subject",
+  "sourceRepresentations": [
+    {
+      "uuid": "6da31a37-691f-4908-896f-2829ebe2309e",
+      "type": "Genre",
+      "prefLabel": "Opinion",
+      "authority": "Smartlogic",
+      "authorityValue": "6da31a37-691f-4908-896f-2829ebe2309e",
+      "aliases": [
+        "Opinion"
+      ]
+    }
+  ]
+}

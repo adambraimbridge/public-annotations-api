@@ -1,0 +1,26 @@
+{
+  "prefUUID": "87645070-7d8a-492e-9695-bf61ac2b4d18",
+  "prefLabel": "Moral Money",
+  "type": "Brand",
+  "aliases": [
+    "Moral Money"
+  ],
+  "parentUUIDs": [
+    "dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "87645070-7d8a-492e-9695-bf61ac2b4d18",
+      "type": "Brand",
+      "prefLabel": "Moral Money",
+      "authority": "Smartlogic",
+      "authorityValue": "87645070-7d8a-492e-9695-bf61ac2b4d18",
+      "aliases": [
+        "Moral Money"
+      ],
+      "parentUUIDs": [
+        "dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54"
+      ]
+    }
+  ]
+}
