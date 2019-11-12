@@ -27,13 +27,13 @@ jobs:
             GO111MODULE=off go get -u github.com/jstemmer/go-junit-report
             GO111MODULE=off go get -u github.com/mattn/goveralls
             curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.18.0
-            git clone git@github.com:Financial-Times/upp-coding-standard.git
+            wget https://raw.githubusercontent.com/Financial-Times/upp-coding-standard/v1.0.0/golangci-config/.golangci.yml
       - run: |
           go build -mod=readonly -v
       - run:
           name: Run linters
           command: |
-            golangci-lint run --new-from-rev=master --config upp-coding-standard/golangci-config/.golangci.yml
+            golangci-lint run --new-from-rev=master --build-tags=integration --config .golangci.yml
       - run:
           wget --retry-connrefused --no-check-certificate -T 60 $NEO4J_TEST_URL; curl $NEO4J_TEST_URL
       - run: |

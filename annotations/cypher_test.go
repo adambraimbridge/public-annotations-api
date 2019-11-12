@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"testing"
 
-	annrw "github.com/Financial-Times/annotations-rw-neo4j/annotations"
+	annrw "github.com/Financial-Times/annotations-rw-neo4j/v3/annotations"
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
 	"github.com/Financial-Times/concepts-rw-neo4j/concepts"
 	"github.com/Financial-Times/content-rw-neo4j/content"
@@ -29,12 +29,17 @@ const (
 	contentWithThreeLevelsOfBrandUUID  = "3fc9fe3e-af8c-3a3a-961a-e5065392bb31"
 	contentWithCircularBrandUUID       = "3fc9fe3e-af8c-4a4a-961a-e5065392bb31"
 	contentWithOnlyFTUUID              = "3fc9fe3e-af8c-5a5a-961a-e5065392bb31"
+	contentWithHasBrand                = "ae17012e-ad40-11e9-8030-530adfa879c2"
 	alphavilleSeriesUUID               = "747894f8-a231-4efb-805d-753635eca712"
-	brandParentUUID                    = "dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54"
-	brandChildUUID                     = "ff691bf8-8d92-1a1a-8326-c273400bff0b"
-	brandGrandChildUUID                = "ff691bf8-8d92-2a2a-8326-c273400bff0b"
-	brandCircularAUUID                 = "ff691bf8-8d92-3a3a-8326-c273400bff0b"
-	brandCircularBUUID                 = "ff691bf8-8d92-4a4a-8326-c273400bff0b"
+
+	brandParentUUID                = "dbb0bdae-1f0c-1a1a-b0cb-b2227cce2b54"
+	brandChildUUID                 = "ff691bf8-8d92-1a1a-8326-c273400bff0b"
+	brandGrandChildUUID            = "ff691bf8-8d92-2a2a-8326-c273400bff0b"
+	brandCircularAUUID             = "ff691bf8-8d92-3a3a-8326-c273400bff0b"
+	brandCircularBUUID             = "ff691bf8-8d92-4a4a-8326-c273400bff0b"
+	brandWithHasBrandPredicateUUID = "2d3e16e0-61cb-4322-8aff-3b01c59f4daa"
+	brandHubPageUUID               = "87645070-7d8a-492e-9695-bf61ac2b4d18"
+	genreOpinionUUID               = "6da31a37-691f-4908-896f-2829ebe2309e"
 
 	contentWithBrandsDiffTypesUUID = "3fc9fe3e-af8c-6a6a-961a-e5065392bb31"
 	financialInstrumentUUID        = "77f613ad-1470-422c-bf7c-1dd4c3fd1693"
@@ -58,21 +63,25 @@ const (
 
 	brandType = "http://www.ft.com/ontology/product/Brand"
 	topicType = "http://www.ft.com/ontology/Topic"
+	genreType = "http://www.ft.com/ontology/Genre"
 )
 
 var (
 	conceptLabels = map[string]string{
-		brandGrandChildUUID: "Child Business School video",
-		brandChildUUID:      "Business School video",
-		brandParentUUID:     "Financial Times",
-		brandCircularAUUID:  "Circular Business School video - A",
-		brandCircularBUUID:  "Circular Business School video - B",
-		aboutTopic:          "Ashes 2017",
-		broaderTopicA:       "The Ashes",
-		broaderTopicB:       "Cricket",
-		narrowerTopic:       "England Ashes 2017 Victory",
-		cyclicTopicA:        "Dodgy Cyclic Topic A",
-		cyclicTopicB:        "Dodgy Cyclic Topic B",
+		brandGrandChildUUID:            "Child Business School video",
+		brandChildUUID:                 "Business School video",
+		brandParentUUID:                "Financial Times",
+		brandCircularAUUID:             "Circular Business School video - A",
+		brandCircularBUUID:             "Circular Business School video - B",
+		aboutTopic:                     "Ashes 2017",
+		broaderTopicA:                  "The Ashes",
+		broaderTopicB:                  "Cricket",
+		narrowerTopic:                  "England Ashes 2017 Victory",
+		cyclicTopicA:                   "Dodgy Cyclic Topic A",
+		cyclicTopicB:                   "Dodgy Cyclic Topic B",
+		brandWithHasBrandPredicateUUID: "Lex",
+		brandHubPageUUID:               "Moral Money",
+		genreOpinionUUID:               "Opinion",
 	}
 
 	conceptTypes = map[string][]string{
@@ -87,11 +96,18 @@ var (
 			"http://www.ft.com/ontology/concept/Concept",
 			topicType,
 		},
+		genreType: {
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
+			"http://www.ft.com/ontology/classification/Classification",
+			genreType,
+		},
 	}
 
 	conceptApiUrlTemplates = map[string]string{
 		brandType: "http://api.ft.com/brands/%s",
 		topicType: "http://api.ft.com/things/%s",
+		genreType: "http://api.ft.com/things/%s",
 	}
 )
 
@@ -104,7 +120,9 @@ var allUUIDs = []string{contentUUID, contentWithNoAnnotationsUUID, contentWithPa
 	contentWithThreeLevelsOfBrandUUID, contentWithCircularBrandUUID, contentWithOnlyFTUUID, alphavilleSeriesUUID,
 	brandParentUUID, brandChildUUID, brandGrandChildUUID, brandCircularAUUID, brandCircularBUUID, contentWithBrandsDiffTypesUUID,
 	FakebookConceptUUID, MSJConceptUUID, MetalMickeyConceptUUID, brokenPacUUID, financialInstrumentUUID, JohnSmithConceptUUID,
-	aboutTopic, broaderTopicA, broaderTopicB, narrowerTopic, cyclicTopicA, cyclicTopicB}
+	aboutTopic, broaderTopicA, broaderTopicB, narrowerTopic, cyclicTopicA, cyclicTopicB, brandWithHasBrandPredicateUUID,
+	brandHubPageUUID, genreOpinionUUID, contentWithHasBrand,
+}
 
 func TestCypherDriverSuite(t *testing.T) {
 	suite.Run(t, newCypherDriverTestSuite())
@@ -314,6 +332,22 @@ func (s *cypherDriverTestSuite) TestRetrieveContentBrandsOfDifferentTypes() {
 	assertListContainsAll(s.T(), anns, expectedAnnotations)
 }
 
+func (s *cypherDriverTestSuite) TestRetrieveAnnotationWithHasBrand() {
+	writeHasBrandAnnotations(s.T(), s.db)
+
+	expectedAnnotations := annotations{
+		expectedAnnotation(brandHubPageUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle),
+		expectedAnnotation(brandWithHasBrandPredicateUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle),
+		expectedAnnotation(genreOpinionUUID, genreType, predicates["IS_CLASSIFIED_BY"], pacLifecycle),
+		expectedAnnotation(brandParentUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle),
+	}
+
+	driver := NewCypherDriver(s.db, "prod")
+	anns := getAndCheckAnnotations(driver, contentWithHasBrand, s.T())
+	assert.Equal(s.T(), len(expectedAnnotations), len(anns), "Didn't get the same number of annotations")
+	assertListContainsAll(s.T(), anns, expectedAnnotations)
+}
+
 func TestRetrieveNoAnnotationsWhenThereAreNonePresentExceptBrands(t *testing.T) {
 	assert := assert.New(t)
 	db := getDatabaseConnection(t)
@@ -397,6 +431,7 @@ func writeAllDataToDB(t testing.TB, db neoutils.NeoConnection) {
 	writeFinancialInstruments(t, db)
 	writeSubjects(t, db)
 	writeAlphavilleSeries(t, db)
+	writeGenres(t, db)
 	writeV1Annotations(t, db)
 	writeV2Annotations(t, db)
 	writeTopics(t, db)
@@ -410,6 +445,8 @@ func writeBrands(t testing.TB, db neoutils.NeoConnection) concepts.ConceptServic
 	writeJSONToService(brandRW, "./fixtures/Brand-ff691bf8-8d92-2a2a-8326-c273400bff0b-grand_child.json", t)
 	writeJSONToService(brandRW, "./fixtures/Brand-ff691bf8-8d92-3a3a-8326-c273400bff0b-circular_a.json", t)
 	writeJSONToService(brandRW, "./fixtures/Brand-ff691bf8-8d92-4a4a-8326-c273400bff0b-circular_b.json", t)
+	writeJSONToService(brandRW, "./fixtures/Brand-2d3e16e0-61cb-4322-8aff-3b01c59f4daa-true-brand.json", t)
+	writeJSONToService(brandRW, "./fixtures/Brand-87645070-7d8a-492e-9695-bf61ac2b4d18-hub-page.json", t)
 	return brandRW
 }
 
@@ -423,6 +460,7 @@ func writeContent(t testing.TB, db neoutils.NeoConnection) baseftrwapp.Service {
 	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-4a4a-961a-e5065392bb31.json", t)
 	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-5a5a-961a-e5065392bb31.json", t)
 	writeJSONToBaseService(contentRW, "./fixtures/Content-3fc9fe3e-af8c-6a6a-961a-e5065392bb31.json", t)
+	writeJSONToBaseService(contentRW, "./fixtures/Content-ae17012e-ad40-11e9-8030-530adfa879c2.json", t)
 	return contentRW
 }
 
@@ -474,6 +512,12 @@ func writeAlphavilleSeries(t testing.TB, db neoutils.NeoConnection) concepts.Con
 	return alphavilleSeriesRW
 }
 
+func writeGenres(t testing.TB, db neoutils.NeoConnection) {
+	genresRW := concepts.NewConceptService(db)
+	assert.NoError(t, genresRW.Initialise())
+	writeJSONToService(genresRW, "./fixtures/Genre-6da31a37-691f-4908-896f-2829ebe2309e-opinion.json", t)
+}
+
 func writeV1Annotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
 	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
@@ -499,6 +543,13 @@ func writePacAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Service 
 	service := annrw.NewCypherAnnotationsService(db)
 	assert.NoError(t, service.Initialise())
 	writeJSONToAnnotationsService(t, service, "pac", "annotations-pac", contentUUID, "./fixtures/Annotations-3fc9fe3e-af8c-4f7f-961a-e5065392bb31-pac.json")
+	return service
+}
+
+func writeHasBrandAnnotations(t testing.TB, db neoutils.NeoConnection) annrw.Service {
+	service := annrw.NewCypherAnnotationsService(db)
+	assert.NoError(t, service.Initialise())
+	writeJSONToAnnotationsService(t, service, "pac", "annotations-pac", contentWithHasBrand, "./fixtures/Annotations-ae17012e-ad40-11e9-8030-530adfa879c2-pac.json")
 	return service
 }
 
