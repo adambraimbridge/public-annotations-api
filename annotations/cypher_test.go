@@ -348,6 +348,110 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationWithHasBrand() {
 	assertListContainsAll(s.T(), anns, expectedAnnotations)
 }
 
+func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
+
+	//setup
+	t := s.T()
+	db := s.db
+
+	contentRW := content.NewCypherContentService(db)
+	assert.NoError(t, contentRW.Initialise())
+
+	conceptRW := concepts.NewConceptService(db)
+	assert.NoError(t, conceptRW.Initialise())
+
+	annotationRW := annrw.NewCypherAnnotationsService(db)
+	assert.NoError(t, annotationRW.Initialise())
+
+	writeConcept := func(fixture string) (string, string) {
+		writeJSONToService(conceptRW, fixture, t)
+
+		absPath, _ := filepath.Abs(fixture)
+		f, err := os.Open(absPath)
+		assert.NoError(t, err)
+		data := map[string]interface{}{}
+		err = json.NewDecoder(f).Decode(&data)
+		assert.NoError(t, err)
+
+		uuid, ok := data["prefUUID"].(string)
+		if !ok {
+			t.Fatalf("in fixture %s prefUUID is not a string", fixture)
+		}
+		label, ok := data["prefLabel"].(string)
+		if !ok {
+			t.Fatalf("in fixture %s prefLabel is not a string", fixture)
+		}
+		return uuid, label
+	}
+
+	writeContent := func(fixture string) string {
+		writeJSONToBaseService(contentRW, fixture, t)
+		absPath, _ := filepath.Abs(fixture)
+		f, err := os.Open(absPath)
+		assert.NoError(t, err)
+		data := map[string]interface{}{}
+		err = json.NewDecoder(f).Decode(&data)
+		assert.NoError(t, err)
+
+		uuid, ok := data["uuid"].(string)
+		if !ok {
+			t.Fatalf("in fixture %s uuid is not a string", fixture)
+		}
+		return uuid
+	}
+
+	contentID := writeContent("./fixtures/hasFocus/content.json")
+	brandUUID, brandLabel := writeConcept("./fixtures/hasFocus/brand-hub-page.json")
+	topicUUID, topicLabel := writeConcept("./fixtures/hasFocus/topic-focus-of-brand.json")
+	cleanUUIDs := []string{brandUUID, topicUUID, contentID}
+
+	tests := map[string]struct {
+		Annotations         string
+		ExpectedAnnotations annotations
+	}{
+		"focused on concept should return implicitly classified by": {
+			Annotations: "./fixtures/hasFocus/annotation-topic-about.json",
+			ExpectedAnnotations: annotations{
+				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
+				//expectedAnnotationWithLabel(brandUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, brandLabel),
+			},
+		},
+		"direct isClassifiedBy annotations should override implicit ones": {
+			Annotations: "./fixtures/hasFocus/annotation-topic-and-brand-is-classified-by.json",
+			ExpectedAnnotations: annotations{
+				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
+				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
+			},
+		},
+		"direct hasBrand annotations should override implicit ones": {
+			Annotations: "./fixtures/hasFocus/annotation-topic-and-brand-has-brand.json",
+			ExpectedAnnotations: annotations{
+				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
+				expectedAnnotationWithLabel(brandUUID, brandType, predicates["HAS_BRAND"], pacLifecycle, brandLabel),
+			},
+		},
+		"isClassifiedBy should be with greatest priority": {
+			Annotations: "./fixtures/hasFocus/annotation-topic-and-brand-multiple-ann.json",
+			ExpectedAnnotations: annotations{
+				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
+				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
+			},
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+
+			writeJSONToAnnotationsService(t, annotationRW, "pac", "annotations-pac", contentID, test.Annotations)
+
+			driver := NewCypherDriver(db, "prod")
+			anns := getAndCheckAnnotations(driver, contentID, t)
+			assert.Equal(t, len(test.ExpectedAnnotations), len(anns), "Didn't get the same number of annotations")
+			assertListContainsAll(t, anns, test.ExpectedAnnotations)
+		})
+	}
+	deleteUUIDs(t, db, cleanUUIDs)
+}
+
 func TestRetrieveNoAnnotationsWhenThereAreNonePresentExceptBrands(t *testing.T) {
 	assert := assert.New(t)
 	db := getDatabaseConnection(t)
@@ -621,19 +725,22 @@ func assertListContainsAll(t *testing.T, list interface{}, items ...interface{})
 	}
 }
 
-func cleanDB(t testing.TB, db neoutils.NeoConnection) {
-	qs := make([]*neoism.CypherQuery, len(allUUIDs))
-	for i, uuid := range allUUIDs {
-		qs[i] = &neoism.CypherQuery{
-			Statement: fmt.Sprintf(`
-			MATCH (a:Thing {uuid: "%s"})
-			OPTIONAL MATCH (a)<-[iden:IDENTIFIES]-(i:Identifier)
-			OPTIONAL MATCH (a)-[:EQUIVALENT_TO]-(t:Thing)
-			DELETE iden, i, t
-			DETACH DELETE a`, uuid)}
+func deleteUUIDs(t testing.TB, db neoutils.NeoConnection, uuids []string) {
+	qs := make([]*neoism.CypherQuery, len(uuids))
+	for i, uuid := range uuids {
+		qs[i] = &neoism.CypherQuery{Statement: fmt.Sprintf(`
+		MATCH (a:Thing {uuid: "%s"})
+		OPTIONAL MATCH (a)<-[iden:IDENTIFIES]-(i:Identifier)
+		OPTIONAL MATCH (a)-[:EQUIVALENT_TO]-(t:Thing)
+		DELETE iden, i, t
+		DETACH DELETE a`, uuid)}
 	}
 	err := db.CypherBatch(qs)
 	assert.NoError(t, err)
+}
+
+func cleanDB(t testing.TB, db neoutils.NeoConnection) {
+	deleteUUIDs(t, db, allUUIDs)
 }
 
 func getExpectedMentionsFakebookAnnotation(lifecycle string) annotation {
@@ -764,6 +871,17 @@ func expectedAnnotation(conceptUuid string, conceptType string, predicate string
 		APIURL:    fmt.Sprintf(conceptApiUrlTemplates[conceptType], conceptUuid),
 		Types:     conceptTypes[conceptType],
 		PrefLabel: conceptLabels[conceptUuid],
+		Lifecycle: lifecycle,
+	}
+}
+
+func expectedAnnotationWithLabel(conceptUuid string, conceptType string, predicate string, lifecycle string, prefLabel string) annotation {
+	return annotation{
+		Predicate: predicate,
+		ID:        fmt.Sprintf("http://api.ft.com/things/%s", conceptUuid),
+		APIURL:    fmt.Sprintf(conceptApiUrlTemplates[conceptType], conceptUuid),
+		Types:     conceptTypes[conceptType],
+		PrefLabel: prefLabel,
 		Lifecycle: lifecycle,
 	}
 }
