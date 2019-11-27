@@ -1,0 +1,23 @@
+{
+  "prefUUID": "fffc7143-b313-4a54-98bb-fba83444e665",
+  "prefLabel": "Hub page",
+  "type": "Brand",
+  "aliases": [
+    "Hub page"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "fffc7143-b313-4a54-98bb-fba83444e665",
+      "type": "Brand",
+      "prefLabel": "Hub page",
+      "authority": "Smartlogic",
+      "authorityValue": "fffc7143-b313-4a54-98bb-fba83444e665",
+      "aliases": [
+        "Hub page"
+      ],
+      "focusedUUIDs":[
+        "740c604b-8d97-443e-be70-33de6f1d6e67"
+      ]
+    }
+  ]
+}
