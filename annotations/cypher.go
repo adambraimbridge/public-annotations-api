@@ -84,6 +84,18 @@ func (cd cypherDriver) read(contentUUID string) (anns annotations, found bool, e
 			rel.lifecycle as lifecycle
 		UNION ALL
 		MATCH (content:Content{uuid:{contentUUID}})-[rel:ABOUT]-(:Concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
+		MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(leafConcept:Concept)<-[:HAS_FOCUS*1..]-(focusConcept:Concept)-[:EQUIVALENT_TO]->(canonicalFocus)
+		RETURN 
+			DISTINCT canonicalFocus.prefUUID as id,
+			canonicalFocus.isDeprecated as isDeprecated,
+			"IMPLICITLY_CLASSIFIED_BY" as predicate,
+			labels(canonicalFocus) as types,
+			canonicalFocus.prefLabel as prefLabel,
+			null as leiCode,
+			null as figi,
+			rel.lifecycle as lifecycle
+		UNION ALL
+		MATCH (content:Content{uuid:{contentUUID}})-[rel:ABOUT]-(:Concept)-[:EQUIVALENT_TO]->(canonicalConcept:Concept)
 		MATCH (canonicalConcept)<-[:EQUIVALENT_TO]-(leafConcept:Concept)-[:HAS_BROADER*1..]->(implicit:Concept)-[:EQUIVALENT_TO]->(canonicalImplicit)
 		WHERE NOT (canonicalImplicit)<-[:EQUIVALENT_TO]-(:Concept)<-[:ABOUT]-(content) // filter out the original abouts
 		RETURN 
