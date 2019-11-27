@@ -13,6 +13,8 @@ const (
 	About                   = "http://www.ft.com/ontology/annotation/about"
 	IsClassifiedBy          = "http://www.ft.com/ontology/classification/isclassifiedby"
 	IsPrimarilyClassifiedBy = "http://www.ft.com/ontology/classification/isprimarilyclassifiedby"
+	ImplicitlyClassifiedBy  = "http://www.ft.com/ontology/implicitlyclassifiedby"
+	HasBrand                = "http://www.ft.com/ontology/classification/isclassifiedby"
 )
 
 type AnnotationsPredicateFilter struct {
@@ -34,6 +36,8 @@ func NewAnnotationsPredicateFilter() *AnnotationsPredicateFilter {
 			MajorMentions,
 			About,
 			IsClassifiedBy,
+			HasBrand,
+			ImplicitlyClassifiedBy,
 			IsPrimarilyClassifiedBy,
 		},
 		// Configure groups of predicates that should be filtered according to their importance.
@@ -44,6 +48,8 @@ func NewAnnotationsPredicateFilter() *AnnotationsPredicateFilter {
 				About,
 			},
 			{
+				ImplicitlyClassifiedBy,
+				HasBrand,
 				IsClassifiedBy,
 				IsPrimarilyClassifiedBy,
 			},
