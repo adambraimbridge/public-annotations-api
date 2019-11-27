@@ -413,7 +413,7 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 			Annotations: "./fixtures/hasFocus/annotation-topic-about.json",
 			ExpectedAnnotations: annotations{
 				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
-				//expectedAnnotationWithLabel(brandUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, brandLabel),
+				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, brandLabel),
 			},
 		},
 		"direct isClassifiedBy annotations should override implicit ones": {
