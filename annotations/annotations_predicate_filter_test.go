@@ -10,7 +10,9 @@ const (
 	MENTIONS                   = "http://www.ft.com/ontology/annotation/mentions"
 	MAJOR_MENTIONS             = "http://www.ft.com/ontology/annotation/majormentions"
 	ABOUT                      = "http://www.ft.com/ontology/annotation/about"
+	HAS_BRAND                  = "http://www.ft.com/ontology/classification/isclassifiedby"
 	IS_CLASSIFIED_BY           = "http://www.ft.com/ontology/classification/isclassifiedby"
+	IMPLICITLY_CLASSIFIED_BY   = "http://www.ft.com/ontology/implicitlyClassifiedBy"
 	IS_PRIMARILY_CLASSIFIED_BY = "http://www.ft.com/ontology/classification/isprimarilyclassifiedby"
 	HAS_AUTHOR                 = "http://www.ft.com/ontology/annotation/hasauthor"
 	ConceptA                   = "1a2359b1-9326-4b80-9b97-2a91ccd68d23"
@@ -144,6 +146,33 @@ var tests = map[string]struct {
 		[]annotation{
 			{Predicate: IS_PRIMARILY_CLASSIFIED_BY, ID: ConceptA},
 			{Predicate: IS_CLASSIFIED_BY, ID: ConceptB},
+		},
+	},
+	"IsClassifiedBy should be with highest priority": {
+		input: []annotation{
+			{Predicate: IS_CLASSIFIED_BY, ID: ConceptA},
+			{Predicate: IMPLICITLY_CLASSIFIED_BY, ID: ConceptA},
+			{Predicate: HAS_BRAND, ID: ConceptA},
+		},
+		expectedOutput: []annotation{
+			{Predicate: IS_CLASSIFIED_BY, ID: ConceptA},
+		},
+	},
+	"HasBrand should be with higher priority than ImplicitlyClassifiedBy": {
+		input: []annotation{
+			{Predicate: HAS_BRAND, ID: ConceptA},
+			{Predicate: IMPLICITLY_CLASSIFIED_BY, ID: ConceptA},
+		},
+		expectedOutput: []annotation{
+			{Predicate: HAS_BRAND, ID: ConceptA},
+		},
+	},
+	"Returns one occurrence of Implicitly Classified By for one concept": {
+		input: []annotation{
+			{Predicate: IMPLICITLY_CLASSIFIED_BY, ID: ConceptA},
+		},
+		expectedOutput: []annotation{
+			{Predicate: IMPLICITLY_CLASSIFIED_BY, ID: ConceptA},
 		},
 	},
 }

@@ -421,7 +421,6 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 			ExpectedAnnotations: annotations{
 				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
 				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
-				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, brandLabel),
 			},
 		},
 		"direct hasBrand annotations should override implicit ones": {
@@ -429,7 +428,6 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 			ExpectedAnnotations: annotations{
 				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
 				expectedAnnotationWithLabel(brandUUID, brandType, predicates["HAS_BRAND"], pacLifecycle, brandLabel),
-				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, brandLabel),
 			},
 		},
 		"isClassifiedBy should be with greatest priority": {
@@ -437,7 +435,6 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 			ExpectedAnnotations: annotations{
 				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
 				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
-				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, brandLabel),
 			},
 		},
 	}
