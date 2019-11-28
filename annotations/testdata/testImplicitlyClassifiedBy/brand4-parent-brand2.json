@@ -1,0 +1,20 @@
+{
+  "prefUUID": "578b9cb4-fa2d-461c-b783-224dec2ea326",
+  "prefLabel": "Brand4",
+  "type": "Brand",
+  "aliases": [
+    "Brand4"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "578b9cb4-fa2d-461c-b783-224dec2ea326",
+      "type": "Brand",
+      "prefLabel": "Brand4",
+      "authority": "Smartlogic",
+      "authorityValue": "578b9cb4-fa2d-461c-b783-224dec2ea326",
+      "aliases": [
+        "Brand4"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "prefUUID": "a98bd74a-cebc-4a20-be2c-3536916f5c35",
+  "prefLabel": "Brand2",
+  "type": "Brand",
+  "aliases": [
+    "Brand2"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "a98bd74a-cebc-4a20-be2c-3536916f5c35",
+      "type": "Brand",
+      "prefLabel": "Brand2",
+      "authority": "Smartlogic",
+      "authorityValue": "a98bd74a-cebc-4a20-be2c-3536916f5c35",
+      "aliases": [
+        "Brand2"
+      ],
+      "focusedUUIDs":[
+        "745394df-41f2-4429-a2e7-031237565837"
+      ],
+      "parentUUIDs":[
+        "578b9cb4-fa2d-461c-b783-224dec2ea326"
+      ]
+    }
+  ]
+}
