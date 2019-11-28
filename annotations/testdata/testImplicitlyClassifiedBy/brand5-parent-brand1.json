@@ -1,0 +1,20 @@
+{
+  "prefUUID": "3851d741-59a9-40df-933f-46f2d552c0a9",
+  "prefLabel": "Brand5",
+  "type": "Brand",
+  "aliases": [
+    "Brand5"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "3851d741-59a9-40df-933f-46f2d552c0a9",
+      "type": "Brand",
+      "prefLabel": "Brand5",
+      "authority": "Smartlogic",
+      "authorityValue": "3851d741-59a9-40df-933f-46f2d552c0a9",
+      "aliases": [
+        "Brand5"
+      ]
+    }
+  ]
+}

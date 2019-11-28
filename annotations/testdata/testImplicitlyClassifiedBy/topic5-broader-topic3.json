@@ -1,0 +1,17 @@
+{  
+    "prefUUID":"55e6bd0f-3bd0-479b-8088-028cf73d7368",
+    "prefLabel":"Topic5",
+    "type":"Topic",
+    "sourceRepresentations":[  
+        {  
+            "uuid":"55e6bd0f-3bd0-479b-8088-028cf73d7368",
+            "prefLabel":"Topic5",
+            "type":"Topic",
+            "authority":"Smartlogic",
+            "authorityValue":"55e6bd0f-3bd0-479b-8088-028cf73d7368",
+            "aliases":[  
+                "Topic5"
+            ]
+        }
+    ]
+}

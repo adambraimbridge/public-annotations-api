@@ -1,0 +1,15 @@
+{
+  "prefUUID": "01131def-c2bf-4893-9a7e-1f01ae9d8451",
+  "prefLabel": "Organisation1",
+  "type": "Organisation",
+  "sourceRepresentations": [
+    {
+      "uuid": "01131def-c2bf-4893-9a7e-1f01ae9d8451",
+      "prefLabel": "Organisation1",
+      "type": "Organisation",
+      "authority": "FACTSET",
+      "authorityValue": "Organisation1-test-value"
+    }
+  ],
+  "properName": "Organisation1"
+}

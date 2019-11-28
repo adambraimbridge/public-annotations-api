@@ -1,0 +1,20 @@
+{  
+    "prefUUID":"745394df-41f2-4429-a2e7-031237565837",
+    "prefLabel":"Topic2",
+    "type":"Topic",
+    "sourceRepresentations":[  
+        {  
+            "uuid":"745394df-41f2-4429-a2e7-031237565837",
+            "prefLabel":"Topic2",
+            "type":"Topic",
+            "authority":"Smartlogic",
+            "authorityValue":"745394df-41f2-4429-a2e7-031237565837",
+            "aliases":[  
+                "Topic2"
+            ],
+            "broaderUUIDs":[
+              "a37cf813-4af9-491c-b5b1-335d93618cf6"
+            ]
+        }
+    ]
+}

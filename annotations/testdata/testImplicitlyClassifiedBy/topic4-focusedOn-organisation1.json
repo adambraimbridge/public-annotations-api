@@ -1,0 +1,20 @@
+{  
+    "prefUUID":"0aa353c7-251e-49ed-a55b-f8a58ea787d6",
+    "prefLabel":"Topic4",
+    "type":"Topic",
+    "sourceRepresentations":[  
+        {  
+            "uuid":"0aa353c7-251e-49ed-a55b-f8a58ea787d6",
+            "prefLabel":"Topic4",
+            "type":"Topic",
+            "authority":"Smartlogic",
+            "authorityValue":"0aa353c7-251e-49ed-a55b-f8a58ea787d6",
+            "aliases":[  
+                "Topic4"
+            ],
+            "focusedUUIDs":[
+              "01131def-c2bf-4893-9a7e-1f01ae9d8451"
+            ]
+        }
+    ]
+}

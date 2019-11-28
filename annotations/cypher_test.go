@@ -61,9 +61,10 @@ const (
 	v2PlatformVersion    = "v2"
 	emptyPlatformVersion = ""
 
-	brandType = "http://www.ft.com/ontology/product/Brand"
-	topicType = "http://www.ft.com/ontology/Topic"
-	genreType = "http://www.ft.com/ontology/Genre"
+	brandType        = "http://www.ft.com/ontology/product/Brand"
+	topicType        = "http://www.ft.com/ontology/Topic"
+	genreType        = "http://www.ft.com/ontology/Genre"
+	organisationType = "http://www.ft.com/ontology/organisation/Organisation"
 )
 
 var (
@@ -102,12 +103,18 @@ var (
 			"http://www.ft.com/ontology/classification/Classification",
 			genreType,
 		},
+		organisationType: {
+			"http://www.ft.com/ontology/core/Thing",
+			"http://www.ft.com/ontology/concept/Concept",
+			organisationType,
+		},
 	}
 
 	conceptApiUrlTemplates = map[string]string{
-		brandType: "http://api.ft.com/brands/%s",
-		topicType: "http://api.ft.com/things/%s",
-		genreType: "http://api.ft.com/things/%s",
+		brandType:        "http://api.ft.com/brands/%s",
+		topicType:        "http://api.ft.com/things/%s",
+		genreType:        "http://api.ft.com/things/%s",
+		organisationType: "http://api.ft.com/organisations/%s",
 	}
 )
 
@@ -348,6 +355,94 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationWithHasBrand() {
 	assertListContainsAll(s.T(), anns, expectedAnnotations)
 }
 
+func (s *cypherDriverTestSuite) TestTransitivePropertyOfHasFocus() {
+	t := s.T()
+	db := s.db
+
+	contentRW := content.NewCypherContentService(db)
+	assert.NoError(t, contentRW.Initialise())
+
+	conceptRW := concepts.NewConceptService(db)
+	assert.NoError(t, conceptRW.Initialise())
+
+	annotationRW := annrw.NewCypherAnnotationsService(db)
+	assert.NoError(t, annotationRW.Initialise())
+
+	writeContent := func(fixture string) string {
+		writeJSONToBaseService(contentRW, fixture, t)
+		data := readJSONFile(t, fixture)
+		uuid, _ := data["uuid"].(string)
+		return uuid
+	}
+	writeConcept := func(fixture string) (string, string) {
+		writeJSONToService(conceptRW, fixture, t)
+		data := readJSONFile(t, fixture)
+		uuid, _ := data["prefUUID"].(string)
+		label, _ := data["prefLabel"].(string)
+		return uuid, label
+	}
+
+	removeUUID := func(uuid string) {
+
+		err := db.CypherBatch([]*neoism.CypherQuery{
+			&neoism.CypherQuery{
+				Statement: `
+				MATCH (a:Thing {uuid: {thingID}})
+				OPTIONAL MATCH (a)<-[iden:IDENTIFIES]-(i:Identifier)
+				OPTIONAL MATCH (a)-[:EQUIVALENT_TO]-(t:Thing)
+				OPTIONAL MATCH (a)-[r]-()
+				DELETE iden, i, t, r, a`,
+				Parameters: map[string]interface{}{
+					"thingID": uuid,
+				},
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed removeing '%s' with: %s", uuid, err.Error())
+		}
+	}
+
+	expected := []annotation{}
+
+	contentID := writeContent("./testdata/testImplicitlyClassifiedBy/content.json")
+	defer removeUUID(contentID)
+
+	concepts := []struct {
+		Fixture   string // concept fixture
+		Type      string // expected concept type
+		Predicate string // expected annotations predicate
+	}{
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic2-about.json", Type: topicType, Predicate: "ABOUT"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic1-mentions.json", Type: topicType, Predicate: "MENTIONS"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/organisation1-about.json", Type: organisationType, Predicate: "ABOUT"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand1-isClassifiedBy.json", Type: brandType, Predicate: "IS_CLASSIFIED_BY"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic3-broader-topic2.json", Type: topicType, Predicate: "IMPLICITLY_ABOUT"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic4-focusedOn-organisation1.json", Type: topicType, Predicate: "IMPLICITLY_CLASSIFIED_BY"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand2-focusedOn-topic2.json", Type: brandType, Predicate: "IMPLICITLY_CLASSIFIED_BY"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand5-parent-brand1.json", Type: brandType, Predicate: "IMPLICITLY_CLASSIFIED_BY"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic5-broader-topic3.json", Type: topicType, Predicate: "IMPLICITLY_ABOUT"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand4-parent-brand2.json", Type: brandType},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand3-focusedOn-topic3.json", Type: brandType},
+	}
+
+	for _, c := range concepts {
+		UUID, label := writeConcept(c.Fixture)
+		defer removeUUID(UUID)
+		if c.Predicate == "" {
+			continue
+		}
+		expected = append(expected, expectedAnnotationWithLabel(UUID, c.Type, predicates[c.Predicate], pacLifecycle, label))
+	}
+
+	writeJSONToAnnotationsService(t, annotationRW, "pac", "annotations-pac", contentID, "./testdata/testImplicitlyClassifiedBy/annotations.json")
+
+	driver := NewCypherDriver(db, "prod")
+	anns := getAndCheckAnnotations(driver, contentID, t)
+	assert.Equal(t, len(expected), len(anns), "Didn't get the same number of annotations")
+	assertListContainsAll(t, anns, expected)
+
+}
+
 func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 
 	//setup
@@ -365,13 +460,7 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 
 	writeConcept := func(fixture string) (string, string) {
 		writeJSONToService(conceptRW, fixture, t)
-
-		absPath, _ := filepath.Abs(fixture)
-		f, err := os.Open(absPath)
-		assert.NoError(t, err)
-		data := map[string]interface{}{}
-		err = json.NewDecoder(f).Decode(&data)
-		assert.NoError(t, err)
+		data := readJSONFile(t, fixture)
 
 		uuid, ok := data["prefUUID"].(string)
 		if !ok {
@@ -386,13 +475,7 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 
 	writeContent := func(fixture string) string {
 		writeJSONToBaseService(contentRW, fixture, t)
-		absPath, _ := filepath.Abs(fixture)
-		f, err := os.Open(absPath)
-		assert.NoError(t, err)
-		data := map[string]interface{}{}
-		err = json.NewDecoder(f).Decode(&data)
-		assert.NoError(t, err)
-
+		data := readJSONFile(t, fixture)
 		uuid, ok := data["uuid"].(string)
 		if !ok {
 			t.Fatalf("in fixture %s uuid is not a string", fixture)
@@ -403,7 +486,7 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 	contentID := writeContent("./testdata/hasFocus/content.json")
 	brandUUID, brandLabel := writeConcept("./testdata/hasFocus/brand-hub-page.json")
 	topicUUID, topicLabel := writeConcept("./testdata/hasFocus/topic-focus-of-brand.json")
-	cleanUUIDs := []string{brandUUID, topicUUID, contentID}
+	cleanUUIDs := []string{topicUUID, contentID, brandUUID}
 
 	tests := map[string]struct {
 		Annotations         string
@@ -732,7 +815,8 @@ func deleteUUIDs(t testing.TB, db neoutils.NeoConnection, uuids []string) {
 		MATCH (a:Thing {uuid: "%s"})
 		OPTIONAL MATCH (a)<-[iden:IDENTIFIES]-(i:Identifier)
 		OPTIONAL MATCH (a)-[:EQUIVALENT_TO]-(t:Thing)
-		DELETE iden, i, t
+		OPTIONAL MATCH (a)-[r]-()
+		DELETE r, iden, i, t
 		DETACH DELETE a`, uuid)}
 	}
 	err := db.CypherBatch(qs)
@@ -741,6 +825,17 @@ func deleteUUIDs(t testing.TB, db neoutils.NeoConnection, uuids []string) {
 
 func cleanDB(t testing.TB, db neoutils.NeoConnection) {
 	deleteUUIDs(t, db, allUUIDs)
+}
+
+func readJSONFile(t testing.TB, fixture string) map[string]interface{} {
+
+	absPath, _ := filepath.Abs(fixture)
+	f, err := os.Open(absPath)
+	assert.NoError(t, err)
+	data := map[string]interface{}{}
+	err = json.NewDecoder(f).Decode(&data)
+	assert.NoError(t, err)
+	return data
 }
 
 func getExpectedMentionsFakebookAnnotation(lifecycle string) annotation {
