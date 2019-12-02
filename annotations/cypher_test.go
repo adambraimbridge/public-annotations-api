@@ -381,31 +381,11 @@ func (s *cypherDriverTestSuite) TestTransitivePropertyOfHasFocus() {
 		label, _ := data["prefLabel"].(string)
 		return uuid, label
 	}
-
-	removeUUID := func(uuid string) {
-
-		err := db.CypherBatch([]*neoism.CypherQuery{
-			&neoism.CypherQuery{
-				Statement: `
-				MATCH (a:Thing {uuid: {thingID}})
-				OPTIONAL MATCH (a)<-[iden:IDENTIFIES]-(i:Identifier)
-				OPTIONAL MATCH (a)-[:EQUIVALENT_TO]-(t:Thing)
-				OPTIONAL MATCH (a)-[r]-()
-				DELETE iden, i, t, r, a`,
-				Parameters: map[string]interface{}{
-					"thingID": uuid,
-				},
-			},
-		})
-		if err != nil {
-			t.Fatalf("failed removeing '%s' with: %s", uuid, err.Error())
-		}
-	}
-
+	removeUUIDs := []string{}
 	expected := []annotation{}
 
 	contentID := writeContent("./testdata/testImplicitlyClassifiedBy/content.json")
-	defer removeUUID(contentID)
+	removeUUIDs = append(removeUUIDs, contentID)
 
 	concepts := []struct {
 		Fixture   string // concept fixture
@@ -427,7 +407,7 @@ func (s *cypherDriverTestSuite) TestTransitivePropertyOfHasFocus() {
 
 	for _, c := range concepts {
 		UUID, label := writeConcept(c.Fixture)
-		defer removeUUID(UUID)
+		removeUUIDs = append(removeUUIDs, UUID)
 		if c.Predicate == "" {
 			continue
 		}
@@ -441,6 +421,7 @@ func (s *cypherDriverTestSuite) TestTransitivePropertyOfHasFocus() {
 	assert.Equal(t, len(expected), len(anns), "Didn't get the same number of annotations")
 	assertListContainsAll(t, anns, expected)
 
+	deleteUUIDs(t, db, removeUUIDs)
 }
 
 func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
@@ -811,13 +792,16 @@ func assertListContainsAll(t *testing.T, list interface{}, items ...interface{})
 func deleteUUIDs(t testing.TB, db neoutils.NeoConnection, uuids []string) {
 	qs := make([]*neoism.CypherQuery, len(uuids))
 	for i, uuid := range uuids {
-		qs[i] = &neoism.CypherQuery{Statement: fmt.Sprintf(`
-		MATCH (a:Thing {uuid: "%s"})
-		OPTIONAL MATCH (a)<-[iden:IDENTIFIES]-(i:Identifier)
-		OPTIONAL MATCH (a)-[:EQUIVALENT_TO]-(t:Thing)
-		OPTIONAL MATCH (a)-[r]-()
-		DELETE r, iden, i, t
-		DETACH DELETE a`, uuid)}
+		qs[i] = &neoism.CypherQuery{Statement: `
+			MATCH (a:Thing {uuid: {thingUUID}})
+			OPTIONAL MATCH (a)<-[iden:IDENTIFIES]-(i:Identifier)
+			OPTIONAL MATCH (a)-[:EQUIVALENT_TO]-(t:Thing)
+			DELETE iden, i, t
+			DETACH DELETE a`,
+			Parameters: map[string]interface{}{
+				"thingUUID": uuid,
+			},
+		}
 	}
 	err := db.CypherBatch(qs)
 	assert.NoError(t, err)
