@@ -397,7 +397,7 @@ func (s *cypherDriverTestSuite) TestTransitivePropertyOfHasFocus() {
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/organisation1-about.json", Type: organisationType, Predicate: "ABOUT"},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand1-isClassifiedBy.json", Type: brandType, Predicate: "IS_CLASSIFIED_BY"},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic3-broader-topic2.json", Type: topicType, Predicate: "IMPLICITLY_ABOUT"},
-		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic4-focusedOn-organisation1.json", Type: topicType, Predicate: "IMPLICITLY_CLASSIFIED_BY"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic4-focusedOn-organisation1.json", Type: topicType},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand2-focusedOn-topic2.json", Type: brandType, Predicate: "IMPLICITLY_CLASSIFIED_BY"},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand5-parent-brand1.json", Type: brandType, Predicate: "IMPLICITLY_CLASSIFIED_BY"},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic5-broader-topic3.json", Type: topicType, Predicate: "IMPLICITLY_ABOUT"},
