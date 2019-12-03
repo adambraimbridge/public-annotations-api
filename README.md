@@ -6,8 +6,9 @@ __Provides a public API for Annotations stored in a Neo4J graph database__
 ## Installation & running locally
 
 ```sh
-git clone github.com/Financial-Times/public-annotations-api
-cd ./public-annotations-api
+go get -u github.com/Financial-Times/public-annotations-api
+cd $GOPATH/src/github.com/Financial-Times/public-annotations-api
+go build -mod=readonly
 ./public-annotations-api --neo-url={neo4jUrl} --port={port} --log-level={DEBUG|INFO|WARN|ERROR}--cache-duration{e.g. 22h10m3s}
 ```
 
