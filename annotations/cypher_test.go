@@ -406,12 +406,12 @@ func (s *cypherDriverTestSuite) TestTransitivePropertyOfHasFocus() {
 	}
 
 	for _, c := range concepts {
-		UUID, label := writeConcept(c.Fixture)
+		UUID, prefLabel := writeConcept(c.Fixture)
 		removeUUIDs = append(removeUUIDs, UUID)
 		if c.Predicate == "" {
 			continue
 		}
-		expected = append(expected, expectedAnnotationWithLabel(UUID, c.Type, predicates[c.Predicate], pacLifecycle, label))
+		expected = append(expected, expectedAnnotationWithPrefLabel(UUID, c.Type, predicates[c.Predicate], pacLifecycle, prefLabel))
 	}
 
 	writeJSONToAnnotationsService(t, annotationRW, "pac", "annotations-pac", contentID, "./testdata/testImplicitlyClassifiedBy/annotations.json")
@@ -476,29 +476,29 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 		"focused on concept should return implicitly classified by": {
 			Annotations: "./testdata/hasFocus/annotation-topic-about.json",
 			ExpectedAnnotations: annotations{
-				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
-				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, brandLabel),
+				expectedAnnotationWithPrefLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
+				expectedAnnotationWithPrefLabel(brandUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, brandLabel),
 			},
 		},
 		"direct isClassifiedBy annotations should override implicit ones": {
 			Annotations: "./testdata/hasFocus/annotation-topic-and-brand-is-classified-by.json",
 			ExpectedAnnotations: annotations{
-				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
-				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
+				expectedAnnotationWithPrefLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
+				expectedAnnotationWithPrefLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
 			},
 		},
 		"direct hasBrand annotations should override implicit ones": {
 			Annotations: "./testdata/hasFocus/annotation-topic-and-brand-has-brand.json",
 			ExpectedAnnotations: annotations{
-				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
-				expectedAnnotationWithLabel(brandUUID, brandType, predicates["HAS_BRAND"], pacLifecycle, brandLabel),
+				expectedAnnotationWithPrefLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
+				expectedAnnotationWithPrefLabel(brandUUID, brandType, predicates["HAS_BRAND"], pacLifecycle, brandLabel),
 			},
 		},
 		"isClassifiedBy should be with greatest priority": {
 			Annotations: "./testdata/hasFocus/annotation-topic-and-brand-multiple-ann.json",
 			ExpectedAnnotations: annotations{
-				expectedAnnotationWithLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
-				expectedAnnotationWithLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
+				expectedAnnotationWithPrefLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
+				expectedAnnotationWithPrefLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
 			},
 		},
 	}
@@ -751,6 +751,8 @@ func writeJSONToBaseService(service baseftrwapp.Service, pathToJSONFile string, 
 	assert.NoError(t, err)
 	err = service.Write(inst, "TEST_TRANS_ID")
 	assert.NoError(t, err)
+	err = f.Close()
+	assert.NoError(t, err)
 }
 
 func writeJSONToService(service concepts.ConceptService, pathToJSONFile string, t testing.TB) {
@@ -762,6 +764,8 @@ func writeJSONToService(service concepts.ConceptService, pathToJSONFile string, 
 	assert.NoError(t, err)
 	_, err = service.Write(inst, "TEST_TRANS_ID")
 	assert.NoError(t, err)
+	err = f.Close()
+	assert.NoError(t, err)
 }
 
 func writeJSONToAnnotationsService(t testing.TB, service annrw.Service, platformVersion string, lifecycle string, contentUUID string, pathToJSONFile string) {
@@ -772,6 +776,8 @@ func writeJSONToAnnotationsService(t testing.TB, service annrw.Service, platform
 	inst, err := service.DecodeJSON(dec)
 	assert.NoError(t, err, "Error parsing file %s", pathToJSONFile)
 	err = service.Write(contentUUID, lifecycle, platformVersion, "TID_TEST", inst)
+	assert.NoError(t, err)
+	err = f.Close()
 	assert.NoError(t, err)
 }
 
@@ -818,6 +824,8 @@ func readJSONFile(t testing.TB, fixture string) map[string]interface{} {
 	assert.NoError(t, err)
 	data := map[string]interface{}{}
 	err = json.NewDecoder(f).Decode(&data)
+	assert.NoError(t, err)
+	err = f.Close()
 	assert.NoError(t, err)
 	return data
 }
@@ -954,7 +962,7 @@ func expectedAnnotation(conceptUuid string, conceptType string, predicate string
 	}
 }
 
-func expectedAnnotationWithLabel(conceptUuid string, conceptType string, predicate string, lifecycle string, prefLabel string) annotation {
+func expectedAnnotationWithPrefLabel(conceptUuid string, conceptType string, predicate string, lifecycle string, prefLabel string) annotation {
 	return annotation{
 		Predicate: predicate,
 		ID:        fmt.Sprintf("http://api.ft.com/things/%s", conceptUuid),
