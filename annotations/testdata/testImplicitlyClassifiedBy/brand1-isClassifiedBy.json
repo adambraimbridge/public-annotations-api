@@ -1,0 +1,23 @@
+{
+  "prefUUID": "ee2cffbc-ddd9-4ae2-9e4c-52e6fb722ed9",
+  "prefLabel": "Brand1",
+  "type": "Brand",
+  "aliases": [
+    "Brand1"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "ee2cffbc-ddd9-4ae2-9e4c-52e6fb722ed9",
+      "type": "Brand",
+      "prefLabel": "Brand1",
+      "authority": "Smartlogic",
+      "authorityValue": "ee2cffbc-ddd9-4ae2-9e4c-52e6fb722ed9",
+      "aliases": [
+        "Brand1"
+      ],
+      "parentUUIDs":[
+        "3851d741-59a9-40df-933f-46f2d552c0a9"
+      ]
+    }
+  ]
+}

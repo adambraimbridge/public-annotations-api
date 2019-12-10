@@ -1,0 +1,23 @@
+{
+  "prefUUID": "287cd56d-a512-4147-8dac-ad7b40131416",
+  "prefLabel": "Brand3",
+  "type": "Brand",
+  "aliases": [
+    "Brand3"
+  ],
+  "sourceRepresentations": [
+    {
+      "uuid": "287cd56d-a512-4147-8dac-ad7b40131416",
+      "type": "Brand",
+      "prefLabel": "Brand3",
+      "authority": "Smartlogic",
+      "authorityValue": "287cd56d-a512-4147-8dac-ad7b40131416",
+      "aliases": [
+        "Brand3"
+      ],
+      "focusedUUIDs":[
+        "a37cf813-4af9-491c-b5b1-335d93618cf6"
+      ]
+    }
+  ]
+}

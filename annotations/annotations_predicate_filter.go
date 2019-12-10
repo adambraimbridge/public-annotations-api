@@ -1,47 +1,28 @@
 package annotations
 
 import (
-	"reflect"
 	"strings"
 )
 
 // Defines all names of predicates that have to be considered by the annotation filter.
 // Predicates that are not defined in FilteredPredicateNames are not filtered.
-type filteredPredicateNames struct {
-	MENTIONS                   string
-	MAJOR_MENTIONS             string
-	ABOUT                      string
-	IS_CLASSIFIED_BY           string
-	IS_PRIMARILY_CLASSIFIED_BY string
-}
 
-func newFilteredPredicateNames() *filteredPredicateNames {
-	v := filteredPredicateNames{}
-	v.MENTIONS = "http://www.ft.com/ontology/annotation/mentions"
-	v.MAJOR_MENTIONS = "http://www.ft.com/ontology/annotation/majormentions"
-	v.ABOUT = "http://www.ft.com/ontology/annotation/about"
-	v.IS_CLASSIFIED_BY = "http://www.ft.com/ontology/classification/isclassifiedby"
-	v.IS_PRIMARILY_CLASSIFIED_BY = "http://www.ft.com/ontology/classification/isprimarilyclassifiedby"
-	return &v
-}
-
-func (f *filteredPredicateNames) contains(pred string) bool {
-	enum := newFilteredPredicateNames()
-	v := reflect.ValueOf(*enum)
-	for i := 0; i < v.NumField(); i++ {
-		if v.Field(i).String() == pred {
-			return true
-		}
-	}
-	return false
-}
+const (
+	Mentions                = "http://www.ft.com/ontology/annotation/mentions"
+	MajorMentions           = "http://www.ft.com/ontology/annotation/majormentions"
+	About                   = "http://www.ft.com/ontology/annotation/about"
+	IsClassifiedBy          = "http://www.ft.com/ontology/classification/isclassifiedby"
+	IsPrimarilyClassifiedBy = "http://www.ft.com/ontology/classification/isprimarilyclassifiedby"
+	ImplicitlyClassifiedBy  = "http://www.ft.com/ontology/implicitlyclassifiedby"
+	HasBrand                = "http://www.ft.com/ontology/classification/isclassifiedby"
+)
 
 type AnnotationsPredicateFilter struct {
 	// Definition of predicate groups to whom Rule of Importance should be applied.
 	// Each group contains a list of predicate names in the order of increasing importance.
 	ImportanceRuleConfig [][]string
 	// Predicate names of annotations that should be considered for filtering
-	enum *filteredPredicateNames
+	enum []string
 	// Stores annotations to be filtered keyed by concept ID (uuid).
 	unfilteredAnnotations map[string][]annotation
 	// Stores annotations not to be filtered keyed by concept ID (uuid).
@@ -49,16 +30,33 @@ type AnnotationsPredicateFilter struct {
 }
 
 func NewAnnotationsPredicateFilter() *AnnotationsPredicateFilter {
-	f := AnnotationsPredicateFilter{}
-	f.enum = newFilteredPredicateNames()
-	// Configure groups of predicates that should be filtered according to their importance.
-	f.ImportanceRuleConfig = [][]string{
-		{f.enum.MENTIONS, f.enum.MAJOR_MENTIONS, f.enum.ABOUT},
-		{f.enum.IS_CLASSIFIED_BY, f.enum.IS_PRIMARILY_CLASSIFIED_BY},
+	return &AnnotationsPredicateFilter{
+		enum: []string{
+			Mentions,
+			MajorMentions,
+			About,
+			IsClassifiedBy,
+			HasBrand,
+			ImplicitlyClassifiedBy,
+			IsPrimarilyClassifiedBy,
+		},
+		// Configure groups of predicates that should be filtered according to their importance.
+		ImportanceRuleConfig: [][]string{
+			{
+				Mentions,
+				MajorMentions,
+				About,
+			},
+			{
+				ImplicitlyClassifiedBy,
+				HasBrand,
+				IsClassifiedBy,
+				IsPrimarilyClassifiedBy,
+			},
+		},
+		filteredAnnotations:   make(map[string][]annotation),
+		unfilteredAnnotations: make(map[string][]annotation),
 	}
-	f.filteredAnnotations = make(map[string][]annotation)
-	f.unfilteredAnnotations = make(map[string][]annotation)
-	return &f
 }
 
 func (f *AnnotationsPredicateFilter) FilterAnnotations(annotations []annotation) {
@@ -68,11 +66,16 @@ func (f *AnnotationsPredicateFilter) FilterAnnotations(annotations []annotation)
 }
 
 func (f *AnnotationsPredicateFilter) Add(a annotation) {
-	if f.enum.contains(strings.ToLower(a.Predicate)) {
-		f.addFiltered(a)
-	} else {
-		f.addUnfiltered(a)
+
+	pred := strings.ToLower(a.Predicate)
+	for _, p := range f.enum {
+		if p == pred {
+			f.addFiltered(a)
+			return
+		}
 	}
+
+	f.addUnfiltered(a)
 }
 
 func (f *AnnotationsPredicateFilter) ProduceResponseList() []annotation {
@@ -97,19 +100,19 @@ func (f *AnnotationsPredicateFilter) addFiltered(a annotation) {
 		// For each importance group we shell store 1 most important annotation
 		f.filteredAnnotations[a.ID] = make([]annotation, len(f.ImportanceRuleConfig))
 	}
-	grpId, pos := f.getGroupIdAndImportanceValue(strings.ToLower(a.Predicate))
-	if grpId == -1 || pos == -1 {
+	grpID, pos := f.getGroupIDAndImportanceValue(strings.ToLower(a.Predicate))
+	if grpID == -1 || pos == -1 {
 		return
 	}
 	arr := f.filteredAnnotations[a.ID]
-	prevAnnotation := arr[grpId]
+	prevAnnotation := arr[grpID]
 	// Empty value indicates we have not seen annotations for this group before.
 	if prevAnnotation.ID == "" {
-		f.filteredAnnotations[a.ID][grpId] = a
+		f.filteredAnnotations[a.ID][grpID] = a
 	} else {
-		prevPos := f.getImportanceValueForGroupId(strings.ToLower(prevAnnotation.Predicate), grpId)
+		prevPos := f.getImportanceValueForGroupID(strings.ToLower(prevAnnotation.Predicate), grpID)
 		if prevPos < pos {
-			f.filteredAnnotations[a.ID][grpId] = a
+			f.filteredAnnotations[a.ID][grpID] = a
 		}
 	}
 }
@@ -121,7 +124,7 @@ func (f *AnnotationsPredicateFilter) addUnfiltered(a annotation) {
 	f.unfilteredAnnotations[a.ID] = append(f.unfilteredAnnotations[a.ID], a)
 }
 
-func (f *AnnotationsPredicateFilter) getGroupIdAndImportanceValue(predicate string) (int, int) {
+func (f *AnnotationsPredicateFilter) getGroupIDAndImportanceValue(predicate string) (int, int) {
 	for group, s := range f.ImportanceRuleConfig {
 		for pos, val := range s {
 			if val == predicate {
@@ -133,7 +136,7 @@ func (f *AnnotationsPredicateFilter) getGroupIdAndImportanceValue(predicate stri
 	return -1, -1
 }
 
-func (f *AnnotationsPredicateFilter) getImportanceValueForGroupId(predicate string, groupId int) int {
+func (f *AnnotationsPredicateFilter) getImportanceValueForGroupID(predicate string, groupId int) int {
 	for pos, val := range f.ImportanceRuleConfig[groupId] {
 		if val == predicate {
 			return pos
