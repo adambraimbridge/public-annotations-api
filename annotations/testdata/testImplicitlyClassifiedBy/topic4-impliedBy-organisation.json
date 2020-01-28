@@ -12,7 +12,7 @@
             "aliases":[  
                 "Topic4"
             ],
-            "focusedUUIDs":[
+            "impliedByUUIDs":[
               "01131def-c2bf-4893-9a7e-1f01ae9d8451"
             ]
         }
