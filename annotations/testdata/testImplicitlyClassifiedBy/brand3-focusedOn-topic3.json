@@ -15,7 +15,7 @@
       "aliases": [
         "Brand3"
       ],
-      "focusedUUIDs":[
+      "impliedByUUIDs":[
         "a37cf813-4af9-491c-b5b1-335d93618cf6"
       ]
     }
