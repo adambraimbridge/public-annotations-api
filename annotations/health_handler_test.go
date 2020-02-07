@@ -23,7 +23,7 @@ func TestGTGUnhealthyCluster(t *testing.T) {
 	hctx := &HandlerCtx{
 		AnnotationsDriver:  annotationsDriver,
 		CacheControlHeader: "test-header",
-		Log:                logger.NewUPPInfoLogger("test-public-annotations-api"),
+		Log:                logger.NewUPPLogger("test-public-annotations-api", "PANIC"),
 	}
 
 	//create a responseRecorder
@@ -52,7 +52,7 @@ func TestGTGHealthyCluster(t *testing.T) {
 	hctx := &HandlerCtx{
 		AnnotationsDriver:  annotationsDriver,
 		CacheControlHeader: "test-header",
-		Log:                logger.NewUPPInfoLogger("test-public-annotations-api"),
+		Log:                logger.NewUPPLogger("test-public-annotations-api", "PANIC"),
 	}
 	//create a responseRecorder
 	rr := httptest.NewRecorder()
