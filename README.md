@@ -73,9 +73,6 @@ only the annotation with "Is Primarily Classified By" relationship will be retur
 
 ### Logging
 
-The application uses logrus, the logfile is initialised in main.go.
-
-Logging requires an env app parameter: for all environments other than local, logs are written to file. When running locally logging
-is written to console (if you want to log locally to file you need to pass in an env parameter that is != local).
+Logging requires an env app parameter: for all environments other than local, logs are written to file. When running locally logging is written to console (if you want to log locally to file you need to pass in an env parameter that is != local).
 
 NOTE: <http://localhost:8080/__gtg> end point is not logged as it is called every second from varnish and this information is not needed in logs/splunk
