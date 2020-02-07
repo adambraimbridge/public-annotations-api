@@ -122,7 +122,7 @@ func TestGetHandlerWithLifecycleQueryParams(t *testing.T) {
 			hctx := &HandlerCtx{
 				AnnotationsDriver:  tc.annotationsDriver,
 				CacheControlHeader: "test-header",
-				Log:                logger.NewUPPInfoLogger("test-public-annotations-api"),
+				Log:                logger.NewUPPLogger("test-public-annotations-api", "PANIC"),
 			}
 			req, err := http.NewRequest("GET", fmt.Sprintf("/content/%s/annotations?%s", knownUUID, tc.lifecycleParams), nil)
 			if err != nil {
