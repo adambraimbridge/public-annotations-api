@@ -22,14 +22,15 @@ jobs:
             mkdir -p ${CIRCLE_TEST_REPORTS}
             mkdir -p ${CIRCLE_COVERAGE_REPORT}
       - run:
-          name: External Dependancies
+          name: External Dependencies
           command: |
-            GO111MODULE=off go get -u github.com/jstemmer/go-junit-report
-            GO111MODULE=off go get -u github.com/mattn/goveralls
+            GO111MODULE=off go get github.com/jstemmer/go-junit-report
+            GO111MODULE=off go get github.com/mattn/goveralls
             curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.18.0
             wget https://raw.githubusercontent.com/Financial-Times/upp-coding-standard/v1.0.0/golangci-config/.golangci.yml
-      - run: |
-          go build -mod=readonly -v
+      - run:
+          name: Go Build
+          command: go build -mod=readonly -v
       - run:
           name: Run linters
           command: |
@@ -37,7 +38,7 @@ jobs:
       - run:
           wget --retry-connrefused --no-check-certificate -T 60 $NEO4J_TEST_URL; curl $NEO4J_TEST_URL
       - run: |
-          go test ./... -mod=readonly -v -tags=integration -race -cover -coverprofile=$CIRCLE_COVERAGE_REPORT/coverage.out | go-junit-report > $CIRCLE_TEST_REPORTS/junit.xml
+          go test -mod=readonly -v -tags=integration -race -cover -coverprofile=$CIRCLE_COVERAGE_REPORT/coverage.out | go-junit-report > $CIRCLE_TEST_REPORTS/junit.xml
       - run: |
           goveralls -coverprofile=$CIRCLE_COVERAGE_REPORT/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
       - store_test_results:
@@ -45,7 +46,7 @@ jobs:
   docker_build:
     working_directory: /public-annotations-api
     docker:
-      - image: docker:18.03
+      - image: docker:18
     steps:
       - checkout
       - setup_remote_docker
