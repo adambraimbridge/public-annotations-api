@@ -10,7 +10,7 @@ import (
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/http-handlers-go/v2/httphandlers"
-	"github.com/Financial-Times/neo-utils-go/neoutils"
+	"github.com/Financial-Times/neo-utils-go/v2/neoutils"
 
 	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/public-annotations-api/v3/annotations"
@@ -56,6 +56,7 @@ func main() {
 		EnvVar: "LOG_LEVEL",
 	})
 
+
 	log := logger.NewUPPLogger("public-annotations-api", *logLevel)
 
 	app.Action = func() {
@@ -93,7 +94,7 @@ func runServer(neoURL string, port string, cacheDuration string, env string, log
 		},
 		BackgroundConnect: true,
 	}
-	db, err := neoutils.Connect(neoURL, &conf)
+	db, err := neoutils.Connect(neoURL, &conf, log)
 	if err != nil {
 		return fmt.Errorf("failed connecting to neo4j: %w", err)
 	}
