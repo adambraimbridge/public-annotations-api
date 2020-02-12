@@ -12,7 +12,7 @@ require (
 	github.com/Financial-Times/go-logger/v2 v2.0.1
 	github.com/Financial-Times/http-handlers-go/v2 v2.1.0
 	github.com/Financial-Times/neo-model-utils-go v0.0.0-20180712095719-aea1e95c8305
-	github.com/Financial-Times/neo-utils-go v0.0.0-20200128103253-be403f13d92e
+	github.com/Financial-Times/neo-utils-go v0.0.0-20180807105745-1fe6ae2f38f3
 	github.com/Financial-Times/service-status-go v0.0.0-20160323111542-3f5199736a3d
 	github.com/cyberdelia/go-metrics-graphite v0.0.0-20161219230853-39f87cc3b432 // indirect
 	github.com/gorilla/mux v1.7.3
@@ -20,7 +20,9 @@ require (
 	github.com/jmcvetta/neoism v1.3.1
 	github.com/joho/godotenv v1.3.0
 	github.com/rcrowley/go-metrics v0.0.0-20190826022208-cac0b30c2563
+	github.com/sirupsen/logrus v1.2.0 // indirect
 	github.com/stretchr/testify v1.3.0
+	go4.org v0.0.0-20181109185143-00e24f1b2599 // indirect
 )
 
 replace gopkg.in/stretchr/testify.v1 => github.com/stretchr/testify v1.4.0
