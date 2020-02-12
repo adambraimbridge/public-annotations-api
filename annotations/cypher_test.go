@@ -15,7 +15,7 @@ import (
 	"github.com/Financial-Times/concepts-rw-neo4j/concepts"
 	"github.com/Financial-Times/content-rw-neo4j/content"
 	"github.com/Financial-Times/go-logger/v2"
-	"github.com/Financial-Times/neo-utils-go/neoutils"
+	"github.com/Financial-Times/neo-utils-go/v2/neoutils"
 	"github.com/jmcvetta/neoism"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -132,10 +132,6 @@ var allUUIDs = []string{contentUUID, contentWithNoAnnotationsUUID, contentWithPa
 	brandHubPageUUID, genreOpinionUUID, contentWithHasBrand,
 }
 
-func init() {
-	logger.NewUPPLogger("test-public-annotations-api", "PANIC")
-}
-
 func TestCypherDriverSuite(t *testing.T) {
 	suite.Run(t, newCypherDriverTestSuite())
 }
@@ -154,6 +150,7 @@ func (s *cypherDriverTestSuite) TearDownTest() {
 }
 
 func getDatabaseConnection(t *testing.T) neoutils.NeoConnection {
+	l := logger.NewUPPLogger("test-public-annotations-api", "PANIC")
 	if testing.Short() {
 		t.Skip("Skipping Neo4j integration tests.")
 		return nil
@@ -166,7 +163,7 @@ func getDatabaseConnection(t *testing.T) neoutils.NeoConnection {
 
 	conf := neoutils.DefaultConnectionConfig()
 	conf.Transactional = false
-	db, err := neoutils.Connect(url, conf)
+	db, err := neoutils.Connect(url, conf, l)
 	require.NoError(t, err, "Failed to connect to Neo4j")
 	return db
 }

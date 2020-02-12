@@ -10,7 +10,7 @@ import (
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/http-handlers-go/v2/httphandlers"
-	"github.com/Financial-Times/neo-utils-go/neoutils"
+	"github.com/Financial-Times/neo-utils-go/v2/neoutils"
 
 	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/public-annotations-api/v3/annotations"
@@ -76,6 +76,8 @@ func main() {
 }
 
 func runServer(neoURL string, port string, cacheDuration string, env string, log *logger.UPPLogger) error {
+	l := logger.NewUPPLogger("public-annotations-api", "INFO")
+	
 	duration, durationErr := time.ParseDuration(cacheDuration)
 	if durationErr != nil {
 		return fmt.Errorf("failed to parse cache duration string: %w", durationErr)
@@ -93,7 +95,7 @@ func runServer(neoURL string, port string, cacheDuration string, env string, log
 		},
 		BackgroundConnect: true,
 	}
-	db, err := neoutils.Connect(neoURL, &conf)
+	db, err := neoutils.Connect(neoURL, &conf, l)
 	if err != nil {
 		return fmt.Errorf("failed connecting to neo4j: %w", err)
 	}
