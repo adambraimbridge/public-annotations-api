@@ -1,0 +1,20 @@
+{  
+    "prefUUID":"bb3c006d-e999-3919-8fb2-4992ef7a2101",
+    "prefLabel":"Organisation2",
+    "type":"Organisation",
+    "sourceRepresentations":[  
+        {  
+            "uuid":"bb3c006d-e999-3919-8fb2-4992ef7a2100",
+            "prefLabel":"Organisation2",
+            "type":"Organisation",
+            "authority":"Smartlogic",
+            "authorityValue":"bb3c006d-e999-3919-8fb2-4992ef7a2100",
+            "aliases":[  
+                "Organisation2"
+            ],
+            "broaderUUIDs":[
+              "a37cf813-4af9-491c-b5b1-335d93618cf7"
+            ]
+        }
+    ]
+}
