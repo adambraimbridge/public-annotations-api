@@ -56,7 +56,6 @@ func main() {
 		EnvVar: "LOG_LEVEL",
 	})
 
-
 	log := logger.NewUPPLogger("public-annotations-api", *logLevel)
 
 	app.Action = func() {
