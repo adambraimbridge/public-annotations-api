@@ -4,11 +4,12 @@ ENV PROJECT="public-annotations-api"
 
 # Include code
 ENV ORG_PATH="github.com/Financial-Times"
-ENV SRC_FOLDER="${GOPATH}/src/${ORG_PATH}/${PROJECT}"
-COPY . ${SRC_FOLDER}
-WORKDIR ${SRC_FOLDER}
+ENV BUILDINFO_PACKAGE="github.com/Financial-Times/service-status-go/buildinfo."
 
-# Install dependancies and build app
+COPY . /${PROJECT}/
+WORKDIR /${PROJECT}
+
+# Build the app
 RUN BUILDINFO_PACKAGE="${ORG_PATH}/service-status-go/buildinfo." \
     && VERSION="version=$(git describe --tag --always 2> /dev/null)" \
     && DATETIME="dateTime=$(date -u +%Y%m%d%H%M%S)" \
