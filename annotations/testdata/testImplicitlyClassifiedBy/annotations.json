@@ -38,5 +38,15 @@
       ],
       "predicate": "mentions"
     }
+  },
+  {
+    "thing": {
+      "id": "http://api.ft.com/things/01131def-c2bf-4893-9a7e-1f01ae9d8451",
+      "prefLabel": "Organisation2",
+      "types": [
+        "http://www.ft.com/ontology/organisation/Organisation"
+      ],
+      "predicate": "about"
+    }
   }
 ]

@@ -15,7 +15,7 @@
       "aliases": [
         "Brand2"
       ],
-      "focusedUUIDs":[
+      "impliedByUUIDs":[
         "745394df-41f2-4429-a2e7-031237565837"
       ],
       "parentUUIDs":[

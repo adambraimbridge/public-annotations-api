@@ -6,13 +6,13 @@ require (
 	github.com/Financial-Times/annotations-rw-neo4j/v3 v3.2.0
 	github.com/Financial-Times/api-endpoint v0.0.0-20170713111258-802a63542ff0 // indirect
 	github.com/Financial-Times/base-ft-rw-app-go v0.0.0-20180522140206-1ea8a13e1f37
-	github.com/Financial-Times/concepts-rw-neo4j v1.24.1
+	github.com/Financial-Times/concepts-rw-neo4j v1.24.2
 	github.com/Financial-Times/content-rw-neo4j v1.0.3-0.20190417080642-a8b4c6720d8e
 	github.com/Financial-Times/go-fthealth v0.0.0-20181009114238-ca83ad65381f
 	github.com/Financial-Times/go-logger/v2 v2.0.1
 	github.com/Financial-Times/http-handlers-go/v2 v2.1.0
 	github.com/Financial-Times/neo-model-utils-go v0.0.0-20180712095719-aea1e95c8305
-	github.com/Financial-Times/neo-utils-go v0.0.0-20181119150836-7fc6c3f7b78f
+	github.com/Financial-Times/neo-utils-go/v2 v2.0.0
 	github.com/Financial-Times/service-status-go v0.0.0-20160323111542-3f5199736a3d
 	github.com/cyberdelia/go-metrics-graphite v0.0.0-20161219230853-39f87cc3b432 // indirect
 	github.com/gorilla/mux v1.7.3

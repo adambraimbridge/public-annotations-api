@@ -14,7 +14,8 @@ import (
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
 	"github.com/Financial-Times/concepts-rw-neo4j/concepts"
 	"github.com/Financial-Times/content-rw-neo4j/content"
-	"github.com/Financial-Times/neo-utils-go/neoutils"
+	"github.com/Financial-Times/go-logger/v2"
+	"github.com/Financial-Times/neo-utils-go/v2/neoutils"
 	"github.com/jmcvetta/neoism"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -149,6 +150,7 @@ func (s *cypherDriverTestSuite) TearDownTest() {
 }
 
 func getDatabaseConnection(t *testing.T) neoutils.NeoConnection {
+	l := logger.NewUPPLogger("test-public-annotations-api", "PANIC")
 	if testing.Short() {
 		t.Skip("Skipping Neo4j integration tests.")
 		return nil
@@ -161,7 +163,7 @@ func getDatabaseConnection(t *testing.T) neoutils.NeoConnection {
 
 	conf := neoutils.DefaultConnectionConfig()
 	conf.Transactional = false
-	db, err := neoutils.Connect(url, conf)
+	db, err := neoutils.Connect(url, conf, l)
 	require.NoError(t, err, "Failed to connect to Neo4j")
 	return db
 }
@@ -355,7 +357,7 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationWithHasBrand() {
 	assertListContainsAll(s.T(), anns, expectedAnnotations)
 }
 
-func (s *cypherDriverTestSuite) TestTransitivePropertyOfHasFocus() {
+func (s *cypherDriverTestSuite) TestTransitivePropertyOfImpliedBy() {
 	t := s.T()
 	db := s.db
 
@@ -397,12 +399,13 @@ func (s *cypherDriverTestSuite) TestTransitivePropertyOfHasFocus() {
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/organisation1-about.json", Type: organisationType, Predicate: "ABOUT"},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand1-isClassifiedBy.json", Type: brandType, Predicate: "IS_CLASSIFIED_BY"},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic3-broader-topic2.json", Type: topicType, Predicate: "IMPLICITLY_ABOUT"},
-		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic4-focusedOn-organisation1.json", Type: topicType},
-		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand2-focusedOn-topic2.json", Type: brandType, Predicate: "IMPLICITLY_CLASSIFIED_BY"},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic4-impliedBy-organisation1.json", Type: topicType},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand6-impliedBy-organisation2.json", Type: organisationType},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand2-impliedBy-topic2.json", Type: brandType, Predicate: "IMPLICITLY_CLASSIFIED_BY"},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand5-parent-brand1.json", Type: brandType, Predicate: "IMPLICITLY_CLASSIFIED_BY"},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/topic5-broader-topic3.json", Type: topicType, Predicate: "IMPLICITLY_ABOUT"},
 		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand4-parent-brand2.json", Type: brandType},
-		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand3-focusedOn-topic3.json", Type: brandType},
+		{Fixture: "./testdata/testImplicitlyClassifiedBy/brand3-impliedBy-topic3.json", Type: brandType},
 	}
 
 	for _, c := range concepts {
@@ -420,11 +423,10 @@ func (s *cypherDriverTestSuite) TestTransitivePropertyOfHasFocus() {
 	anns := getAndCheckAnnotations(driver, contentID, t)
 	assert.Equal(t, len(expected), len(anns), "Didn't get the same number of annotations")
 	assertListContainsAll(t, anns, expected)
-
 	deleteUUIDs(t, db, removeUUIDs)
 }
 
-func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
+func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithImpliedBy() {
 
 	//setup
 	t := s.T()
@@ -464,38 +466,38 @@ func (s *cypherDriverTestSuite) TestRetrieveAnnotationsWithHasFocus() {
 		return uuid
 	}
 
-	contentID := writeContent("./testdata/hasFocus/content.json")
-	brandUUID, brandLabel := writeConcept("./testdata/hasFocus/brand-hub-page.json")
-	topicUUID, topicLabel := writeConcept("./testdata/hasFocus/topic-focus-of-brand.json")
+	contentID := writeContent("./testdata/impliedBy/content.json")
+	brandUUID, brandLabel := writeConcept("./testdata/impliedBy/brand-hub-page.json")
+	topicUUID, topicLabel := writeConcept("./testdata/impliedBy/topic-implies-brand.json")
 	cleanUUIDs := []string{topicUUID, contentID, brandUUID}
 
 	tests := map[string]struct {
 		Annotations         string
 		ExpectedAnnotations annotations
 	}{
-		"focused on concept should return implicitly classified by": {
-			Annotations: "./testdata/hasFocus/annotation-topic-about.json",
+		"implied by concept should return implicitly classified by": {
+			Annotations: "./testdata/impliedBy/annotation-topic-about.json",
 			ExpectedAnnotations: annotations{
 				expectedAnnotationWithPrefLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
 				expectedAnnotationWithPrefLabel(brandUUID, brandType, predicates["IMPLICITLY_CLASSIFIED_BY"], pacLifecycle, brandLabel),
 			},
 		},
 		"direct isClassifiedBy annotations should override implicit ones": {
-			Annotations: "./testdata/hasFocus/annotation-topic-and-brand-is-classified-by.json",
+			Annotations: "./testdata/impliedBy/annotation-topic-and-brand-is-classified-by.json",
 			ExpectedAnnotations: annotations{
 				expectedAnnotationWithPrefLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
 				expectedAnnotationWithPrefLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
 			},
 		},
 		"direct hasBrand annotations should override implicit ones": {
-			Annotations: "./testdata/hasFocus/annotation-topic-and-brand-has-brand.json",
+			Annotations: "./testdata/impliedBy/annotation-topic-and-brand-has-brand.json",
 			ExpectedAnnotations: annotations{
 				expectedAnnotationWithPrefLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
 				expectedAnnotationWithPrefLabel(brandUUID, brandType, predicates["HAS_BRAND"], pacLifecycle, brandLabel),
 			},
 		},
 		"isClassifiedBy should be with greatest priority": {
-			Annotations: "./testdata/hasFocus/annotation-topic-and-brand-multiple-ann.json",
+			Annotations: "./testdata/impliedBy/annotation-topic-and-brand-multiple-ann.json",
 			ExpectedAnnotations: annotations{
 				expectedAnnotationWithPrefLabel(topicUUID, topicType, predicates["ABOUT"], pacLifecycle, topicLabel),
 				expectedAnnotationWithPrefLabel(brandUUID, brandType, predicates["IS_CLASSIFIED_BY"], pacLifecycle, brandLabel),
