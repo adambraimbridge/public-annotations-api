@@ -2,6 +2,10 @@
 
 The Public Annotations API is a micro-service which gets all annotations by a content uuid.
 
+## Code
+
+annotationsapi
+
 ## Primary URL
 
 https://upp-prod-delivery-glb.upp.ft.com/__public-annotations-api/
