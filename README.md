@@ -30,7 +30,7 @@ _Optional arguments are:
 ```sh
 docker-compose -f docker-compose-tests.yml up -d --build && \
 docker logs -f test-runner && \
-docker-compose -f docker-compose-tests.yml down
+docker-compose -f docker-compose-tests.yml down -v
 ```
 
 ## Build & deployment

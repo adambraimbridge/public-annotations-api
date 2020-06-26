@@ -2,10 +2,13 @@ package annotations
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sort"
+	"strings"
 	"testing"
 
 	"github.com/Financial-Times/go-logger/v2"
@@ -102,19 +105,6 @@ func TestGetHandlerWithLifecycleQueryParams(t *testing.T) {
 			expectedStatusCode: http.StatusBadRequest,
 			expectedBody:       `{"message":"invalid query parameter"}`,
 		},
-		"request with lifecycle parameters should apply additional filtering": {
-			annotationsDriver: mockDriver{
-				readFunc: func(string) (anns annotations, found bool, err error) {
-					return []annotation{pacAnnotationA, pacAnnotationB, v1AnnotationA, v1AnnotationB, v2AnnotationA, v2AnnotationB}, true, nil
-				},
-			},
-			lifecycleParams:    "lifecycle=pac&lifecycle=v1",
-			expectedStatusCode: http.StatusOK,
-			expectedBody: `[
-				{"predicate":"http://www.ft.com/ontology/annotation/about","id":"6bbd0457-15ab-4ddc-ab82-0cd5b8d9ce18","apiUrl":"","types":null},
-				{"predicate":"http://www.ft.com/ontology/annotation/mentions","id":"0ab61bfc-a2b1-4b08-a864-4233fd72f250","apiUrl":"","types":null}
-			]`,
-		},
 	}
 
 	for name, tc := range tests {
@@ -135,6 +125,63 @@ func TestGetHandlerWithLifecycleQueryParams(t *testing.T) {
 			r.ServeHTTP(rec, req)
 			assert.True(t, tc.expectedStatusCode == rec.Code, fmt.Sprintf("Wrong response code, was %d, should be %d", rec.Code, tc.expectedStatusCode))
 			assert.JSONEq(t, tc.expectedBody, rec.Body.String(), fmt.Sprintf("Wrong response body"))
+		})
+	}
+}
+
+func TestGetHandlerWithLifecycleQueryParamsAdditionalFilter(t *testing.T) {
+	tests := map[string]struct {
+		annotationsDriver   mockDriver
+		lifecycleParams     string
+		expectedStatusCode  int
+		expectedAnnotations []annotation
+	}{
+		"pac&v1 additional filtering": {
+			annotationsDriver: mockDriver{
+				readFunc: func(string) (anns annotations, found bool, err error) {
+					return []annotation{pacAnnotationA, pacAnnotationB, v1AnnotationA, v1AnnotationB, v2AnnotationA, v2AnnotationB}, true, nil
+				},
+			},
+			lifecycleParams:    "lifecycle=pac&lifecycle=v1",
+			expectedStatusCode: http.StatusOK,
+			expectedAnnotations: []annotation{
+				{
+					Predicate: "http://www.ft.com/ontology/annotation/about",
+					ID:        "6bbd0457-15ab-4ddc-ab82-0cd5b8d9ce18",
+				},
+				{
+					Predicate: "http://www.ft.com/ontology/annotation/mentions",
+					ID:        "0ab61bfc-a2b1-4b08-a864-4233fd72f250",
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			hctx := &HandlerCtx{
+				AnnotationsDriver:  tc.annotationsDriver,
+				CacheControlHeader: "test-header",
+				Log:                logger.NewUPPLogger("test-public-annotations-api", "PANIC"),
+			}
+			req, err := http.NewRequest("GET", fmt.Sprintf("/content/%s/annotations?%s", knownUUID, tc.lifecycleParams), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rec := httptest.NewRecorder()
+			r := mux.NewRouter()
+			r.HandleFunc("/content/{uuid}/annotations", GetAnnotations(hctx)).Methods("GET")
+			r.ServeHTTP(rec, req)
+			assert.True(t, tc.expectedStatusCode == rec.Code, fmt.Sprintf("Wrong response code, was %d, should be %d", rec.Code, tc.expectedStatusCode))
+
+			var actualAnnotations []annotation
+			_ = json.NewDecoder(rec.Body).Decode(&actualAnnotations)
+			sort.Slice(actualAnnotations, func(i, j int) bool {
+				return strings.Compare(actualAnnotations[i].ID, actualAnnotations[j].ID) >= 0
+			})
+
+			assert.Equal(t, tc.expectedAnnotations, actualAnnotations, fmt.Sprintf("Wrong response body"))
 		})
 	}
 }
