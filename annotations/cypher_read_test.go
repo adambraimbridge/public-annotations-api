@@ -45,7 +45,7 @@ func TestCypherDriverReadBrand(t *testing.T) {
 				{
 					Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
 					ID:        "http://api.ft.com/things/test",
-					APIURL:    "http://test.api.ft.com/brands/test",
+					APIURL:    "https://api-t.ft.com/brands/test",
 					Types:     []string{"http://www.ft.com/ontology/product/Brand"},
 				},
 			},
@@ -65,7 +65,7 @@ func TestCypherDriverReadBrand(t *testing.T) {
 				{
 					Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
 					ID:        "http://api.ft.com/things/test",
-					APIURL:    "http://test.api.ft.com/brands/test",
+					APIURL:    "https://api-t.ft.com/brands/test",
 					Types:     []string{"http://www.ft.com/ontology/product/Brand"},
 				},
 			},
@@ -90,13 +90,13 @@ func TestCypherDriverReadBrand(t *testing.T) {
 				{
 					Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
 					ID:        "http://api.ft.com/things/id1",
-					APIURL:    "http://test.api.ft.com/brands/id1",
+					APIURL:    "https://api-t.ft.com/brands/id1",
 					Types:     []string{"http://www.ft.com/ontology/product/Brand"},
 				},
 				{
 					Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
 					ID:        "http://api.ft.com/things/id2",
-					APIURL:    "http://test.api.ft.com/brands/id2",
+					APIURL:    "https://api-t.ft.com/brands/id2",
 					Types:     []string{"http://www.ft.com/ontology/product/Brand"},
 				},
 			},

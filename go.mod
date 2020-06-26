@@ -9,9 +9,10 @@ require (
 	github.com/Financial-Times/concepts-rw-neo4j v1.24.2
 	github.com/Financial-Times/content-rw-neo4j v1.0.3-0.20190417080642-a8b4c6720d8e
 	github.com/Financial-Times/go-fthealth v0.0.0-20181009114238-ca83ad65381f
+	github.com/Financial-Times/go-logger v0.0.0-20180323124113-febee6537e90
 	github.com/Financial-Times/go-logger/v2 v2.0.1
 	github.com/Financial-Times/http-handlers-go/v2 v2.1.0
-	github.com/Financial-Times/neo-model-utils-go v0.0.0-20180712095719-aea1e95c8305
+	github.com/Financial-Times/neo-model-utils-go v0.0.0-20200626072928-d579e3942c38
 	github.com/Financial-Times/neo-utils-go/v2 v2.0.0
 	github.com/Financial-Times/service-status-go v0.0.0-20160323111542-3f5199736a3d
 	github.com/cyberdelia/go-metrics-graphite v0.0.0-20161219230853-39f87cc3b432 // indirect
@@ -20,7 +21,7 @@ require (
 	github.com/jmcvetta/neoism v1.3.1
 	github.com/joho/godotenv v1.3.0
 	github.com/rcrowley/go-metrics v0.0.0-20190826022208-cac0b30c2563
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.6.1
 )
 
 replace gopkg.in/stretchr/testify.v1 => github.com/stretchr/testify v1.4.0

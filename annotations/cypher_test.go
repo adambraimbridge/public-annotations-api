@@ -113,10 +113,10 @@ var (
 	}
 
 	conceptApiUrlTemplates = map[string]string{
-		brandType:        "http://api.ft.com/brands/%s",
-		topicType:        "http://api.ft.com/things/%s",
-		genreType:        "http://api.ft.com/things/%s",
-		organisationType: "http://api.ft.com/organisations/%s",
+		brandType:        "https://api.ft.com/brands/%s",
+		topicType:        "https://api.ft.com/things/%s",
+		genreType:        "https://api.ft.com/things/%s",
+		organisationType: "https://api.ft.com/organisations/%s",
 	}
 )
 
@@ -841,7 +841,7 @@ func getExpectedMentionsFakebookAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/annotation/mentions",
 		ID:        "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
-		APIURL:    "http://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
+		APIURL:    "https://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
 		Types: []string{
 			"http://www.ft.com/ontology/core/Thing",
 			"http://www.ft.com/ontology/concept/Concept",
@@ -860,7 +860,7 @@ func getExpectedAboutFakebookAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/annotation/about",
 		ID:        "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
-		APIURL:    "http://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
+		APIURL:    "https://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
 		Types: []string{
 			"http://www.ft.com/ontology/core/Thing",
 			"http://www.ft.com/ontology/concept/Concept",
@@ -879,7 +879,7 @@ func getExpectedMallStreetJournalAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/annotation/mentions",
 		ID:        "http://api.ft.com/things/5d1510f8-2779-4b74-adab-0a5eb138fca6",
-		APIURL:    "http://api.ft.com/organisations/5d1510f8-2779-4b74-adab-0a5eb138fca6",
+		APIURL:    "https://api.ft.com/organisations/5d1510f8-2779-4b74-adab-0a5eb138fca6",
 		Types: []string{
 			"http://www.ft.com/ontology/core/Thing",
 			"http://www.ft.com/ontology/concept/Concept",
@@ -894,7 +894,7 @@ func getExpectedMetalMickeyAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
 		ID:        "http://api.ft.com/things/0483bef8-5797-40b8-9b25-b12e492f63c6",
-		APIURL:    "http://api.ft.com/things/0483bef8-5797-40b8-9b25-b12e492f63c6",
+		APIURL:    "https://api.ft.com/things/0483bef8-5797-40b8-9b25-b12e492f63c6",
 		Types: []string{
 			"http://www.ft.com/ontology/core/Thing",
 			"http://www.ft.com/ontology/concept/Concept",
@@ -910,7 +910,7 @@ func getExpectedHasDisplayTagFakebookAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/hasDisplayTag",
 		ID:        "http://api.ft.com/things/eac853f5-3859-4c08-8540-55e043719400",
-		APIURL:    "http://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
+		APIURL:    "https://api.ft.com/organisations/eac853f5-3859-4c08-8540-55e043719400",
 		Types: []string{
 			"http://www.ft.com/ontology/core/Thing",
 			"http://www.ft.com/ontology/concept/Concept",
@@ -930,7 +930,7 @@ func getExpectedJohnSmithAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/hasContributor",
 		ID:        "http://api.ft.com/things/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
-		APIURL:    "http://api.ft.com/people/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
+		APIURL:    "https://api.ft.com/people/75e2f7e9-cb5e-40a5-a074-86d69fe09f69",
 		Types: []string{
 			"http://www.ft.com/ontology/core/Thing",
 			"http://www.ft.com/ontology/concept/Concept",
@@ -946,7 +946,7 @@ func getExpectedAlphavilleSeriesAnnotation(lifecycle string) annotation {
 	return annotation{
 		Predicate: "http://www.ft.com/ontology/classification/isClassifiedBy",
 		ID:        "http://api.ft.com/things/" + alphavilleSeriesUUID,
-		APIURL:    "http://api.ft.com/things/" + alphavilleSeriesUUID,
+		APIURL:    "https://api.ft.com/things/" + alphavilleSeriesUUID,
 		Types: []string{
 			"http://www.ft.com/ontology/core/Thing",
 			"http://www.ft.com/ontology/concept/Concept",
