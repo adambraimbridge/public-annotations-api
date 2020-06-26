@@ -14,6 +14,7 @@ import (
 	"github.com/Financial-Times/base-ft-rw-app-go/baseftrwapp"
 	"github.com/Financial-Times/concepts-rw-neo4j/concepts"
 	"github.com/Financial-Times/content-rw-neo4j/content"
+	v1_log "github.com/Financial-Times/go-logger"
 	"github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/neo-utils-go/v2/neoutils"
 	"github.com/jmcvetta/neoism"
@@ -130,6 +131,10 @@ var allUUIDs = []string{contentUUID, contentWithNoAnnotationsUUID, contentWithPa
 	FakebookConceptUUID, MSJConceptUUID, MetalMickeyConceptUUID, brokenPacUUID, financialInstrumentUUID, JohnSmithConceptUUID,
 	aboutTopic, broaderTopicA, broaderTopicB, narrowerTopic, cyclicTopicA, cyclicTopicB, brandWithHasBrandPredicateUUID,
 	brandHubPageUUID, genreOpinionUUID, contentWithHasBrand,
+}
+
+func init() {
+	v1_log.InitLogger("test-public-annotations-api", "PANIC")
 }
 
 func TestCypherDriverSuite(t *testing.T) {
